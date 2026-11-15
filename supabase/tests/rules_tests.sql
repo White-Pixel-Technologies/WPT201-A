@@ -161,6 +161,21 @@ BEGIN
 END;
 $$;
 
+-- Case-insensitive source name uniqueness
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO public.financial_sources
+            (type, name, opening_amount)
+        VALUES ('bank', 'RLS TEST CASH', 0);
+
+        RAISE EXCEPTION 'FAIL: Case-insensitive duplicate source name was allowed';
+    EXCEPTION
+        WHEN unique_violation THEN
+            RAISE NOTICE 'PASS: Case-insensitive duplicate source name blocked';
+    END;
+END;
+$$;
 
 -- ---------------------------------------------------------
 -- 4. Source type cannot be changed
