@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import Text from '../../components/AppText';
 import { useTheme, type ThemeMode } from '../../theme/theme-context';
 import type { ThemeColors } from '../../theme/colors';
+import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 const themeOptions: {
   label: string;
@@ -11,18 +13,18 @@ const themeOptions: {
   value: ThemeMode;
 }[] = [
   {
-    label: 'System',
-    description: 'Follow your device appearance',
+    label: t('settings.system'),
+    description: t('settings.systemDescription'),
     value: 'system',
   },
   {
-    label: 'Light',
-    description: 'Always use light appearance',
+    label: t('settings.light'),
+    description: t('settings.lightDescription'),
     value: 'light',
   },
   {
-    label: 'Dark',
-    description: 'Always use dark appearance',
+    label: t('settings.dark'),
+    description: t('settings.darkDescription'),
     value: 'dark',
   },
 ];
@@ -34,16 +36,14 @@ export default function Settings() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Settings</Text>
+      <Text style={styles.heading}>{t('settings.title')}</Text>
 
-      <Text style={styles.subtitle}>Manage your app preferences.</Text>
+      <Text style={styles.subtitle}>{t('settings.subtitle')}</Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Appearance</Text>
+        <Text style={styles.sectionTitle}>{t('settings.appearance')}</Text>
 
-        <Text style={styles.description}>
-          Choose how SaveMode looks on your device.
-        </Text>
+        <Text style={styles.description}>{t('settings.description')}</Text>
 
         {themeOptions.map((option) => {
           const selected = mode === option.value;
@@ -58,7 +58,6 @@ export default function Settings() {
             >
               <View style={styles.optionText}>
                 <Text style={styles.optionTitle}>{option.label}</Text>
-
                 <Text style={styles.optionDescription}>
                   {option.description}
                 </Text>
@@ -74,8 +73,8 @@ export default function Settings() {
         <View style={styles.status}>
           <Text style={styles.statusText}>
             {isReady
-              ? `Selected: ${mode.charAt(0).toUpperCase() + mode.slice(1)} · Active appearance: ${resolvedMode}`
-              : 'Loading saved appearance...'}
+              ? `${t('settings.selected')}: ${mode === 'system' ? t('settings.system') : mode === 'light' ? t('settings.light') : t('settings.dark')} | ${t('settings.activeAppearance')}: ${resolvedMode === 'light' ? t('settings.light') : t('settings.dark')}`
+              : t('settings.loading')}
           </Text>
         </View>
       </View>
@@ -94,13 +93,13 @@ function createStyles(colors: ThemeColors) {
       padding: 20,
     },
     heading: {
-      fontSize: 28,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
       marginBottom: 6,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
       marginBottom: 24,
     },
@@ -112,13 +111,13 @@ function createStyles(colors: ThemeColors) {
       padding: 16,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
       marginBottom: 6,
     },
     description: {
-      fontSize: 14,
+      fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
       marginBottom: 16,
     },
@@ -143,13 +142,13 @@ function createStyles(colors: ThemeColors) {
       marginRight: 12,
     },
     optionTitle: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
       marginBottom: 4,
     },
     optionDescription: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
     },
     radio: {
@@ -177,8 +176,8 @@ function createStyles(colors: ThemeColors) {
       marginTop: 8,
     },
     statusText: {
-      fontSize: 13,
-      fontWeight: '500',
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.medium,
       color: colors.text,
     },
   });

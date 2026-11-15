@@ -16,11 +16,11 @@ import type { Source, SourceType } from '../../lib/session';
 import { useTheme } from '../../theme/theme-context';
 import type { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 const MAX_SOURCES = 50;
 
-const DELETE_BLOCKED_MESSAGE =
-  "This source has transactions, so it can't be deleted.";
+const DELETE_BLOCKED_MESSAGE = t('sources.deleteBlocked');
 
 const formatMoney = (amount: number) =>
   `\u20B9${amount.toLocaleString('en-IN', {
@@ -29,10 +29,10 @@ const formatMoney = (amount: number) =>
   })}`;
 
 const sourceLabels: Record<SourceType, string> = {
-  bank: 'Bank Account',
-  cash: 'Cash',
-  wallet: 'Digital Wallet',
-  credit_card: 'Credit Card',
+  bank: t('sources.typeBank'),
+  cash: t('sources.typeCash'),
+  wallet: t('sources.typeWallet'),
+  credit_card: t('sources.typeCreditCard'),
 };
 
 const sourceIcons: Record<SourceType, string> = {
@@ -133,12 +133,12 @@ export default function Sources() {
     const name = form.name.trim();
 
     if (!editingSource && sources.length >= MAX_SOURCES) {
-      showMessage("You've reached the maximum of 50 sources.");
+      showMessage(t('sources.maxReached'));
       return;
     }
 
     if (!name) {
-      showMessage('Please enter a source name.');
+      showMessage(t('sources.enterName'));
       return;
     }
 
@@ -149,7 +149,7 @@ export default function Sources() {
     );
 
     if (duplicate) {
-      showMessage('A source with this name already exists.');
+      showMessage(t('sources.duplicateName'));
       return;
     }
 
@@ -165,7 +165,7 @@ export default function Sources() {
       creditLimit < 0 ||
       outstanding < 0
     ) {
-      showMessage('Please enter valid non-negative amounts.');
+      showMessage(t('sources.invalidAmounts'));
       return;
     }
 
@@ -173,9 +173,7 @@ export default function Sources() {
       form.type === 'credit_card' &&
       (creditLimit <= 0 || outstanding > creditLimit)
     ) {
-      showMessage(
-        'Enter a valid credit limit. Outstanding cannot exceed the credit limit.',
-      );
+      showMessage(t('sources.invalidCredit'));
       return;
     }
 
@@ -210,7 +208,7 @@ export default function Sources() {
   const confirmDelete = (source: Source) => {
     setDeleteErrorSourceId(null);
 
-    const message = `Delete "${source.name}"?`;
+    const message = t('sources.deleteConfirm') + ' "' + source.name + '"?';
 
     if (Platform.OS === 'web') {
       if (typeof window !== 'undefined' && window.confirm(message)) {
@@ -220,9 +218,9 @@ export default function Sources() {
       return;
     }
 
-    Alert.alert('Delete source', message, [
+    Alert.alert(t('sources.deleteTitle'), message, [
       {
-        text: 'Cancel',
+        text: t('sources.cancel'),
         style: 'cancel',
       },
       {
@@ -246,7 +244,7 @@ export default function Sources() {
         value={value}
         onChangeText={(text) => updateField(field, text)}
         keyboardType="decimal-pad"
-        placeholder="0.00"
+        placeholder={t('sources.amountPlaceholder')}
         placeholderTextColor={colors.textMuted}
       />
     </View>
@@ -275,14 +273,14 @@ export default function Sources() {
               onPress={() => openEditModal(source)}
               style={styles.actionButton}
             >
-              <Text style={styles.editText}>Edit</Text>
+              <Text style={styles.editText}>{t('sources.edit')}</Text>
             </Pressable>
 
             <Pressable
               onPress={() => confirmDelete(source)}
               style={styles.actionButton}
             >
-              <Text style={styles.deleteText}>Delete</Text>
+              <Text style={styles.deleteText}>{t('sources.delete')}</Text>
             </Pressable>
           </View>
         </View>
@@ -292,21 +290,23 @@ export default function Sources() {
         {isCard ? (
           <>
             <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Credit limit</Text>
+              <Text style={styles.amountLabel}>{t('sources.creditLimit')}</Text>
               <Text style={styles.amountValue}>
                 {formatMoney(source.creditLimit)}
               </Text>
             </View>
 
             <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Outstanding</Text>
+              <Text style={styles.amountLabel}>{t('sources.outstanding')}</Text>
               <Text style={styles.amountValue}>
                 {formatMoney(source.outstanding)}
               </Text>
             </View>
 
             <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Available credit</Text>
+              <Text style={styles.amountLabel}>
+                {t('sources.availableCredit')}
+              </Text>
               <Text style={styles.availableValue}>
                 {formatMoney(source.creditLimit - source.outstanding)}
               </Text>
@@ -314,7 +314,9 @@ export default function Sources() {
           </>
         ) : (
           <View style={styles.amountRow}>
-            <Text style={styles.amountLabel}>Opening balance</Text>
+            <Text style={styles.amountLabel}>
+              {t('sources.openingBalance')}
+            </Text>
             <Text style={styles.amountValue}>
               {formatMoney(source.openingBalance)}
             </Text>
@@ -338,8 +340,8 @@ export default function Sources() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.heading}>My Sources</Text>
-            <Text style={styles.subtitle}>Manage your money in one place</Text>
+            <Text style={styles.heading}>{t('sources.title')}</Text>
+            <Text style={styles.subtitle}>{t('sources.subtitle')}</Text>
           </View>
 
           <Pressable
@@ -350,12 +352,14 @@ export default function Sources() {
             onPress={openAddModal}
             disabled={sources.length >= MAX_SOURCES}
           >
-            <Text style={styles.addButtonText}>+ Add</Text>
+            <Text style={styles.addButtonText}>{t('sources.add')}</Text>
           </Pressable>
         </View>
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Total opening balance</Text>
+          <Text style={styles.summaryLabel}>
+            {t('sources.totalOpeningBalance')}
+          </Text>
 
           <Text style={styles.summaryAmount}>
             {formatMoney(totals.bankAndCash)}
@@ -363,7 +367,9 @@ export default function Sources() {
 
           <View style={styles.summaryDivider} />
 
-          <Text style={styles.summaryLabel}>Total card outstanding</Text>
+          <Text style={styles.summaryLabel}>
+            {t('sources.totalCardOutstanding')}
+          </Text>
 
           <Text style={styles.outstandingAmount}>
             {formatMoney(totals.outstanding)}
@@ -371,7 +377,7 @@ export default function Sources() {
         </View>
 
         <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>Your accounts</Text>
+          <Text style={styles.sectionTitle}>{t('sources.accounts')}</Text>
 
           <Text style={styles.countText}>
             {sources.length} / {MAX_SOURCES} sources
@@ -382,14 +388,14 @@ export default function Sources() {
           <View style={styles.emptyCard}>
             <Text style={styles.emptyIcon}>{sourceIcons.bank}</Text>
 
-            <Text style={styles.emptyTitle}>No sources yet</Text>
+            <Text style={styles.emptyTitle}>{t('sources.empty')}</Text>
 
             <Text style={styles.emptyDescription}>
-              Add where your money is: a bank account, cash, or a card.
+              {t('sources.emptyDescription')}
             </Text>
 
             <Pressable style={styles.emptyButton} onPress={openAddModal}>
-              <Text style={styles.addButtonText}>+ Add your first source</Text>
+              <Text style={styles.addButtonText}>{t('sources.addFirst')}</Text>
             </Pressable>
           </View>
         ) : (
@@ -411,25 +417,34 @@ export default function Sources() {
             >
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>
-                  {editingSource ? 'Edit source' : 'Add source'}
+                  {editingSource
+                    ? t('sources.editModal')
+                    : t('sources.addModal')}
                 </Text>
 
-                <Pressable onPress={closeModal}>
+                <Pressable
+                  onPress={closeModal}
+                  style={styles.closeButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('sources.closeModal')}
+                >
                   <Text style={styles.closeText}>{'\u2715'}</Text>
                 </Pressable>
               </View>
 
-              <Text style={styles.label}>Source name</Text>
+              <Text style={styles.label}>{t('sources.sourceName')}</Text>
 
               <TextInput
                 style={styles.input}
                 value={form.name}
                 onChangeText={(value) => updateField('name', value)}
-                placeholder="e.g. SBI Savings"
+                placeholder={t('sources.namePlaceholder')}
                 placeholderTextColor={colors.textMuted}
               />
 
-              <Text style={[styles.label, styles.typeLabel]}>Source type</Text>
+              <Text style={[styles.label, styles.typeLabel]}>
+                {t('sources.sourceType')}
+              </Text>
 
               <View style={styles.typeOptions}>
                 {(['bank', 'cash', 'credit_card'] as SourceType[]).map(
@@ -460,20 +475,20 @@ export default function Sources() {
               {form.type === 'credit_card' ? (
                 <>
                   {renderAmountField(
-                    `Credit limit (${'\u20B9'})`,
+                    t('sources.creditLimit') + ' (â‚¹)',
                     'creditLimit',
                     form.creditLimit,
                   )}
 
                   {renderAmountField(
-                    `Current outstanding (${'\u20B9'})`,
+                    t('sources.outstanding') + ' (â‚¹)',
                     'outstanding',
                     form.outstanding,
                   )}
                 </>
               ) : (
                 renderAmountField(
-                  `Opening balance (${'\u20B9'})`,
+                  t('sources.openingBalance') + ' (â‚¹)',
                   'openingBalance',
                   form.openingBalance,
                 )
@@ -481,12 +496,14 @@ export default function Sources() {
 
               <Pressable style={styles.saveButton} onPress={saveSource}>
                 <Text style={styles.saveButtonText}>
-                  {editingSource ? 'Save changes' : 'Add source'}
+                  {editingSource
+                    ? t('sources.saveChanges')
+                    : t('sources.addSource')}
                 </Text>
               </Pressable>
 
               <Pressable style={styles.cancelButton} onPress={closeModal}>
-                <Text style={styles.cancelText}>Cancel</Text>
+                <Text style={styles.cancelText}>{t('sources.cancel')}</Text>
               </Pressable>
             </ScrollView>
           </View>
@@ -516,12 +533,12 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 22,
     },
     heading: {
-      fontSize: 26,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
       marginTop: 5,
     },
@@ -529,15 +546,18 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.primary,
       paddingHorizontal: 18,
       paddingVertical: 11,
+      minHeight: 44,
       borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     disabledButton: {
       opacity: 0.5,
     },
     addButtonText: {
       color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 14,
+      fontWeight: typography.fontWeight.semiBold,
+      fontSize: typography.fontSize.sm,
     },
     summaryCard: {
       backgroundColor: colors.primary,
@@ -546,12 +566,12 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 26,
     },
     summaryLabel: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.onPrimary,
     },
     summaryAmount: {
-      fontSize: 27,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
       marginTop: 5,
     },
@@ -562,8 +582,8 @@ function createStyles(colors: ThemeColors) {
       marginVertical: 16,
     },
     outstandingAmount: {
-      fontSize: 21,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
       marginTop: 5,
     },
@@ -574,12 +594,12 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 13,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     countText: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
     },
     sourceCard: {
@@ -612,18 +632,18 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'center',
     },
     sourceIcon: {
-      fontSize: 22,
+      fontSize: typography.fontSize.xxl,
     },
     sourceInfo: {
       flex: 1,
     },
     sourceName: {
-      fontSize: 16,
-      fontWeight: '700',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     sourceType: {
-      fontSize: 12,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
       marginTop: 4,
     },
@@ -632,18 +652,22 @@ function createStyles(colors: ThemeColors) {
       gap: 5,
     },
     actionButton: {
+      minWidth: 44,
+      minHeight: 44,
       paddingHorizontal: 9,
       paddingVertical: 7,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     editText: {
       color: colors.primary,
-      fontWeight: '600',
-      fontSize: 13,
+      fontWeight: typography.fontWeight.semiBold,
+      fontSize: typography.fontSize.xs,
     },
     deleteText: {
       color: colors.error,
-      fontWeight: '600',
-      fontSize: 13,
+      fontWeight: typography.fontWeight.semiBold,
+      fontSize: typography.fontSize.xs,
     },
     sourceDivider: {
       height: 1,
@@ -656,17 +680,17 @@ function createStyles(colors: ThemeColors) {
       marginTop: 9,
     },
     amountLabel: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
     },
     amountValue: {
-      fontSize: 14,
-      fontWeight: '600',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
     },
     availableValue: {
-      fontSize: 14,
-      fontWeight: '700',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.bold,
       color: colors.success,
     },
     deleteErrorBox: {
@@ -679,8 +703,8 @@ function createStyles(colors: ThemeColors) {
     },
     deleteErrorText: {
       color: colors.error,
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: typography.fontSize.xs,
+      lineHeight: typography.lineHeight.xs,
     },
     emptyCard: {
       backgroundColor: colors.surface,
@@ -691,19 +715,19 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
     },
     emptyIcon: {
-      fontSize: 38,
+      fontSize: typography.fontSize.display,
       marginBottom: 12,
     },
     emptyTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     emptyDescription: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
       textAlign: 'center',
-      lineHeight: 20,
+      lineHeight: typography.lineHeight.sm,
       marginTop: 8,
       marginBottom: 18,
     },
@@ -711,7 +735,10 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.primary,
       paddingHorizontal: 18,
       paddingVertical: 12,
+      minHeight: 44,
       borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     modalBackdrop: {
       flex: 1,
@@ -735,18 +762,23 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 22,
     },
     modalTitle: {
-      fontSize: 21,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
+    closeButton: {
+      minWidth: 44,
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     closeText: {
-      fontSize: 21,
+      fontSize: typography.fontSize.xl,
       color: colors.textSecondary,
-      padding: 5,
     },
     label: {
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
       marginBottom: 8,
     },
@@ -756,7 +788,8 @@ function createStyles(colors: ThemeColors) {
       borderRadius: 9,
       paddingHorizontal: 13,
       paddingVertical: 12,
-      fontSize: 15,
+      minHeight: 44,
+      fontSize: typography.fontSize.sm,
       fontFamily: typography.fontFamily.regular,
       color: colors.text,
       marginBottom: 17,
@@ -773,6 +806,8 @@ function createStyles(colors: ThemeColors) {
       borderWidth: 1,
       borderColor: colors.border,
       padding: 12,
+      minHeight: 44,
+      justifyContent: 'center',
       borderRadius: 9,
     },
     selectedType: {
@@ -781,11 +816,11 @@ function createStyles(colors: ThemeColors) {
     },
     typeOptionText: {
       color: colors.text,
-      fontSize: 14,
+      fontSize: typography.fontSize.sm,
     },
     selectedTypeText: {
       color: colors.primary,
-      fontWeight: '700',
+      fontWeight: typography.fontWeight.bold,
     },
     field: {
       marginBottom: 3,
@@ -794,22 +829,26 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.primary,
       borderRadius: 9,
       alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
       padding: 14,
       marginTop: 8,
     },
     saveButtonText: {
       color: colors.onPrimary,
-      fontWeight: '700',
-      fontSize: 15,
+      fontWeight: typography.fontWeight.bold,
+      fontSize: typography.fontSize.sm,
     },
     cancelButton: {
       alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
       padding: 13,
       marginTop: 5,
     },
     cancelText: {
       color: colors.textSecondary,
-      fontWeight: '600',
+      fontWeight: typography.fontWeight.semiBold,
     },
   });
 }

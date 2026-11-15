@@ -15,15 +15,16 @@ import type { Source, Transaction, TransactionType } from '../../lib/session';
 import { useTheme } from '../../theme/theme-context';
 import type { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 const transactionTypes: {
   label: string;
   value: TransactionType;
 }[] = [
-  { label: 'Income', value: 'income' },
-  { label: 'Expense', value: 'expense' },
-  { label: 'Transfer', value: 'transfer' },
-  { label: 'Adjustment', value: 'adjustment' },
+  { label: t('transactions.typeIncome'), value: 'income' },
+  { label: t('transactions.typeExpense'), value: 'expense' },
+  { label: t('transactions.typeTransfer'), value: 'transfer' },
+  { label: t('transactions.typeAdjustment'), value: 'adjustment' },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -35,10 +36,10 @@ const formatMoney = (amount: number) =>
   })}`;
 
 const typeLabel: Record<TransactionType, string> = {
-  income: 'Income',
-  expense: 'Expense',
-  transfer: 'Transfer',
-  adjustment: 'Adjustment',
+  income: t('transactions.typeIncome'),
+  expense: t('transactions.typeExpense'),
+  transfer: t('transactions.typeTransfer'),
+  adjustment: t('transactions.typeAdjustment'),
 };
 
 export default function Transactions() {
@@ -97,47 +98,50 @@ export default function Transactions() {
   };
 
   const getSourceName = (id?: string) => {
-    if (!id) return 'Unknown source';
+    if (!id) return t('transactions.unknownSource');
 
-    return sources.find((source) => source.id === id)?.name ?? 'Unknown source';
+    return (
+      sources.find((source) => source.id === id)?.name ??
+      t('transactions.unknownSource')
+    );
   };
 
   const saveTransaction = () => {
     const numericAmount = Number(amount);
 
     if (!date.trim()) {
-      showMessage('Please enter a transaction date.');
+      showMessage(t('transactions.dateRequired'));
       return;
     }
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
-      showMessage('Enter the date in YYYY-MM-DD format.');
+      showMessage(t('transactions.dateInvalid'));
       return;
     }
 
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      showMessage('Please enter a valid amount greater than zero.');
+      showMessage(t('transactions.amountInvalid'));
       return;
     }
 
     if (!tag.trim()) {
-      showMessage('Please enter a transaction tag.');
+      showMessage(t('transactions.tagRequired'));
       return;
     }
 
     if (sources.length === 0) {
-      showMessage('Please add a source before creating a transaction.');
+      showMessage(t('transactions.sourceRequired'));
       return;
     }
 
     if (selectedType === 'transfer') {
       if (!fromSourceId || !toSourceId) {
-        showMessage('Please select both transfer sources.');
+        showMessage(t('transactions.transferSourcesRequired'));
         return;
       }
 
       if (fromSourceId === toSourceId) {
-        showMessage('Choose two different sources for a transfer.');
+        showMessage(t('transactions.transferSourcesDifferent'));
         return;
       }
 
@@ -152,7 +156,7 @@ export default function Transactions() {
       });
     } else {
       if (!sourceId) {
-        showMessage('Please select a source.');
+        showMessage(t('transactions.selectSourceRequired'));
         return;
       }
 
@@ -166,7 +170,7 @@ export default function Transactions() {
       });
     }
 
-    showMessage('Transaction saved successfully.');
+    showMessage(t('transactions.saved'));
     resetForm();
   };
 
@@ -250,8 +254,8 @@ export default function Transactions() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.heading}>Transactions</Text>
-            <Text style={styles.subtitle}>Track your income and expenses</Text>
+            <Text style={styles.heading}>{t('transactions.title')}</Text>
+            <Text style={styles.subtitle}>{t('transactions.subtitle')}</Text>
           </View>
 
           <Pressable
@@ -259,16 +263,18 @@ export default function Transactions() {
             onPress={() => setFormVisible(!formVisible)}
           >
             <Text style={styles.addButtonText}>
-              {formVisible ? 'Close' : '+ Add'}
+              {formVisible
+                ? t('transactions.close')
+                : '+ ' + t('transactions.add')}
             </Text>
           </Pressable>
         </View>
 
         {formVisible && (
           <View style={styles.formCard}>
-            <Text style={styles.sectionTitle}>New transaction</Text>
+            <Text style={styles.sectionTitle}>{t('transactions.new')}</Text>
 
-            <Text style={styles.label}>Transaction type</Text>
+            <Text style={styles.label}>{t('transactions.type')}</Text>
 
             <View style={styles.typeOptions}>
               {transactionTypes.map((item) => (
@@ -292,50 +298,50 @@ export default function Transactions() {
               ))}
             </View>
 
-            <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
+            <Text style={styles.label}>{t('transactions.date')}</Text>
 
             <TextInput
               style={styles.input}
               value={date}
               onChangeText={setDate}
-              placeholder="2026-11-10"
+              placeholder={t('transactions.datePlaceholder')}
               placeholderTextColor={colors.textMuted}
             />
 
-            <Text style={styles.label}>Amount (\u20B9)</Text>
+            <Text style={styles.label}>{t('transactions.amount')} (₹)</Text>
 
             <TextInput
               style={styles.input}
               value={amount}
               onChangeText={setAmount}
               keyboardType="decimal-pad"
-              placeholder="Enter amount"
+              placeholder={t('transactions.amountInputPlaceholder')}
               placeholderTextColor={colors.textMuted}
             />
 
-            <Text style={styles.label}>Description (optional)</Text>
+            <Text style={styles.label}>{t('transactions.description')}</Text>
 
             <TextInput
               style={styles.input}
               value={description}
               onChangeText={setDescription}
-              placeholder="What is this transaction for?"
+              placeholder={t('transactions.descriptionInputPlaceholder')}
               placeholderTextColor={colors.textMuted}
             />
 
-            <Text style={styles.label}>Tag</Text>
+            <Text style={styles.label}>{t('transactions.tag')}</Text>
 
             <TextInput
               style={styles.input}
               value={tag}
               onChangeText={setTag}
-              placeholder="e.g. Food, Salary, Shopping"
+              placeholder={t('transactions.tagInputPlaceholder')}
               placeholderTextColor={colors.textMuted}
             />
 
             {selectedType === 'transfer' ? (
               <>
-                <Text style={styles.label}>From source</Text>
+                <Text style={styles.label}>{t('transactions.fromSource')}</Text>
 
                 {sources.map((source) =>
                   renderSourceOption(source, fromSourceId === source.id, () =>
@@ -343,7 +349,7 @@ export default function Transactions() {
                   ),
                 )}
 
-                <Text style={styles.label}>To source</Text>
+                <Text style={styles.label}>{t('transactions.toSource')}</Text>
 
                 {sources.map((source) =>
                   renderSourceOption(source, toSourceId === source.id, () =>
@@ -353,7 +359,9 @@ export default function Transactions() {
               </>
             ) : (
               <>
-                <Text style={styles.label}>Select source</Text>
+                <Text style={styles.label}>
+                  {t('transactions.selectSource')}
+                </Text>
 
                 {sources.map((source) =>
                   renderSourceOption(source, sourceId === source.id, () =>
@@ -364,34 +372,40 @@ export default function Transactions() {
             )}
 
             <Pressable style={styles.saveButton} onPress={saveTransaction}>
-              <Text style={styles.saveButtonText}>Save transaction</Text>
+              <Text style={styles.saveButtonText}>
+                {t('transactions.save')}
+              </Text>
             </Pressable>
 
             <Pressable style={styles.cancelButton} onPress={resetForm}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t('transactions.cancel')}</Text>
             </Pressable>
           </View>
         )}
 
         <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>Recent transactions</Text>
+          <Text style={styles.sectionTitle}>{t('transactions.recent')}</Text>
 
-          <Text style={styles.countText}>{transactions.length} total</Text>
+          <Text style={styles.countText}>
+            {transactions.length} {t('transactions.total')}
+          </Text>
         </View>
 
         {transactions.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No transactions yet</Text>
+            <Text style={styles.emptyTitle}>{t('transactions.empty')}</Text>
 
             <Text style={styles.emptyDescription}>
-              Add your first income, expense or transfer to get started.
+              {t('transactions.emptyDescription')}
             </Text>
 
             <Pressable
               style={styles.emptyButton}
               onPress={() => setFormVisible(true)}
             >
-              <Text style={styles.addButtonText}>+ Add transaction</Text>
+              <Text style={styles.addButtonText}>
+                + {t('transactions.add')}
+              </Text>
             </Pressable>
           </View>
         ) : (
@@ -422,12 +436,12 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 22,
     },
     heading: {
-      fontSize: 26,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
       marginTop: 5,
     },
@@ -435,12 +449,15 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.primary,
       paddingHorizontal: 18,
       paddingVertical: 11,
+      minHeight: 44,
       borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     addButtonText: {
       color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 14,
+      fontWeight: typography.fontWeight.semiBold,
+      fontSize: typography.fontSize.sm,
     },
     formCard: {
       backgroundColor: colors.surface,
@@ -451,14 +468,14 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
       marginBottom: 15,
     },
     label: {
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
       marginTop: 12,
       marginBottom: 8,
@@ -469,7 +486,8 @@ function createStyles(colors: ThemeColors) {
       borderRadius: 9,
       paddingHorizontal: 13,
       paddingVertical: 12,
-      fontSize: 15,
+      minHeight: 44,
+      fontSize: typography.fontSize.sm,
       fontFamily: typography.fontFamily.regular,
       color: colors.text,
       backgroundColor: colors.inputBackground,
@@ -484,6 +502,8 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
       paddingHorizontal: 12,
       paddingVertical: 10,
+      minHeight: 44,
+      justifyContent: 'center',
       borderRadius: 9,
     },
     selectedType: {
@@ -492,17 +512,19 @@ function createStyles(colors: ThemeColors) {
     },
     typeOptionText: {
       color: colors.text,
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
     },
     selectedTypeText: {
       color: colors.primary,
-      fontWeight: '700',
+      fontWeight: typography.fontWeight.bold,
     },
     sourceOption: {
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 9,
       padding: 12,
+      minHeight: 44,
+      justifyContent: 'center',
       marginBottom: 8,
       backgroundColor: colors.surface,
     },
@@ -512,37 +534,41 @@ function createStyles(colors: ThemeColors) {
     },
     sourceOptionText: {
       color: colors.text,
-      fontSize: 14,
-      fontWeight: '600',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semiBold,
     },
     selectedSourceText: {
       color: colors.primary,
     },
     sourceOptionType: {
       color: colors.textSecondary,
-      fontSize: 11,
+      fontSize: typography.fontSize.xs,
       marginTop: 4,
     },
     saveButton: {
       backgroundColor: colors.primary,
       borderRadius: 9,
       alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
       padding: 14,
       marginTop: 22,
     },
     saveButtonText: {
       color: colors.onPrimary,
-      fontWeight: '700',
-      fontSize: 15,
+      fontWeight: typography.fontWeight.bold,
+      fontSize: typography.fontSize.sm,
     },
     cancelButton: {
       alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
       padding: 13,
       marginTop: 5,
     },
     cancelText: {
       color: colors.textSecondary,
-      fontWeight: '600',
+      fontWeight: typography.fontWeight.semiBold,
     },
     listHeader: {
       flexDirection: 'row',
@@ -551,7 +577,7 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 13,
     },
     countText: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
     },
     transactionCard: {
@@ -572,17 +598,17 @@ function createStyles(colors: ThemeColors) {
       flex: 1,
     },
     transactionTitle: {
-      fontSize: 15,
-      fontWeight: '700',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     transactionMeta: {
-      fontSize: 12,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
       marginTop: 5,
     },
     transactionSource: {
-      fontSize: 12,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
       marginTop: 5,
     },
@@ -590,8 +616,8 @@ function createStyles(colors: ThemeColors) {
       alignItems: 'flex-end',
     },
     transactionAmount: {
-      fontSize: 14,
-      fontWeight: '700',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     incomeAmount: {
@@ -601,7 +627,7 @@ function createStyles(colors: ThemeColors) {
       color: colors.error,
     },
     transactionType: {
-      fontSize: 11,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
       marginTop: 5,
     },
@@ -614,15 +640,15 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
     },
     emptyTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     emptyDescription: {
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       color: colors.textSecondary,
       textAlign: 'center',
-      lineHeight: 20,
+      lineHeight: typography.lineHeight.sm,
       marginTop: 8,
       marginBottom: 18,
     },
@@ -630,7 +656,10 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.primary,
       paddingHorizontal: 18,
       paddingVertical: 12,
+      minHeight: 44,
       borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   });
 }

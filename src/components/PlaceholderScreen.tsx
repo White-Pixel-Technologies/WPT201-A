@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import Text from './AppText';
 import { useTheme } from '../theme/theme-context';
 import type { ThemeColors } from '../theme/colors';
+import { typography } from '../theme/typography';
 
 type PlaceholderScreenProps = {
   title: string;
@@ -36,8 +37,8 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.background,
     },
     text: {
-      fontSize: 24,
-      fontWeight: '600',
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
     },
   });

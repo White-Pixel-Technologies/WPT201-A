@@ -14,6 +14,7 @@ import { useSession } from '../../lib/session';
 import { useTheme } from '../../theme/theme-context';
 import type { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 export default function NameScreen() {
   const { colors } = useTheme();
@@ -32,12 +33,12 @@ export default function NameScreen() {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
-      setError('Please enter your name.');
+      setError(t('onboarding.nameRequired'));
       return;
     }
 
     if (trimmedName.length < 2) {
-      setError('Name must contain at least 2 characters.');
+      setError(t('onboarding.nameTooShort'));
       return;
     }
 
@@ -51,19 +52,19 @@ export default function NameScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.content}>
-        <Text style={styles.step}>STEP 1 OF 3</Text>
+        <Text style={styles.step}>{t('onboarding.step1')}</Text>
 
-        <Text style={styles.title}>What&apos;s your name?</Text>
+        <Text style={styles.title}>{t('onboarding.nameTitle')}</Text>
 
         <Text style={styles.description}>
-          Welcome to SaveMode. Let&apos;s personalize your experience.
+          {t('onboarding.nameDescription')}
         </Text>
 
-        <Text style={styles.label}>Your name</Text>
+        <Text style={styles.label}>{t('onboarding.nameLabel')}</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Enter your name"
+          placeholder={t('onboarding.namePlaceholder')}
           placeholderTextColor={colors.textMuted}
           value={name}
           onChangeText={(value) => {
@@ -72,13 +73,13 @@ export default function NameScreen() {
           }}
           autoCapitalize="words"
           maxLength={50}
-          accessibilityLabel="Your name"
+          accessibilityLabel={t('onboarding.nameLabel')}
         />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable style={styles.button} onPress={handleContinue}>
-          <Text style={styles.buttonText}>Continue</Text>
+          <Text style={styles.buttonText}>{t('onboarding.continue')}</Text>
         </Pressable>
       </View>
     </KeyboardAvoidingView>
@@ -100,25 +101,25 @@ function createStyles(colors: ThemeColors) {
     },
     step: {
       color: colors.primary,
-      fontSize: 12,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.bold,
       marginBottom: 16,
     },
     title: {
-      fontSize: 28,
-      fontWeight: '700',
+      fontSize: typography.fontSize.display,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
       marginBottom: 12,
     },
     description: {
       color: colors.textSecondary,
-      fontSize: 15,
-      lineHeight: 23,
+      fontSize: typography.fontSize.sm,
+      lineHeight: typography.lineHeight.md,
       marginBottom: 32,
     },
     label: {
-      fontSize: 14,
-      fontWeight: '600',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
       marginBottom: 8,
     },
@@ -128,7 +129,7 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
       borderRadius: 10,
       paddingHorizontal: 14,
-      fontSize: 16,
+      fontSize: typography.fontSize.md,
       fontFamily: typography.fontFamily.regular,
       color: colors.text,
       backgroundColor: colors.inputBackground,
@@ -136,7 +137,7 @@ function createStyles(colors: ThemeColors) {
     error: {
       color: colors.error,
       marginTop: 8,
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
     },
     button: {
       backgroundColor: colors.primary,
@@ -147,8 +148,8 @@ function createStyles(colors: ThemeColors) {
     },
     buttonText: {
       color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.semiBold,
     },
   });
 }

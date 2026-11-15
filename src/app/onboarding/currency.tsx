@@ -6,14 +6,16 @@ import { default as Text } from '../../components/AppText';
 import { useSession } from '../../lib/session';
 import { useTheme } from '../../theme/theme-context';
 import type { ThemeColors } from '../../theme/colors';
+import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 const currencies = [
-  { code: 'INR', label: 'Indian Rupee', symbol: '\u20B9' },
-  { code: 'USD', label: 'US Dollar', symbol: '$' },
-  { code: 'EUR', label: 'Euro', symbol: '\u20AC' },
-  { code: 'GBP', label: 'British Pound', symbol: '\u00A3' },
-  { code: 'JPY', label: 'Japanese Yen', symbol: '\u00A5' },
-  { code: 'AED', label: 'UAE Dirham', symbol: '\u062F.\u0625' },
+  { code: 'INR', label: t('onboarding.currencyINR'), symbol: '\u20B9' },
+  { code: 'USD', label: t('onboarding.currencyUSD'), symbol: '$' },
+  { code: 'EUR', label: t('onboarding.currencyEUR'), symbol: '\u20AC' },
+  { code: 'GBP', label: t('onboarding.currencyGBP'), symbol: '\u00A3' },
+  { code: 'JPY', label: t('onboarding.currencyJPY'), symbol: '\u00A5' },
+  { code: 'AED', label: t('onboarding.currencyAED'), symbol: '\u062F.\u0625' },
 ];
 
 export default function CurrencyScreen() {
@@ -32,12 +34,12 @@ export default function CurrencyScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.step}>STEP 2 OF 3</Text>
+      <Text style={styles.step}>{t('onboarding.step2')}</Text>
 
-      <Text style={styles.title}>Choose your currency</Text>
+      <Text style={styles.title}>{t('onboarding.currencyTitle')}</Text>
 
       <Text style={styles.description}>
-        Select the currency you want to use for tracking your finances.
+        {t('onboarding.currencyDescription')}
       </Text>
 
       {currencies.map((item) => {
@@ -66,7 +68,7 @@ export default function CurrencyScreen() {
       })}
 
       <Pressable style={styles.button} onPress={handleContinue}>
-        <Text style={styles.buttonText}>Continue</Text>
+        <Text style={styles.buttonText}>{t('onboarding.continue')}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -88,20 +90,20 @@ function createStyles(colors: ThemeColors) {
     },
     step: {
       color: colors.primary,
-      fontSize: 12,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.bold,
       marginBottom: 16,
     },
     title: {
-      fontSize: 27,
-      fontWeight: '700',
+      fontSize: typography.fontSize.display,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
       marginBottom: 12,
     },
     description: {
-      fontSize: 15,
+      fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
-      lineHeight: 23,
+      lineHeight: typography.lineHeight.md,
       marginBottom: 28,
     },
     option: {
@@ -126,23 +128,23 @@ function createStyles(colors: ThemeColors) {
       gap: 14,
     },
     symbol: {
-      fontSize: 24,
+      fontSize: typography.fontSize.xxl,
       color: colors.primary,
       width: 35,
     },
     code: {
-      fontSize: 15,
-      fontWeight: '700',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
     },
     label: {
       color: colors.textSecondary,
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
       marginTop: 3,
     },
     check: {
       color: colors.primary,
-      fontSize: 20,
+      fontSize: typography.fontSize.xl,
     },
     button: {
       backgroundColor: colors.primary,
@@ -153,8 +155,8 @@ function createStyles(colors: ThemeColors) {
     },
     buttonText: {
       color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
+      fontWeight: typography.fontWeight.semiBold,
+      fontSize: typography.fontSize.md,
     },
   });
 }

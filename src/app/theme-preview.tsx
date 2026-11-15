@@ -112,7 +112,7 @@ export default function ThemePreviewScreen() {
                 marginBottom: spacing.sm,
               }}
             >
-              {name} — SaveMode
+              {name} - SaveMode
             </Text>
           ))}
 
@@ -126,11 +126,11 @@ export default function ThemePreviewScreen() {
               style={{
                 color: palette.colors.text,
                 fontFamily: font,
-                fontSize: 16,
+                fontSize: typography.fontSize.md,
                 marginBottom: spacing.sm,
               }}
             >
-              {name} — Inter
+              {name} - Inter
             </Text>
           ))}
 
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: lightColors.background,
   },
   heading: {
-    fontSize: 26,
+    fontSize: typography.fontSize.xxl,
     fontFamily: typography.fontFamily.bold,
     padding: spacing.lg,
     color: lightColors.text,

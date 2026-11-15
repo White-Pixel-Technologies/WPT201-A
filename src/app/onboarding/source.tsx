@@ -13,11 +13,12 @@ import { useSession, type SourceType } from '../../lib/session';
 import { useTheme } from '../../theme/theme-context';
 import type { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 const sourceTypes: { label: string; value: SourceType }[] = [
-  { label: 'Bank Account', value: 'bank' },
-  { label: 'Cash', value: 'cash' },
-  { label: 'Credit Card', value: 'credit_card' },
+  { label: t('onboarding.bankAccount'), value: 'bank' },
+  { label: t('onboarding.cash'), value: 'cash' },
+  { label: t('onboarding.creditCard'), value: 'credit_card' },
 ];
 
 export default function SourceScreen() {
@@ -64,7 +65,7 @@ export default function SourceScreen() {
     const numericBalance = Number(balance);
 
     if (!trimmedName) {
-      setError('Please enter a source name.');
+      setError(t('onboarding.sourceRequired'));
       return;
     }
 
@@ -74,7 +75,7 @@ export default function SourceScreen() {
         !Number.isFinite(numericLimit) ||
         numericLimit <= 0
       ) {
-        setError('Please enter a valid credit limit greater than zero.');
+        setError(t('onboarding.creditLimitInvalid'));
         return;
       }
 
@@ -83,12 +84,12 @@ export default function SourceScreen() {
         !Number.isFinite(numericOutstanding) ||
         numericOutstanding < 0
       ) {
-        setError('Please enter a valid outstanding amount.');
+        setError(t('onboarding.outstandingInvalid'));
         return;
       }
 
       if (numericOutstanding > numericLimit) {
-        setError('Outstanding amount cannot exceed the credit limit.');
+        setError(t('onboarding.outstandingTooHigh'));
         return;
       }
     } else {
@@ -97,7 +98,7 @@ export default function SourceScreen() {
         !Number.isFinite(numericBalance) ||
         numericBalance < 0
       ) {
-        setError('Please enter a valid non-negative balance.');
+        setError(t('onboarding.balanceInvalid'));
         return;
       }
     }
@@ -120,20 +121,20 @@ export default function SourceScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={styles.step}>STEP 3 OF 3</Text>
+      <Text style={styles.step}>{t('onboarding.step3')}</Text>
 
-      <Text style={styles.title}>Add your first source</Text>
+      <Text style={styles.title}>{t('onboarding.sourceTitle')}</Text>
 
       <Text style={styles.description}>
         Add a bank account, cash account or credit card to start tracking your
         finances.
       </Text>
 
-      <Text style={styles.label}>Source name</Text>
+      <Text style={styles.label}>{t('onboarding.sourceName')}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="e.g. My Savings"
+        placeholder={t('onboarding.sourceNamePlaceholder')}
         placeholderTextColor={colors.textMuted}
         value={sourceName}
         onChangeText={(value) => {
@@ -143,7 +144,7 @@ export default function SourceScreen() {
         maxLength={50}
       />
 
-      <Text style={styles.label}>Source type</Text>
+      <Text style={styles.label}>{t('onboarding.sourceType')}</Text>
 
       {sourceTypes.map((item) => {
         const selected = sourceType === item.value;
@@ -168,11 +169,13 @@ export default function SourceScreen() {
 
       {isCreditCard ? (
         <>
-          <Text style={styles.label}>Credit limit ({savedData.currency})</Text>
+          <Text style={styles.label}>
+            {t('onboarding.creditLimit')} ({savedData.currency})
+          </Text>
 
           <TextInput
             style={styles.input}
-            placeholder="e.g. 50000"
+            placeholder={t('onboarding.creditLimitPlaceholder')}
             placeholderTextColor={colors.textMuted}
             value={creditLimit}
             onChangeText={(value) => {
@@ -183,12 +186,12 @@ export default function SourceScreen() {
           />
 
           <Text style={styles.label}>
-            Outstanding amount ({savedData.currency})
+            {t('onboarding.outstanding')} ({savedData.currency})
           </Text>
 
           <TextInput
             style={styles.input}
-            placeholder="e.g. 10000"
+            placeholder={t('onboarding.outstandingPlaceholder')}
             placeholderTextColor={colors.textMuted}
             value={outstanding}
             onChangeText={(value) => {
@@ -199,7 +202,9 @@ export default function SourceScreen() {
           />
 
           <View style={styles.creditBox}>
-            <Text style={styles.creditLabel}>Available credit</Text>
+            <Text style={styles.creditLabel}>
+              {t('onboarding.availableCredit')}
+            </Text>
 
             <Text style={styles.creditValue}>
               {savedData.currency}{' '}
@@ -212,12 +217,12 @@ export default function SourceScreen() {
       ) : (
         <>
           <Text style={styles.label}>
-            Initial balance ({savedData.currency})
+            {t('onboarding.initialBalance')} ({savedData.currency})
           </Text>
 
           <TextInput
             style={styles.input}
-            placeholder="0"
+            placeholder={t('onboarding.zeroPlaceholder')}
             placeholderTextColor={colors.textMuted}
             value={balance}
             onChangeText={(value) => {
@@ -232,7 +237,7 @@ export default function SourceScreen() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <Pressable style={styles.button} onPress={handleFinish}>
-        <Text style={styles.buttonText}>Finish setup</Text>
+        <Text style={styles.buttonText}>{t('onboarding.finish')}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -254,25 +259,25 @@ function createStyles(colors: ThemeColors) {
     },
     step: {
       color: colors.primary,
-      fontSize: 12,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.bold,
       marginBottom: 16,
     },
     title: {
-      fontSize: 27,
-      fontWeight: '700',
+      fontSize: typography.fontSize.display,
+      fontWeight: typography.fontWeight.bold,
       color: colors.text,
       marginBottom: 12,
     },
     description: {
       color: colors.textSecondary,
-      fontSize: 15,
-      lineHeight: 23,
+      fontSize: typography.fontSize.sm,
+      lineHeight: typography.lineHeight.md,
       marginBottom: 28,
     },
     label: {
-      fontSize: 14,
-      fontWeight: '600',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semiBold,
       color: colors.text,
       marginBottom: 8,
       marginTop: 18,
@@ -285,7 +290,7 @@ function createStyles(colors: ThemeColors) {
       paddingHorizontal: 14,
       backgroundColor: colors.inputBackground,
       color: colors.text,
-      fontSize: 16,
+      fontSize: typography.fontSize.md,
       fontFamily: typography.fontFamily.regular,
     },
     option: {
@@ -304,12 +309,12 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.surfaceSecondary,
     },
     optionText: {
-      fontSize: 15,
+      fontSize: typography.fontSize.sm,
       color: colors.text,
     },
     check: {
       color: colors.primary,
-      fontSize: 18,
+      fontSize: typography.fontSize.lg,
     },
     creditBox: {
       marginTop: 20,
@@ -321,19 +326,19 @@ function createStyles(colors: ThemeColors) {
     },
     creditLabel: {
       color: colors.text,
-      fontSize: 14,
-      fontWeight: '600',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semiBold,
     },
     creditValue: {
       color: colors.primary,
-      fontSize: 22,
-      fontWeight: '700',
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.bold,
       marginTop: 8,
     },
     error: {
       color: colors.error,
       marginTop: 12,
-      fontSize: 13,
+      fontSize: typography.fontSize.xs,
     },
     button: {
       backgroundColor: colors.primary,
@@ -344,8 +349,8 @@ function createStyles(colors: ThemeColors) {
     },
     buttonText: {
       color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.semiBold,
     },
   });
 }

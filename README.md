@@ -1,154 +1,167 @@
-﻿# SaveMode
+﻿# WPT 201 - A
 
-SaveMode is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
+A privacy-focused personal expense management application built with Expo, React Native and TypeScript.
+
+## App Configuration
+
+| Setting         | Value                             |
+| --------------- | --------------------------------- |
+| App name        | WPT 201 - A                       |
+| Slug            | wpt-201-a                         |
+| Scheme          | wpt201a                           |
+| Expo SDK        | 57                                |
+| Android package | in.whitepixeltechnologies.wpt201a |
+| iOS bundle ID   | in.whitepixeltechnologies.wpt201a |
 
 ## Prerequisites
 
 - Node.js LTS
 - Git
-- Visual Studio Code or another code editor
-- Expo Go for testing on a compatible Android device
+- Visual Studio Code
+- Expo Go for device testing
+- Android Studio for native Android development
 
-## Getting started
+## Setup
 
-### 1. Clone the repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/joshitha29-08/SaveMode.git
 cd SaveMode
 ```
 
-### 2. Install dependencies
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
+Create your environment file:
 
-Create your local environment file:
-
-Windows:
+Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Mac/Linux:
+macOS/Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-Configure the Supabase values using the instructions below.
+Add the required environment values to `.env`.
 
-Never commit `.env` or expose secret keys.
+## Run the Application
 
-## Running the application
-
-### Web
+Start the web version:
 
 ```bash
 npm run web
 ```
 
-Open the URL printed in the terminal. The default Expo web URL is usually:
-
-`http://localhost:8081`
-
-### Android
-
-1. Install Expo Go on your compatible Android device.
-2. Connect your computer and phone to the same Wi-Fi network.
-3. Run:
+Start the Expo development server:
 
 ```bash
 npm start
 ```
 
-4. Scan the terminal QR code using Expo Go.
-5. Wait for the application to load.
+Scan the QR code using Expo Go on a compatible device.
 
-If the default port is busy, use the port displayed by Expo.
+Run the native Android app:
 
-## Development checks
+```bash
+npm run android
+```
 
-Run these checks before submitting changes:
+iOS native development requires macOS and Xcode. The app is configured for iPhone, not iPad.
+
+## Environment Variables
+
+Configure these values in your local `.env` file:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Use only the approved public/publishable key in the client application. Never expose a Supabase service-role key in the app.
+
+Do not commit `.env` or other secrets to Git.
+
+## Available Checks
+
+TypeScript:
 
 ```bash
 npm run typecheck
+```
+
+Tests:
+
+```bash
 npm test -- --runInBand
+```
+
+Lint:
+
+```bash
 npm run lint
+```
+
+Check formatting:
+
+```bash
 npm run format:check
 ```
 
-To format project files:
+Apply formatting:
 
 ```bash
 npm run format
 ```
 
-## Project structure
+## Project Structure
 
-| Folder           | Responsibility                                 |
-| ---------------- | ---------------------------------------------- |
-| `src/app`        | Expo Router screens and navigation             |
-| `src/components` | Shared UI components                           |
-| `src/data`       | Data access and backend integration            |
-| `src/features`   | Feature-specific functionality                 |
-| `src/i18n`       | Localization resources                         |
-| `src/lib`        | Shared helpers, session and routing            |
-| `src/theme`      | Colours, typography, spacing and radius tokens |
-| `src/constants`  | Compatibility constants                        |
-| `supabase`       | Database-related scripts and configuration     |
-| `plugins`        | Custom Expo plugins                            |
-| `docs`           | Project documentation                          |
-| `.github`        | Repository workflows and templates             |
+```text
+src/
+├── app/          # Expo Router screens and routes
+├── components/   # Shared UI components
+├── constants/    # Application constants
+├── data/         # Data-related modules
+├── features/     # Feature-specific modules
+├── hooks/        # Reusable React hooks
+├── i18n/         # Translation resources
+├── lib/          # Shared libraries and services
+├── theme/        # Colors, typography, spacing and theme context
+├── types/        # TypeScript types
+└── __tests__/    # Tests
 
-## Theme system
+assets/           # Static assets
+supabase/         # Supabase-related files
+plugins/          # Expo plugin configuration
+.github/          # GitHub project configuration
+docs/             # Project documentation
+```
 
-SaveMode supports three theme modes:
+## Theme System
 
-- **System:** follows the operating system or browser appearance.
-- **Light:** forces the light theme.
-- **Dark:** forces the dark theme.
+The application supports three theme modes:
 
-Theme preferences are persisted locally using AsyncStorage.
+- System: follows the device appearance.
+- Light: uses the light theme.
+- Dark: uses the dark theme.
 
-Shared text should use the `AppText` component from `src/components/AppText.tsx`. Use the design tokens in `src/theme` instead of hardcoding colours, typography, spacing or corner radii in screens.
+Theme preferences are persisted locally. Use the shared theme context and design tokens rather than hardcoding colors or styles in screens.
 
-See `src/theme/README.md` for implementation guidance.
+The current theme palette is provisional until the approved Design Pack is available.
 
-The current palette is provisional until the official Design Pack v1.0 is available for verification.
+## Project Notes
 
-## Supabase configuration
+- Keep reusable UI in `src/components`.
+- Keep theme values in `src/theme`.
+- Keep user-facing translations in `src/i18n/en.json`.
+- Follow the project's TypeScript and formatting conventions.
+- Do not commit credentials, secrets or local environment files.
 
-SaveMode uses Supabase for backend and database functionality.
-
-### Getting access
-
-1. Request access to the SaveMode Supabase project from the project administrator.
-2. Open the Supabase Dashboard.
-3. Locate the project's API settings.
-4. Obtain the approved Project URL and public client key.
-5. Add them to your local `.env` file.
-
-### Environment variables
-
-Use the variable names defined in `.env.example`:
-
-- `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-
-### Security guidelines
-
-- Never commit `.env`.
-- Never expose Supabase Secret Keys or `service_role` keys in client code.
-- Keep `.env.example` limited to placeholder values.
-- Use only the approved public client key in the application.
-
-## Documentation
-
-Each major project folder contains a README describing its responsibility.
-
-Project-specific requirements, architecture decisions and handover information belong in `docs`.
+Refer to the approved project requirements and design documentation before treating provisional implementation details as final.

@@ -5,6 +5,8 @@ import Text from '../../components/AppText';
 import PlaceholderScreen from '../../components/PlaceholderScreen';
 import { useSession } from '../../lib/session';
 import { useTheme } from '../../theme/theme-context';
+import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
 
 export default function Home() {
   const logout = useSession((state) => state.logout);
@@ -16,13 +18,13 @@ export default function Home() {
   };
 
   return (
-    <PlaceholderScreen title="Home">
+    <PlaceholderScreen title={t('home.title')}>
       <Pressable
         style={[styles.button, { backgroundColor: colors.error }]}
         onPress={handleLogout}
       >
         <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-          Logout
+          {t('home.logout')}
         </Text>
       </Pressable>
     </PlaceholderScreen>
@@ -31,13 +33,16 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   button: {
+    minHeight: 44,
     paddingVertical: 12,
     paddingHorizontal: 28,
     borderRadius: 8,
     marginTop: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semiBold,
   },
 });
