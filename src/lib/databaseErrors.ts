@@ -1,4 +1,3 @@
-
 export function getDatabaseErrorKey(error: unknown): string {
   if (!error || typeof error !== 'object') {
     return 'err.generic';
@@ -25,7 +24,34 @@ export function getDatabaseErrorKey(error: unknown): string {
     return 'err.source.limit';
   }
 
-  if (errorText.includes('EC-SRC-04')) {
+  if (
+    errorText.includes('FINANCIAL_SOURCES_UNIQUE_NAME') ||
+    errorText.includes('UNIQUE_NAME') ||
+    errorText.includes('DUPLICATE KEY')
+  ) {
+    return 'err.name.duplicate.source';
+  }
+
+  if (
+    errorText.includes('TRANSACTIONS_SOURCE_FK') ||
+    errorText.includes('TRANSACTIONS_TO_SOURCE_FK') ||
+    errorText.includes('VIOLATES FOREIGN KEY')
+  ) {
+    return 'info.source.has.txns';
+  }
+
+  if (
+    errorText.includes('WPT_BAL_MAX') ||
+    errorText.includes('WPT_BAL_MIN') ||
+    errorText.includes('BAL-10')
+  ) {
+    return 'err.amount.max';
+  }
+
+  if (
+    errorText.includes('EC-SRC-04') ||
+    errorText.includes('SOURCES_OPENING_SIGN')
+  ) {
     return 'err.source.negative_cash';
   }
 
