@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Slot, usePathname, useRouter } from 'expo-router';
 import type { ComponentProps } from 'react';
 import {
@@ -14,21 +14,25 @@ import { NavigationText } from '../../constants/navigation';
 import { useTheme } from '../../theme/theme-context';
 
 const places = [
-  { label: NavigationText.home, path: '/home', icon: 'home' as const },
+  {
+    label: NavigationText.home,
+    path: '/home',
+    icon: 'home-outline' as const,
+  },
   {
     label: NavigationText.transactions,
     path: '/transactions',
-    icon: 'list' as const,
+    icon: 'format-list-bulleted' as const,
   },
   {
     label: NavigationText.sources,
     path: '/sources',
-    icon: 'credit-card' as const,
+    icon: 'credit-card-outline' as const,
   },
   {
     label: NavigationText.settings,
     path: '/settings',
-    icon: 'settings' as const,
+    icon: 'cog-outline' as const,
   },
 ];
 
@@ -43,7 +47,7 @@ function NavigationLink({
 }: {
   label: string;
   path: string;
-  icon: ComponentProps<typeof Feather>['name'];
+  icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
   active: boolean;
   vertical?: boolean;
   mutedColor: string;
@@ -62,7 +66,7 @@ function NavigationLink({
         vertical ? styles.verticalLink : undefined,
       ])}
     >
-      <Feather name={icon} size={20} color={color} />
+      <MaterialCommunityIcons name={icon} size={20} color={color} />
       <Text style={StyleSheet.flatten([styles.navLabel, { color }])}>
         {label}
       </Text>
@@ -131,8 +135,14 @@ export default function TabsLayout() {
                   { backgroundColor: colors.primary },
                 ])}
               >
-                <Feather name="plus" size={18} color="#FFFFFF" />
-                <Text style={styles.addButtonText}>
+                <MaterialCommunityIcons
+                  name="plus"
+                  size={18}
+                  color={colors.onPrimary}
+                />
+                <Text
+                  style={[styles.addButtonText, { color: colors.onPrimary }]}
+                >
                   {NavigationText.addTransaction}
                 </Text>
               </Pressable>
@@ -182,7 +192,11 @@ export default function TabsLayout() {
                   { backgroundColor: colors.primary, borderColor: background },
                 ])}
               >
-                <Feather name="plus" size={26} color="#FFFFFF" />
+                <MaterialCommunityIcons
+                  name="plus"
+                  size={26}
+                  color={colors.onPrimary}
+                />
               </Pressable>
             )}
 
@@ -243,7 +257,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addButtonText: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   scroll: {

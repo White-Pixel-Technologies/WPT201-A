@@ -5,14 +5,14 @@ const config: ExpoConfig = {
   slug: 'wpt-201-a',
   version: '1.0.0',
   scheme: 'wpt201a',
-  orientation: 'default',
+  orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   icon: './assets/images/icon.png',
 
   ios: {
     bundleIdentifier: 'com.whitepixeltech.savemode',
     icon: './assets/expo.icon',
-    supportsTablet: true,
+    supportsTablet: false,
   },
 
   android: {
