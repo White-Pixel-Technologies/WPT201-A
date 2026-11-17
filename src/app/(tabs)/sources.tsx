@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     gap: 16,
-    paddingBottom: 40,
+    paddingBottom: 72,
   },
   topHeader: {
     flexDirection: 'row',

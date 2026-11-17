@@ -17,12 +17,13 @@ function AppContent() {
     if (!ready) return;
 
     const currentGroup = segments[0] as string | undefined;
+    const isRoot = !currentGroup;
     const isPublic =
-      currentGroup === '(auth)' || currentGroup === '(public)';
+      isRoot || currentGroup === '(auth)' || currentGroup === '(public)';
 
     if (!isLoggedIn) {
       if (!isPublic) {
-        router.replace('/(auth)/login');
+        router.replace('/(auth)/welcome');
       }
       return;
     }

@@ -1,4 +1,3 @@
-
 import {
   ActivityIndicator,
   Modal,
@@ -16,10 +15,12 @@ type ConfirmSheetProps = {
   onKeepEditing: () => void;
   onDiscard: () => void;
   title?: string;
+  description?: string;
   cancelLabel?: string;
   confirmLabel?: string;
   loading?: boolean;
   confirmDisabled?: boolean;
+  variant?: 'destructive' | 'primary';
 };
 
 export default function ConfirmSheet({
@@ -27,10 +28,12 @@ export default function ConfirmSheet({
   onKeepEditing,
   onDiscard,
   title,
+  description,
   cancelLabel,
   confirmLabel,
   loading = false,
   confirmDisabled = false,
+  variant = 'destructive',
 }: ConfirmSheetProps) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
@@ -39,6 +42,7 @@ export default function ConfirmSheet({
   const backgroundColor = isDark ? '#242424' : '#FFFFFF';
   const textColor = isDark ? '#FFFFFF' : '#222222';
   const disabled = loading || confirmDisabled;
+  const confirmButtonBg = variant === 'primary' ? '#2457C5' : '#B42318';
 
   return (
     <Modal
@@ -73,6 +77,17 @@ export default function ConfirmSheet({
             {title ?? t('confirm.discard.title')}
           </Text>
 
+          {description ? (
+            <Text
+              style={[
+                styles.description,
+                { color: isDark ? '#A3A3A3' : '#666666' },
+              ]}
+            >
+              {description}
+            </Text>
+          ) : null}
+
           <View style={styles.actions}>
             <Pressable
               onPress={onKeepEditing}
@@ -100,6 +115,7 @@ export default function ConfirmSheet({
               }
               style={[
                 styles.confirmButton,
+                { backgroundColor: confirmButtonBg },
                 disabled && styles.disabledButton,
               ]}
             >
@@ -132,7 +148,7 @@ const styles = StyleSheet.create({
     padding: 24,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    gap: 24,
+    gap: 16,
   },
   desktopSheet: {
     width: '90%',
@@ -150,11 +166,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
   },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: 12,
+    marginTop: 8,
   },
   cancelButton: {
     padding: 14,
@@ -166,7 +187,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   confirmButton: {
-    backgroundColor: '#B42318',
     padding: 14,
     minHeight: 44,
     minWidth: 88,

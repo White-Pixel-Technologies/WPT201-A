@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useCallback,
@@ -10,12 +11,10 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import { RESET_REDIRECT_URL, VERIFY_REDIRECT_URL } from '../constants/urls';
 
 export const ONBOARDING_DONE = 3;
 const ONBOARDING_KEY = 'savemode-onboarding-step';
-
-const VERIFY_REDIRECT_URL = 'https://savemode.pages.dev/verify';
-const RESET_REDIRECT_URL = 'https://savemode.pages.dev/reset-password';
 
 type SessionValue = {
   ready: boolean;
@@ -52,11 +51,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const syncUserSettings = useCallback(async (userId: string, savedStep: string | null) => {
     try {
-      // Ensure user settings and default tags exist
       try {
         await supabase.rpc('ensure_user_setup');
       } catch {
-        // Continue even if RPC is unavailable or already run
+        // Continue if RPC is unavailable.
       }
 
       const { data, error } = await supabase
@@ -72,6 +70,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (data.name) {
         setUserName(data.name);
       }
+
       if (data.currency_code) {
         setCurrencyCode(data.currency_code);
       }
@@ -80,12 +79,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setOnboardingStepState(ONBOARDING_DONE);
         await AsyncStorage.setItem(ONBOARDING_KEY, String(ONBOARDING_DONE));
       } else {
-        // If name is not saved yet, user is at step 0 (Name)
         if (!data.name || data.name.trim().length === 0) {
           setOnboardingStepState(0);
           await AsyncStorage.setItem(ONBOARDING_KEY, '0');
         } else {
-          // If name is saved, check local step (1 for currency, 2 for source)
           const parsed = Number(savedStep);
           const stepToSet = parsed === 2 ? 2 : 1;
           setOnboardingStepState(stepToSet);
@@ -93,7 +90,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {
-      // Keep app functioning with local state if network fails
+      // Keep app functioning with local state.
     }
   }, []);
 
@@ -103,17 +100,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
         if (!mounted) return;
+
         setSession(newSession);
 
         if (newSession?.user) {
-          const metaName = (newSession.user.user_metadata?.full_name ||
+          const metaName = (
+            newSession.user.user_metadata?.full_name ||
             newSession.user.user_metadata?.name ||
-            '') as string;
+            ''
+          ) as string;
+
           if (metaName) {
             setUserName((prev) => prev || metaName);
           }
+
           void AsyncStorage.getItem(ONBOARDING_KEY).then((saved) => {
-            if (mounted) void syncUserSettings(newSession.user.id, saved);
+            if (mounted) {
+              void syncUserSettings(newSession.user.id, saved);
+            }
           });
         }
       },
@@ -128,19 +132,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
         if (!mounted) return;
 
-        const currentSession = sessionResult.error ? null : sessionResult.data.session;
+        const currentSession = sessionResult.error
+          ? null
+          : sessionResult.data.session;
+
         setSession(currentSession);
 
         if (currentSession?.user) {
-          const metaName = (currentSession.user.user_metadata?.full_name ||
+          const metaName = (
+            currentSession.user.user_metadata?.full_name ||
             currentSession.user.user_metadata?.name ||
-            '') as string;
+            ''
+          ) as string;
+
           if (metaName) {
             setUserName(metaName);
           }
+
           await syncUserSettings(currentSession.user.id, savedStep);
         } else {
           const parsedStep = Number(savedStep);
+
           setOnboardingStepState(
             Number.isInteger(parsedStep) &&
               parsedStep >= 0 &&
@@ -171,12 +183,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const refreshUserSettings = useCallback(async () => {
     if (!session?.user?.id) return;
+
     const saved = await AsyncStorage.getItem(ONBOARDING_KEY);
     await syncUserSettings(session.user.id, saved);
   }, [session, syncUserSettings]);
 
   const setOnboardingStep = useCallback((step: number) => {
     const clamped = Math.max(0, Math.min(step, ONBOARDING_DONE));
+
     setOnboardingStepState(clamped);
     void AsyncStorage.setItem(ONBOARDING_KEY, String(clamped)).catch(() => {});
   }, []);
@@ -191,7 +205,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const markOnboardingComplete = useCallback(async () => {
     setOnboardingStepState(ONBOARDING_DONE);
-    await AsyncStorage.setItem(ONBOARDING_KEY, String(ONBOARDING_DONE)).catch(() => {});
+
+    await AsyncStorage.setItem(
+      ONBOARDING_KEY,
+      String(ONBOARDING_DONE),
+    ).catch(() => {});
+
     if (session?.user?.id) {
       try {
         await supabase
@@ -199,7 +218,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           .update({ onboarding_completed: true })
           .eq('user_id', session.user.id);
       } catch {
-        // Handled
+        // Handled.
       }
     }
   }, [session]);
@@ -246,10 +265,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signOut({
         scope: 'local',
       });
+
       await AsyncStorage.removeItem(ONBOARDING_KEY).catch(() => {});
       setSession(null);
       setUserName('');
       setOnboardingStepState(0);
+
       return error?.message ?? null;
     } catch {
       return 'Unable to log out. Please try again.';
