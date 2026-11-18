@@ -1,54 +1,35 @@
-/**
- * Shared routing helpers for authentication and onboarding.
- */
+import type { Href } from 'expo-router';
 
 export const ONBOARDING_STEPS = ['name', 'currency', 'source'] as const;
 
-export const ONBOARDING_DONE = ONBOARDING_STEPS.length;
+const AUTH_PATHS = ['/welcome', '/login', '/signup', '/forgot-password'];
 
-export function nextOnboardingHref(step: number): any {
-  if (step < 0) {
-    return '/onboarding/name';
-  }
-
-  if (step >= ONBOARDING_DONE) {
-    return '/home';
-  }
-
-  return `/onboarding/${ONBOARDING_STEPS[step]}`;
+/** Next unfinished onboarding screen for a logged-in user. */
+export function nextOnboardingHref(step: number): Href {
+  const name = ONBOARDING_STEPS[Math.min(step, ONBOARDING_STEPS.length - 1)];
+  return ('/onboarding/' + name) as Href;
 }
 
-export function safeRedirectPath(redirect?: string | string[]): string {
-  const path = Array.isArray(redirect) ? redirect[0] : redirect;
-
-  if (
-    !path ||
-    !path.startsWith('/') ||
-    path.startsWith('//') ||
-    path.includes('\\') ||
-    path.includes('://')
-  ) {
-    return '/home';
+/** Only allows paths inside our app, e.g. "/transactions?month=2026-10". */
+export function safeRedirectPath(value: unknown): Href {
+  if (typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')) {
+    const path = value.split('?')[0];
+    if (!AUTH_PATHS.includes(path)) return value as Href;
   }
-
-  return path;
+  return '/home' as Href;
 }
 
+/** Rebuilds "/transactions?month=2026-10" from the pathname and query params. */
 export function currentUrl(
   pathname: string,
   params: Record<string, string | string[] | undefined>,
 ): string {
   const query = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (Array.isArray(value)) {
-      value.forEach((item) => query.append(key, item));
-    } else if (value !== undefined) {
-      query.set(key, value);
-    }
-  });
-
-  const search = query.toString();
-
-  return search ? `${pathname}?${search}` : pathname;
+  const segments = pathname.split('/');
+  for (const [key, value] of Object.entries(params)) {
+    // skip route params such as :id that are already inside the path
+    if (typeof value === 'string' && !segments.includes(value)) query.set(key, value);
+  }
+  const text = query.toString();
+  return text ? pathname + '?' + text : pathname;
 }

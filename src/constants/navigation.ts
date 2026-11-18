@@ -1,5 +1,9 @@
+import { t } from '../i18n';
+
 export const NavigationText = {
-  appName: 'SaveMode',
+  get appName() {
+    return t('app.name');
+  },
   home: 'Home',
   transactions: 'Transactions',
   addTransaction: 'Add transaction',

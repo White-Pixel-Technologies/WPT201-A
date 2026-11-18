@@ -1,351 +1,565 @@
-import { useMemo, useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
+  Text,
   TextInput,
   Pressable,
   StyleSheet,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Switch,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSession } from '../../lib/session';
+import { useAppTheme } from '../../lib/theme';
+import { useNetworkStatus } from '../../lib/useNetworkStatus';
+import { supabase } from '../../lib/supabase';
+import { t } from '../../i18n';
+import OfflineBanner from '../../components/ui/OfflineBanner';
+import InlineError from '../../components/ui/InlineError';
+import { cleanPastedAmount } from '../../lib/formatMoney';
+import { generateUUID } from '../../lib/uuid';
+import { getDatabaseErrorKey } from '../../lib/databaseErrors';
+import { Colors } from '../../constants/colors';
 
-import { default as Text } from '../../components/AppText';
-import { useSession, type SourceType } from '../../lib/session';
-import { useTheme } from '../../theme/theme-context';
-import type { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+type SourceType = 'cash' | 'bank' | 'card';
 
-const sourceTypes: { label: string; value: SourceType }[] = [
-  { label: 'Bank Account', value: 'bank' },
-  { label: 'Cash', value: 'cash' },
-  { label: 'Credit Card', value: 'credit_card' },
-];
+export default function OnboardingSourceScreen() {
+  const router = useRouter();
+  const { isDark } = useAppTheme();
+  const { isOnline } = useNetworkStatus();
+  const { currencyCode, setOnboardingStep, markOnboardingComplete } = useSession();
 
-export default function SourceScreen() {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  // Keep a stable UUID for idempotent retries (G-FRM-05)
+  const sourceIdRef = useRef<string>(generateUUID());
 
-  const savedData = useSession((state) => state.onboardingData);
-
-  const updateOnboardingData = useSession(
-    (state) => state.updateOnboardingData,
-  );
-
-  const completeOnboarding = useSession((state) => state.completeOnboarding);
-
-  const [sourceName, setSourceName] = useState(savedData.sourceName);
-
-  const [sourceType, setSourceType] = useState<SourceType>(
-    savedData.sourceType === 'cash' || savedData.sourceType === 'credit_card'
-      ? savedData.sourceType
-      : 'bank',
-  );
-
-  const [balance, setBalance] = useState(String(savedData.initialBalance ?? 0));
-
-  const [creditLimit, setCreditLimit] = useState(
-    String(savedData.creditLimit ?? 0),
-  );
-
-  const [outstanding, setOutstanding] = useState(
-    String(savedData.outstanding ?? 0),
-  );
+  const [type, setType] = useState<SourceType>('cash');
+  const [name, setName] = useState('Cash');
+  const [openingBalance, setOpeningBalance] = useState('0');
+  const [isOverdrawn, setIsOverdrawn] = useState(false);
+  const [creditLimit, setCreditLimit] = useState('');
+  const [currentOutstanding, setCurrentOutstanding] = useState('0');
 
   const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isCreditCard = sourceType === 'credit_card';
+  const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
+  const subtextColor = isDark ? '#A1A1AA' : '#64748B';
+  const cardColor = isDark ? '#1E1E1E' : '#FFFFFF';
+  const inputBorder = isDark ? '#3F3F46' : '#CBD5E1';
+  const inputBg = isDark ? '#27272A' : '#F8FAFC';
+  const backgroundColor = isDark ? '#121212' : '#F8FAFC';
 
-  const numericLimit = Number(creditLimit);
-  const numericOutstanding = Number(outstanding);
+  const helperExample =
+    type === 'bank'
+      ? 'e.g. SBI Savings, HDFC Salary'
+      : type === 'card'
+        ? 'e.g. ICICI Amazon Pay card'
+        : 'e.g. Wallet cash';
 
-  const availableCredit = numericLimit - numericOutstanding;
+  const handleTypeChange = (newType: SourceType) => {
+    setType(newType);
+    setError('');
+    if (newType === 'cash' && (!name || name === 'Bank Account' || name === 'Credit Card')) {
+      setName('Cash');
+    } else if (newType === 'bank' && (!name || name === 'Cash' || name === 'Credit Card')) {
+      setName('Bank Account');
+    } else if (newType === 'card' && (!name || name === 'Cash' || name === 'Bank Account')) {
+      setName('Credit Card');
+    }
+  };
 
-  const handleFinish = () => {
-    const trimmedName = sourceName.trim();
-    const numericBalance = Number(balance);
+  const handleAmountChange = (
+    val: string,
+    setter: (v: string) => void
+  ) => {
+    setError('');
+    // Check if pasted with symbols
+    if (/[₹$,a-zA-Z]/.test(val)) {
+      const cleaned = cleanPastedAmount(val, currencyCode);
+      if (cleaned !== null) {
+        setter(cleaned);
+        return;
+      }
+    }
+    // Block multiple decimal points and limit to 2 decimals
+    if (/^\d*\.?\d{0,2}$/.test(val) || val === '') {
+      setter(val);
+    }
+  };
+
+  const handleBack = () => {
+    setOnboardingStep(1);
+    router.back();
+  };
+
+  const handleComplete = async () => {
+    setError('');
+    const trimmedName = name.trim();
 
     if (!trimmedName) {
       setError('Please enter a source name.');
       return;
     }
 
-    if (isCreditCard) {
-      if (
-        !creditLimit.trim() ||
-        !Number.isFinite(numericLimit) ||
-        numericLimit <= 0
-      ) {
-        setError('Please enter a valid credit limit greater than zero.');
+    if (trimmedName.length > 30) {
+      setError('Source name cannot exceed 30 characters.');
+      return;
+    }
+
+    let openingNum = 0;
+    let limitNum: number | null = null;
+
+    if (type === 'cash') {
+      if (!openingBalance.trim() || isNaN(Number(openingBalance))) {
+        setError(t('err.amount.invalid'));
+        return;
+      }
+      openingNum = Number(openingBalance);
+      if (openingNum < 0) {
+        setError(t('err.cash.negative'));
+        return;
+      }
+    } else if (type === 'bank') {
+      if (!openingBalance.trim() || isNaN(Number(openingBalance))) {
+        setError(t('err.amount.invalid'));
+        return;
+      }
+      openingNum = Number(openingBalance);
+      if (isOverdrawn && openingNum > 0) {
+        openingNum = -Math.abs(openingNum);
+      }
+    } else if (type === 'card') {
+      if (!creditLimit.trim() || isNaN(Number(creditLimit))) {
+        setError(t('err.amount.invalid'));
+        return;
+      }
+      limitNum = Number(creditLimit);
+      if (limitNum <= 0) {
+        setError(t('err.limit.zero'));
         return;
       }
 
-      if (
-        !outstanding.trim() ||
-        !Number.isFinite(numericOutstanding) ||
-        numericOutstanding < 0
-      ) {
-        setError('Please enter a valid outstanding amount.');
+      if (!currentOutstanding.trim() || isNaN(Number(currentOutstanding))) {
+        setError(t('err.amount.invalid'));
         return;
       }
-
-      if (numericOutstanding > numericLimit) {
-        setError('Outstanding amount cannot exceed the credit limit.');
-        return;
-      }
-    } else {
-      if (
-        !balance.trim() ||
-        !Number.isFinite(numericBalance) ||
-        numericBalance < 0
-      ) {
-        setError('Please enter a valid non-negative balance.');
+      openingNum = Number(currentOutstanding);
+      if (openingNum < 0) {
+        setError(t('err.amount.invalid'));
         return;
       }
     }
 
-    updateOnboardingData({
-      sourceName: trimmedName,
-      sourceType,
-      initialBalance: isCreditCard ? 0 : numericBalance,
-      creditLimit: isCreditCard ? numericLimit : 0,
-      outstanding: isCreditCard ? numericOutstanding : 0,
-    });
+    if (!isOnline) {
+      setError(t('info.offline.save'));
+      return;
+    }
 
-    completeOnboarding();
-    router.replace('/home');
+    setIsSaving(true);
+    try {
+      const { data, error: rpcError } = await supabase.rpc('create_first_source', {
+        p_id: sourceIdRef.current,
+        p_type: type,
+        p_name: trimmedName,
+        p_opening: openingNum,
+        p_credit_limit: limitNum,
+      });
+
+      if (rpcError) {
+        const errorKey = getDatabaseErrorKey(rpcError);
+        setError(t(errorKey));
+        setIsSaving(false);
+        return;
+      }
+
+      if (data === 'created' || data === 'already_complete') {
+        await markOnboardingComplete();
+        router.replace('/home');
+      } else {
+        await markOnboardingComplete();
+        router.replace('/home');
+      }
+    } catch (err) {
+      const errorKey = getDatabaseErrorKey(err);
+      setError(t(errorKey));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.step}>STEP 3 OF 3</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <OfflineBanner visible={!isOnline} />
 
-      <Text style={styles.title}>Add your first source</Text>
+        <View style={styles.cardContainer}>
+          <View style={[styles.card, { backgroundColor: cardColor }]}>
+            {/* Header with Back button */}
+            <View style={styles.navHeader}>
+              <Pressable
+                onPress={handleBack}
+                style={styles.backButton}
+                accessibilityRole="button"
+                accessibilityLabel="Back to Step 2"
+              >
+                <MaterialCommunityIcons
+                  name="arrow-left"
+                  size={24}
+                  color={textColor}
+                />
+                <Text style={[styles.backText, { color: textColor }]}>Back</Text>
+              </Pressable>
 
-      <Text style={styles.description}>
-        Add a bank account, cash account or credit card to start tracking your
-        finances.
-      </Text>
+              <Text style={[styles.progressText, { color: Colors.primary }]}>
+                Step 3 of 3
+              </Text>
+            </View>
 
-      <Text style={styles.label}>Source name</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="e.g. My Savings"
-        placeholderTextColor={colors.textMuted}
-        value={sourceName}
-        onChangeText={(value) => {
-          setSourceName(value);
-          setError('');
-        }}
-        maxLength={50}
-      />
-
-      <Text style={styles.label}>Source type</Text>
-
-      {sourceTypes.map((item) => {
-        const selected = sourceType === item.value;
-
-        return (
-          <Pressable
-            key={item.value}
-            style={[styles.option, selected && styles.selectedOption]}
-            onPress={() => {
-              setSourceType(item.value);
-              setError('');
-            }}
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
-          >
-            <Text style={styles.optionText}>{item.label}</Text>
-
-            <Text style={styles.check}>{selected ? '[x]' : '[ ]'}</Text>
-          </Pressable>
-        );
-      })}
-
-      {isCreditCard ? (
-        <>
-          <Text style={styles.label}>Credit limit ({savedData.currency})</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 50000"
-            placeholderTextColor={colors.textMuted}
-            value={creditLimit}
-            onChangeText={(value) => {
-              setCreditLimit(value);
-              setError('');
-            }}
-            keyboardType="decimal-pad"
-          />
-
-          <Text style={styles.label}>
-            Outstanding amount ({savedData.currency})
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 10000"
-            placeholderTextColor={colors.textMuted}
-            value={outstanding}
-            onChangeText={(value) => {
-              setOutstanding(value);
-              setError('');
-            }}
-            keyboardType="decimal-pad"
-          />
-
-          <View style={styles.creditBox}>
-            <Text style={styles.creditLabel}>Available credit</Text>
-
-            <Text style={styles.creditValue}>
-              {savedData.currency}{' '}
-              {Number.isFinite(availableCredit) && availableCredit >= 0
-                ? availableCredit.toLocaleString('en-IN')
-                : '\u2014'}
+            <Text style={[styles.title, { color: textColor }]}>
+              Add your first source
             </Text>
+
+            <Text style={[styles.subtitle, { color: subtextColor }]}>
+              Add where your money is: a bank account, cash in hand, or a credit card. You can add more later.
+            </Text>
+
+            {/* Source Type Selector */}
+            <Text style={[styles.label, { color: textColor }]}>Source type</Text>
+            <View style={styles.typeSelector}>
+              {(
+                [
+                  { key: 'cash', label: 'Cash', icon: 'cash' },
+                  { key: 'bank', label: 'Bank account', icon: 'bank' },
+                  { key: 'card', label: 'Credit card', icon: 'credit-card-outline' },
+                ] as const
+              ).map((item) => {
+                const isSelected = type === item.key;
+                return (
+                  <Pressable
+                    key={item.key}
+                    onPress={() => handleTypeChange(item.key)}
+                    style={[
+                      styles.typeButton,
+                      {
+                        backgroundColor: isSelected ? Colors.primary : inputBg,
+                        borderColor: isSelected ? Colors.primary : inputBorder,
+                      },
+                    ]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                    accessibilityLabel={item.label}
+                  >
+                    <MaterialCommunityIcons
+                      name={item.icon as any}
+                      size={18}
+                      color={isSelected ? '#FFFFFF' : textColor}
+                    />
+                    <Text
+                      style={[
+                        styles.typeButtonText,
+                        { color: isSelected ? '#FFFFFF' : textColor },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Source Name Input */}
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: textColor }]}>Source name</Text>
+                {name.length >= 24 && (
+                  <Text style={[styles.counter, { color: subtextColor }]}>
+                    {name.length}/30
+                  </Text>
+                )}
+              </View>
+              <TextInput
+                value={name}
+                onChangeText={(val) => {
+                  setName(val);
+                  if (error) setError('');
+                }}
+                maxLength={30}
+                placeholder="e.g. Cash in hand"
+                placeholderTextColor={subtextColor}
+                style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                accessibilityLabel="Source name"
+              />
+              <Text style={[styles.helperText, { color: subtextColor }]}>
+                {helperExample}
+              </Text>
+            </View>
+
+            {/* Cash & Bank: Opening Balance */}
+            {type !== 'card' && (
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: textColor }]}>
+                  Opening balance
+                </Text>
+                <TextInput
+                  value={openingBalance}
+                  onChangeText={(val) => handleAmountChange(val, setOpeningBalance)}
+                  placeholder="0.00"
+                  placeholderTextColor={subtextColor}
+                  keyboardType="decimal-pad"
+                  style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                  accessibilityLabel="Opening balance"
+                />
+
+                {type === 'bank' && (
+                  <View style={styles.switchRow}>
+                    <Text style={[styles.switchLabel, { color: textColor }]}>
+                      This account is overdrawn
+                    </Text>
+                    <Switch
+                      value={isOverdrawn}
+                      onValueChange={setIsOverdrawn}
+                      trackColor={{ false: inputBorder, true: Colors.primary }}
+                      thumbColor="#FFFFFF"
+                    />
+                  </View>
+                )}
+
+                {(isOverdrawn || Number(openingBalance) < 0) && type === 'bank' && (
+                  <View style={styles.warningBox}>
+                    <InlineError
+                      message={t('warn.bank.starts.negative')}
+                      variant="warning"
+                      isDark={isDark}
+                    />
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Credit Card Fields */}
+            {type === 'card' && (
+              <>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: textColor }]}>Credit limit</Text>
+                  <TextInput
+                    value={creditLimit}
+                    onChangeText={(val) => handleAmountChange(val, setCreditLimit)}
+                    placeholder="e.g. 50000"
+                    placeholderTextColor={subtextColor}
+                    keyboardType="decimal-pad"
+                    style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                    accessibilityLabel="Credit limit"
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: textColor }]}>
+                    Current outstanding
+                  </Text>
+                  <TextInput
+                    value={currentOutstanding}
+                    onChangeText={(val) => handleAmountChange(val, setCurrentOutstanding)}
+                    placeholder="0.00"
+                    placeholderTextColor={subtextColor}
+                    keyboardType="decimal-pad"
+                    style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                    accessibilityLabel="Current outstanding"
+                  />
+                  {Number(creditLimit) > 0 &&
+                    Number(currentOutstanding) > Number(creditLimit) && (
+                      <View style={styles.warningBox}>
+                        <InlineError
+                          message={t('warn.over.limit')}
+                          variant="warning"
+                          isDark={isDark}
+                        />
+                      </View>
+                    )}
+                </View>
+              </>
+            )}
+
+            {!!error && (
+              <View style={styles.errorContainer}>
+                <InlineError message={error} variant="error" isDark={isDark} />
+              </View>
+            )}
+
+            {!isOnline && (
+              <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>
+            )}
+
+            <Pressable
+              onPress={handleComplete}
+              disabled={!isOnline || isSaving}
+              style={[
+                styles.primaryButton,
+                { backgroundColor: Colors.primary },
+                (!isOnline || isSaving) && styles.disabledButton,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Finish setup"
+            >
+              {isSaving ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Finish setup</Text>
+              )}
+            </Pressable>
           </View>
-        </>
-      ) : (
-        <>
-          <Text style={styles.label}>
-            Initial balance ({savedData.currency})
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="0"
-            placeholderTextColor={colors.textMuted}
-            value={balance}
-            onChangeText={(value) => {
-              setBalance(value);
-              setError('');
-            }}
-            keyboardType="decimal-pad"
-          />
-        </>
-      )}
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      <Pressable style={styles.button} onPress={handleFinish}>
-        <Text style={styles.buttonText}>Finish setup</Text>
-      </Pressable>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-function createStyles(colors: ThemeColors) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    content: {
-      padding: 24,
-      paddingTop: 60,
-      paddingBottom: 40,
-      maxWidth: 500,
-      width: '100%',
-      alignSelf: 'center',
-    },
-    step: {
-      color: colors.primary,
-      fontSize: 12,
-      fontWeight: '700',
-      marginBottom: 16,
-    },
-    title: {
-      fontSize: 27,
-      fontWeight: '700',
-      color: colors.text,
-      marginBottom: 12,
-    },
-    description: {
-      color: colors.textSecondary,
-      fontSize: 15,
-      lineHeight: 23,
-      marginBottom: 28,
-    },
-    label: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 8,
-      marginTop: 18,
-    },
-    input: {
-      height: 52,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 10,
-      paddingHorizontal: 14,
-      backgroundColor: colors.inputBackground,
-      color: colors.text,
-      fontSize: 16,
-      fontFamily: typography.fontFamily.regular,
-    },
-    option: {
-      padding: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 10,
-      backgroundColor: colors.surface,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 10,
-    },
-    selectedOption: {
-      borderColor: colors.primary,
-      borderWidth: 2,
-      backgroundColor: colors.surfaceSecondary,
-    },
-    optionText: {
-      fontSize: 15,
-      color: colors.text,
-    },
-    check: {
-      color: colors.primary,
-      fontSize: 18,
-    },
-    creditBox: {
-      marginTop: 20,
-      padding: 16,
-      borderRadius: 10,
-      backgroundColor: colors.surfaceSecondary,
-      borderWidth: 1,
-      borderColor: colors.primary,
-    },
-    creditLabel: {
-      color: colors.text,
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    creditValue: {
-      color: colors.primary,
-      fontSize: 22,
-      fontWeight: '700',
-      marginTop: 8,
-    },
-    error: {
-      color: colors.error,
-      marginTop: 12,
-      fontSize: 13,
-    },
-    button: {
-      backgroundColor: colors.primary,
-      padding: 16,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginTop: 28,
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-  });
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  cardContainer: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
+  },
+  card: {
+    borderRadius: 16,
+    padding: 26,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  navHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    gap: 4,
+  },
+  backText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 21,
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  counter: {
+    fontSize: 12,
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 18,
+  },
+  typeButton: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  typeButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    fontSize: 16,
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 6,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  switchLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  warningBox: {
+    marginTop: 10,
+  },
+  errorContainer: {
+    marginBottom: 12,
+  },
+  offlineHint: {
+    color: '#D97706',
+    fontSize: 13,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  primaryButton: {
+    height: 50,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+});
