@@ -1,5 +1,4 @@
-
-# SaveMode
+﻿# SaveMode
 
 SaveMode is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
 
@@ -17,8 +16,8 @@ The BRD and PRD specify Android 9+ and iOS 15.1+. The current Expo SDK 57 config
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/joshitha29-08/SaveMode.git
-cd SaveMode
+git clone https://github.com/joshitha29-08/WPT201-A.git
+cd WPT201-A
 ```
 
 ### 2. Install Dependencies
@@ -97,23 +96,23 @@ npm run format
 
 ## Project Structure
 
-| Folder | Responsibility |
-|---|---|
-| `src/app` | Expo Router screens and navigation |
-| `src/components` | Shared UI components |
-| `src/constants` | App constants |
-| `src/data` | Data access and backend integration |
-| `src/features` | Feature-specific functionality |
-| `src/hooks` | Shared React hooks |
-| `src/i18n` | Localization resources |
-| `src/lib` | Shared helpers, session and routing |
-| `src/theme` | Colours, typography, spacing and radius tokens |
-| `src/types` | TypeScript types |
-| `src/__tests__` | Tests |
-| `supabase` | Database scripts and configuration |
-| `plugins` | Expo plugins |
-| `docs` | Project documentation |
-| `.github` | Repository workflows and templates |
+| Folder           | Responsibility                                 |
+| ---------------- | ---------------------------------------------- |
+| `src/app`        | Expo Router screens and navigation             |
+| `src/components` | Shared UI components                           |
+| `src/constants`  | App constants                                  |
+| `src/data`       | Data access and backend integration            |
+| `src/features`   | Feature-specific functionality                 |
+| `src/hooks`      | Shared React hooks                             |
+| `src/i18n`       | Localization resources                         |
+| `src/lib`        | Shared helpers, session and routing            |
+| `src/theme`      | Colours, typography, spacing and radius tokens |
+| `src/types`      | TypeScript types                               |
+| `src/__tests__`  | Tests                                          |
+| `supabase`       | Database scripts and configuration             |
+| `plugins`        | Expo plugins                                   |
+| `docs`           | Project documentation                          |
+| `.github`        | Repository workflows and templates             |
 
 ## Theme System
 
@@ -164,13 +163,13 @@ SaveMode web application is hosted using Cloudflare Pages.
 
 ### Deployment Details
 
-- Project Name: savemode
+- Project Name: wpt201a
 - Hosting Platform: Cloudflare Pages
-- GitHub Repository: SaveMode
+- GitHub Repository: WPT201-A
 - Production Branch: main
 - Build Command: `npx expo export -p web`
 - Build Output Directory: `dist`
-- Website URL: https://savemode.pages.dev/
+- Website URL: http://wpt201a.pages.dev
 
 ### Deployment Process
 
@@ -199,5 +198,5 @@ SaveMode web application is hosted using Cloudflare Pages.
 Each major project folder contains a README describing its responsibility.
 
 Project-specific requirements, architecture decisions and handover information belong in `docs`.
-```
 
+Deployment verification: Testing automatic Cloudflare Pages deployment after repository rename.
