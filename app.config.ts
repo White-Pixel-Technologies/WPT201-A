@@ -1,7 +1,7 @@
 import type { ExpoConfig } from 'expo/config';
 
 const config: ExpoConfig = {
-  name: 'SaveMode',
+  name: 'WPT 201 - A',
   slug: 'wpt-201-a',
   version: '1.0.0',
   scheme: 'wpt201a',
@@ -10,13 +10,13 @@ const config: ExpoConfig = {
   icon: './assets/images/icon.png',
 
   ios: {
-    bundleIdentifier: 'com.whitepixeltech.savemode',
+    bundleIdentifier: 'in.whitepixeltechnologies.wpt201a',
     icon: './assets/expo.icon',
-    supportsTablet: true,
+    supportsTablet: false,
   },
 
   android: {
-    package: 'com.whitepixeltech.savemode',
+    package: 'in.whitepixeltechnologies.wpt201a',
     allowBackup: false,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
@@ -45,6 +45,7 @@ const config: ExpoConfig = {
     'expo-image',
     'expo-status-bar',
     'expo-web-browser',
+    './plugins/backup-off',
     ['expo-build-properties', { android: { minSdkVersion: 28 } }],
   ],
 
