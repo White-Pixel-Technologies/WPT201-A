@@ -17,7 +17,7 @@ The BRD and PRD specify Android 9+ and iOS 15.1+. The current Expo SDK 57 config
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/joshitha29-08/SaveMode.git
+git clone https://github.com/joshitha29-08/WPT201-A.git
 cd SaveMode
 ```
 
@@ -170,7 +170,7 @@ SaveMode web application is hosted using Cloudflare Pages.
 - Production Branch: main
 - Build Command: `npx expo export -p web`
 - Build Output Directory: `dist`
-- Website URL: https://savemode.pages.dev/
+- Website URL: http://wpt201a.pages.dev
 
 ### Deployment Process
 
@@ -200,4 +200,4 @@ Each major project folder contains a README describing its responsibility.
 
 Project-specific requirements, architecture decisions and handover information belong in `docs`.
 ```
-
+Deployment verification: Testing automatic Cloudflare Pages deployment after repository rename.
