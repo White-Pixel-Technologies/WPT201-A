@@ -200,4 +200,4 @@ Each major project folder contains a README describing its responsibility.
 
 Project-specific requirements, architecture decisions and handover information belong in `docs`.
 ```
-
+Deployment verification: Testing automatic Cloudflare Pages deployment after repository rename.
