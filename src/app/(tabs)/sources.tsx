@@ -1,815 +1,799 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  Alert,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
   View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-
-import Text from '../../components/AppText';
+import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
+import { useSafeSave } from '../../lib/useSafeSave';
+import { useAppTheme } from '../../lib/theme';
 import { useSession } from '../../lib/session';
-import type { Source, SourceType } from '../../lib/session';
-import { useTheme } from '../../theme/theme-context';
-import type { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { t } from '../../i18n';
+import { formatAmount } from '../../lib/formatMoney';
+import OfflineBanner from '../../components/ui/OfflineBanner';
+import EmptyState from '../../components/ui/EmptyState';
+import Toast from '../../components/ui/Toast';
+import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import SourceForm, {
+  type SourceItem,
+  type SourceType,
+} from '../../components/sources/SourceForm';
+import { Colors } from '../../constants/colors';
 
-const MAX_SOURCES = 50;
-
-const DELETE_BLOCKED_MESSAGE =
-  "This source has transactions, so it can't be deleted.";
-
-const formatMoney = (amount: number) =>
-  `\u20B9${amount.toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-
-const sourceLabels: Record<SourceType, string> = {
-  bank: 'Bank Account',
-  cash: 'Cash',
-  wallet: 'Digital Wallet',
-  credit_card: 'Credit Card',
+type SourceTotals = {
+  bankCashTotal: number;
+  cardOutstandingTotal: number;
 };
 
-const sourceIcons: Record<SourceType, string> = {
-  bank: '\u{1F3E6}',
-  cash: '\u{1F4B5}',
-  wallet: '\u{1F45B}',
-  credit_card: '\u{1F4B3}',
-};
+export default function SourcesScreen() {
+  const router = useRouter();
+  const { isDark } = useAppTheme();
+  const { currencyCode } = useSession();
+  const { isOnline, isSaving, save } = useSafeSave();
 
-type FormState = {
-  name: string;
-  type: SourceType;
-  openingBalance: string;
-  creditLimit: string;
-  outstanding: string;
-};
+  const [sources, setSources] = useState<SourceItem[]>([]);
+  const [totals, setTotals] = useState<SourceTotals>({
+    bankCashTotal: 0,
+    cardOutstandingTotal: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [listError, setListError] = useState('');
 
-const emptyForm: FormState = {
-  name: '',
-  type: 'bank',
-  openingBalance: '0',
-  creditLimit: '0',
-  outstanding: '0',
-};
+  // Form mode (Add / Edit)
+  const [showForm, setShowForm] = useState(false);
+  const [editingSource, setEditingSource] = useState<SourceItem | null>(null);
 
-export default function Sources() {
-  const sources = useSession((state) => state.sources);
-  const addSource = useSession((state) => state.addSource);
-  const updateSource = useSession((state) => state.updateSource);
-  const deleteSource = useSession((state) => state.deleteSource);
+  // Archive collapse state (ARC-02)
+  const [archivedExpanded, setArchivedExpanded] = useState(false);
 
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  // Restore confirm
+  const [sourceToRestore, setSourceToRestore] = useState<SourceItem | null>(null);
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingSource, setEditingSource] = useState<Source | null>(null);
-  const [form, setForm] = useState<FormState>(emptyForm);
-  const [deleteErrorSourceId, setDeleteErrorSourceId] = useState<string | null>(
-    null,
+  // Toast
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
+  const subtextColor = isDark ? '#A1A1AA' : '#64748B';
+  const cardColor = isDark ? '#1E1E1E' : '#FFFFFF';
+  const backgroundColor = isDark ? '#121212' : '#F8FAFC';
+  const borderColor = isDark ? '#27272A' : '#E2E8F0';
+
+  const fetchSourcesData = useCallback(async () => {
+    setListError('');
+    try {
+      // 1. Fetch sources with stats (E6)
+      const { data: sourcesData, error: sourcesError } =
+        await supabase.rpc('sources_with_stats');
+
+      let fetchedSources: SourceItem[] = [];
+      if (sourcesError) {
+        // Fallback to table query if RPC is not present
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('financial_sources')
+          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
+          .order('name');
+
+        if (fallbackError) {
+          setListError(t('err.generic'));
+          return;
+        }
+        fetchedSources = (fallbackData ?? []).map((s) => ({
+          ...s,
+          has_transactions: false,
+        })) as SourceItem[];
+      } else {
+        fetchedSources = (sourcesData ?? []) as SourceItem[];
+      }
+
+      setSources(fetchedSources);
+
+      // 2. Fetch source totals (E6, SRC-08)
+      const { data: totalsData, error: totalsError } =
+        await supabase.rpc('source_totals');
+
+      if (!totalsError && totalsData && totalsData.length > 0) {
+        const row = totalsData[0];
+        setTotals({
+          bankCashTotal: Number(row.bank_cash_total ?? 0),
+          cardOutstandingTotal: Number(row.card_outstanding_total ?? 0),
+        });
+      } else {
+        // Fallback calculation from active sources
+        let bankCash = 0;
+        let cardOut = 0;
+        for (const s of fetchedSources) {
+          if (!s.is_archived) {
+            if (s.type === 'card') {
+              cardOut += Number(s.current_amount);
+            } else {
+              bankCash += Number(s.current_amount);
+            }
+          }
+        }
+        setTotals({
+          bankCashTotal: bankCash,
+          cardOutstandingTotal: cardOut,
+        });
+      }
+    } catch {
+      setListError(t('err.generic'));
+    }
+  }, []);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    await fetchSourcesData();
+    setIsLoading(false);
+  }, [fetchSourcesData]);
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await fetchSourcesData();
+    setIsRefreshing(false);
+  }, [fetchSourcesData]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const init = async () => {
+      await fetchSourcesData();
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    };
+    void init();
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchSourcesData]);
+
+  // Group active sources (SRC-06): 1. Bank accounts, 2. Cash, 3. Credit cards; alphabetical by name
+  const activeSources = useMemo(
+    () => sources.filter((s) => !s.is_archived),
+    [sources]
+  );
+  const archivedSources = useMemo(
+    () => sources.filter((s) => s.is_archived),
+    [sources]
   );
 
-  const totals = useMemo(() => {
-    const bankAndCash = sources
-      .filter((item) => item.type !== 'credit_card')
-      .reduce((sum, item) => sum + item.openingBalance, 0);
+  const bankAccounts = useMemo(
+    () =>
+      activeSources
+        .filter((s) => s.type === 'bank')
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        ),
+    [activeSources]
+  );
 
-    const outstanding = sources
-      .filter((item) => item.type === 'credit_card')
-      .reduce((sum, item) => sum + item.outstanding, 0);
+  const cashSources = useMemo(
+    () =>
+      activeSources
+        .filter((s) => s.type === 'cash')
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        ),
+    [activeSources]
+  );
 
-    return { bankAndCash, outstanding };
-  }, [sources]);
+  const creditCards = useMemo(
+    () =>
+      activeSources
+        .filter((s) => s.type === 'card')
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        ),
+    [activeSources]
+  );
 
-  const showMessage = (message: string) => {
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined') {
-        window.alert(message);
-      }
-    } else {
-      Alert.alert('SaveMode', message);
-    }
-  };
-
-  const openAddModal = () => {
+  const handleOpenAdd = () => {
     setEditingSource(null);
-    setForm(emptyForm);
-    setModalVisible(true);
+    setShowForm(true);
   };
 
-  const openEditModal = (source: Source) => {
-    setEditingSource(source);
+  const handleFormSuccess = async () => {
+    setShowForm(false);
+    setEditingSource(null);
+    setToastMessage(t('toast.saved'));
+    setShowToast(true);
+    await loadData();
+  };
 
-    setForm({
-      name: source.name,
-      type: source.type,
-      openingBalance: String(source.openingBalance),
-      creditLimit: String(source.creditLimit),
-      outstanding: String(source.outstanding),
+  const handleRestoreSource = async () => {
+    if (!sourceToRestore || !isOnline || isSaving) return;
+
+    const success = await save(async () => {
+      const { error } = await supabase
+        .from('financial_sources')
+        .update({ is_archived: false })
+        .eq('id', sourceToRestore.id);
+      return error;
     });
 
-    setModalVisible(true);
+    if (success) {
+      setSourceToRestore(null);
+      setToastMessage('Source restored');
+      setShowToast(true);
+      await loadData();
+    }
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setEditingSource(null);
-    setForm(emptyForm);
+  const getSourceIcon = (type: SourceType) => {
+    switch (type) {
+      case 'bank':
+        return 'bank';
+      case 'card':
+        return 'credit-card-outline';
+      case 'cash':
+      default:
+        return 'cash';
+    }
   };
 
-  const updateField = (field: keyof FormState, value: string) => {
-    setForm((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
-  };
+  const renderSourceRow = (source: SourceItem) => {
+    const isCard = source.type === 'card';
+    const outstanding = source.current_amount;
+    const limit = source.credit_limit ?? 0;
+    const availableCredit = limit - outstanding;
+    const isOverLimit = isCard && limit > 0 && outstanding > limit;
+    const isCreditBalance = isCard && outstanding < 0;
+    const isBelowZero = !isCard && source.current_amount < 0;
 
-  const saveSource = () => {
-    const name = form.name.trim();
-
-    if (!editingSource && sources.length >= MAX_SOURCES) {
-      showMessage("You've reached the maximum of 50 sources.");
-      return;
-    }
-
-    if (!name) {
-      showMessage('Please enter a source name.');
-      return;
-    }
-
-    const duplicate = sources.some(
-      (item) =>
-        item.name.toLowerCase() === name.toLowerCase() &&
-        item.id !== editingSource?.id,
-    );
-
-    if (duplicate) {
-      showMessage('A source with this name already exists.');
-      return;
-    }
-
-    const openingBalance = Number(form.openingBalance);
-    const creditLimit = Number(form.creditLimit);
-    const outstanding = Number(form.outstanding);
-
-    if (
-      !Number.isFinite(openingBalance) ||
-      !Number.isFinite(creditLimit) ||
-      !Number.isFinite(outstanding) ||
-      openingBalance < 0 ||
-      creditLimit < 0 ||
-      outstanding < 0
-    ) {
-      showMessage('Please enter valid non-negative amounts.');
-      return;
-    }
-
-    if (
-      form.type === 'credit_card' &&
-      (creditLimit <= 0 || outstanding > creditLimit)
-    ) {
-      showMessage(
-        'Enter a valid credit limit. Outstanding cannot exceed the credit limit.',
-      );
-      return;
-    }
-
-    const sourceData = {
-      name,
-      type: editingSource ? editingSource.type : form.type,
-      openingBalance: form.type === 'credit_card' ? 0 : openingBalance,
-      creditLimit: form.type === 'credit_card' ? creditLimit : 0,
-      outstanding: form.type === 'credit_card' ? outstanding : 0,
-    };
-
-    if (editingSource) {
-      updateSource(editingSource.id, sourceData);
-    } else {
-      addSource(sourceData);
-    }
-
-    closeModal();
-  };
-
-  const performDelete = (source: Source) => {
-    const deleted = deleteSource(source.id);
-
-    if (!deleted) {
-      setDeleteErrorSourceId(source.id);
-      return;
-    }
-
-    setDeleteErrorSourceId(null);
-  };
-
-  const confirmDelete = (source: Source) => {
-    setDeleteErrorSourceId(null);
-
-    const message = `Delete "${source.name}"?`;
-
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.confirm(message)) {
-        performDelete(source);
-      }
-
-      return;
-    }
-
-    Alert.alert('Delete source', message, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => performDelete(source),
-      },
-    ]);
-  };
-
-  const renderAmountField = (
-    label: string,
-    field: keyof FormState,
-    value: string,
-  ) => (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-
-      <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={(text) => updateField(field, text)}
-        keyboardType="decimal-pad"
-        placeholder="0.00"
-        placeholderTextColor={colors.textMuted}
-      />
-    </View>
-  );
-
-  const renderSource = (source: Source) => {
-    const isCard = source.type === 'credit_card';
-    const hasDeleteError = deleteErrorSourceId === source.id;
+    const usagePercent =
+      isCard && limit > 0 ? Math.min(100, Math.max(0, (outstanding / limit) * 100)) : 0;
 
     return (
-      <View key={source.id} style={styles.sourceCard}>
-        <View style={styles.sourceTop}>
-          <View style={styles.sourceIdentity}>
-            <View style={styles.iconBox}>
-              <Text style={styles.sourceIcon}>{sourceIcons[source.type]}</Text>
+      <Pressable
+        key={source.id}
+        onPress={() => router.push(`/sources/${source.id}` as any)}
+        style={[styles.sourceCard, { backgroundColor: cardColor, borderColor }]}
+        accessibilityRole="button"
+        accessibilityLabel={`${source.name}, ${source.type}`}
+      >
+        <View style={styles.sourceTopRow}>
+          <View style={styles.sourceLeft}>
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: isDark ? '#27272A' : '#E8F5F1' },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={getSourceIcon(source.type) as any}
+                size={22}
+                color={Colors.primary}
+              />
             </View>
-
-            <View style={styles.sourceInfo}>
-              <Text style={styles.sourceName}>{source.name}</Text>
-              <Text style={styles.sourceType}>{sourceLabels[source.type]}</Text>
+            <View style={styles.nameContainer}>
+              <Text style={[styles.sourceName, { color: textColor }]}>
+                {source.name}
+              </Text>
             </View>
           </View>
 
-          <View style={styles.actions}>
-            <Pressable
-              onPress={() => openEditModal(source)}
-              style={styles.actionButton}
-            >
-              <Text style={styles.editText}>Edit</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => confirmDelete(source)}
-              style={styles.actionButton}
-            >
-              <Text style={styles.deleteText}>Delete</Text>
-            </Pressable>
+          {/* Amount on Right */}
+          <View style={styles.amountContainer}>
+            {!isCard ? (
+              <Text
+                style={[
+                  styles.balanceAmount,
+                  { color: isBelowZero ? '#DC2626' : textColor },
+                ]}
+              >
+                {formatAmount(source.current_amount, currencyCode)}
+              </Text>
+            ) : (
+              <View style={styles.cardAmountCol}>
+                <Text
+                  style={[
+                    styles.cardOutstandingText,
+                    { color: isCreditBalance ? '#16A34A' : textColor },
+                  ]}
+                >
+                  Outstanding {formatAmount(outstanding, currencyCode, { hideZeroPaise: true })}
+                </Text>
+                <Text style={[styles.cardAvailableText, { color: subtextColor }]}>
+                  Available {formatAmount(availableCredit, currencyCode, { hideZeroPaise: true })}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        <View style={styles.sourceDivider} />
+        {/* Thin Usage Bar for Credit Cards (SRC-07) */}
+        {isCard && limit > 0 && (
+          <View
+            style={[
+              styles.usageBarTrack,
+              { backgroundColor: isDark ? '#3F3F46' : '#E2E8F0' },
+            ]}
+          >
+            <View
+              style={[
+                styles.usageBarFill,
+                {
+                  width: `${usagePercent}%`,
+                  backgroundColor: isOverLimit ? '#DC2626' : Colors.primary,
+                },
+              ]}
+            />
+          </View>
+        )}
 
-        {isCard ? (
-          <>
-            <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Credit limit</Text>
-              <Text style={styles.amountValue}>
-                {formatMoney(source.creditLimit)}
-              </Text>
-            </View>
+        {/* Warning Labels (SRC-09) */}
+        {isBelowZero && (
+          <View style={styles.warningRow}>
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={15}
+              color="#DC2626"
+            />
+            <Text style={styles.warningText}>Below zero</Text>
+          </View>
+        )}
 
-            <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Outstanding</Text>
-              <Text style={styles.amountValue}>
-                {formatMoney(source.outstanding)}
-              </Text>
-            </View>
-
-            <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Available credit</Text>
-              <Text style={styles.availableValue}>
-                {formatMoney(source.creditLimit - source.outstanding)}
-              </Text>
-            </View>
-          </>
-        ) : (
-          <View style={styles.amountRow}>
-            <Text style={styles.amountLabel}>Opening balance</Text>
-            <Text style={styles.amountValue}>
-              {formatMoney(source.openingBalance)}
+        {isOverLimit && (
+          <View style={styles.warningRow}>
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={15}
+              color="#DC2626"
+            />
+            <Text style={styles.warningText}>
+              Over limit by {formatAmount(outstanding - limit, currencyCode, { hideZeroPaise: true })}
             </Text>
           </View>
         )}
 
-        {hasDeleteError && (
-          <View style={styles.deleteErrorBox}>
-            <Text style={styles.deleteErrorText}>{DELETE_BLOCKED_MESSAGE}</Text>
+        {isCreditBalance && (
+          <View style={[styles.warningRow, styles.creditBalanceRow]}>
+            <MaterialCommunityIcons
+              name="check-circle-outline"
+              size={15}
+              color="#16A34A"
+            />
+            <Text style={styles.creditBalanceText}>
+              Credit balance {formatAmount(Math.abs(outstanding), currencyCode, { hideZeroPaise: true })}
+            </Text>
           </View>
         )}
-      </View>
+      </Pressable>
     );
   };
 
-  return (
-    <View style={styles.container}>
+  if (showForm) {
+    return (
       <ScrollView
+        style={[styles.container, { backgroundColor }]}
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.heading}>My Sources</Text>
-            <Text style={styles.subtitle}>Manage your money in one place</Text>
-          </View>
+        <OfflineBanner visible={!isOnline} />
+        <SourceForm
+          initialSource={editingSource}
+          existingSources={sources}
+          onSuccess={handleFormSuccess}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingSource(null);
+          }}
+        />
+      </ScrollView>
+    );
+  }
 
+  return (
+    <ScrollView
+      style={[styles.container, { backgroundColor }]}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          tintColor={Colors.primary}
+        />
+      }
+    >
+      <OfflineBanner visible={!isOnline} />
+
+      {/* Header */}
+      <View style={styles.topHeader}>
+        <Text style={[styles.pageTitle, { color: textColor }]}>Sources</Text>
+      </View>
+
+      {/* Two Separate Totals at the Top (SRC-08) */}
+      <View style={styles.totalsContainer}>
+        <View
+          style={[styles.totalCard, { backgroundColor: cardColor, borderColor }]}
+        >
+          <Text style={[styles.totalLabel, { color: subtextColor }]}>
+            Total Balance
+          </Text>
+          <Text style={[styles.totalAmount, { color: Colors.primary }]}>
+            {formatAmount(totals.bankCashTotal, currencyCode)}
+          </Text>
+        </View>
+
+        <View
+          style={[styles.totalCard, { backgroundColor: cardColor, borderColor }]}
+        >
+          <Text style={[styles.totalLabel, { color: subtextColor }]}>
+            Total Card Outstanding
+          </Text>
+          <Text style={[styles.totalAmount, { color: textColor }]}>
+            {formatAmount(totals.cardOutstandingTotal, currencyCode)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Error state */}
+      {!!listError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{listError}</Text>
           <Pressable
-            style={[
-              styles.addButton,
-              sources.length >= MAX_SOURCES && styles.disabledButton,
-            ]}
-            onPress={openAddModal}
-            disabled={sources.length >= MAX_SOURCES}
+            onPress={loadData}
+            style={[styles.retryBtn, { backgroundColor: Colors.primary }]}
           >
-            <Text style={styles.addButtonText}>+ Add</Text>
+            <Text style={styles.retryBtnText}>Retry</Text>
           </Pressable>
         </View>
+      )}
 
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Total opening balance</Text>
-
-          <Text style={styles.summaryAmount}>
-            {formatMoney(totals.bankAndCash)}
-          </Text>
-
-          <View style={styles.summaryDivider} />
-
-          <Text style={styles.summaryLabel}>Total card outstanding</Text>
-
-          <Text style={styles.outstandingAmount}>
-            {formatMoney(totals.outstanding)}
-          </Text>
+      {/* Loading state */}
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
         </View>
+      ) : activeSources.length === 0 ? (
+        /* Empty State */
+        <EmptyState onAddSource={handleOpenAdd} />
+      ) : (
+        /* Grouped Active Sources: 1. Bank Accounts, 2. Cash, 3. Credit Cards (SRC-06) */
+        <View style={styles.groupsContainer}>
+          {bankAccounts.length > 0 && (
+            <View style={styles.groupSection}>
+              <Text style={[styles.groupTitle, { color: subtextColor }]}>
+                Bank Accounts ({bankAccounts.length})
+              </Text>
+              {bankAccounts.map(renderSourceRow)}
+            </View>
+          )}
 
-        <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>Your accounts</Text>
+          {cashSources.length > 0 && (
+            <View style={styles.groupSection}>
+              <Text style={[styles.groupTitle, { color: subtextColor }]}>
+                Cash ({cashSources.length})
+              </Text>
+              {cashSources.map(renderSourceRow)}
+            </View>
+          )}
 
-          <Text style={styles.countText}>
-            {sources.length} / {MAX_SOURCES} sources
-          </Text>
-        </View>
+          {creditCards.length > 0 && (
+            <View style={styles.groupSection}>
+              <Text style={[styles.groupTitle, { color: subtextColor }]}>
+                Credit Cards ({creditCards.length})
+              </Text>
+              {creditCards.map(renderSourceRow)}
+            </View>
+          )}
 
-        {sources.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>{sourceIcons.bank}</Text>
-
-            <Text style={styles.emptyTitle}>No sources yet</Text>
-
-            <Text style={styles.emptyDescription}>
-              Add where your money is: a bank account, cash, or a card.
+          {/* Dashed "Add source" Card at End of List (Task 10 Requirement) */}
+          <Pressable
+            onPress={handleOpenAdd}
+            style={[styles.dashedAddCard, { borderColor: isDark ? '#3F3F46' : '#94A3B8' }]}
+            accessibilityRole="button"
+            accessibilityLabel="Add source"
+          >
+            <MaterialCommunityIcons
+              name="plus-circle-outline"
+              size={22}
+              color={Colors.primary}
+            />
+            <Text style={[styles.dashedAddText, { color: Colors.primary }]}>
+              Add source
             </Text>
-
-            <Pressable style={styles.emptyButton} onPress={openAddModal}>
-              <Text style={styles.addButtonText}>+ Add your first source</Text>
-            </Pressable>
-          </View>
-        ) : (
-          sources.map(renderSource)
-        )}
-      </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  {editingSource ? 'Edit source' : 'Add source'}
-                </Text>
-
-                <Pressable onPress={closeModal}>
-                  <Text style={styles.closeText}>{'\u2715'}</Text>
-                </Pressable>
-              </View>
-
-              <Text style={styles.label}>Source name</Text>
-
-              <TextInput
-                style={styles.input}
-                value={form.name}
-                onChangeText={(value) => updateField('name', value)}
-                placeholder="e.g. SBI Savings"
-                placeholderTextColor={colors.textMuted}
-              />
-
-              <Text style={[styles.label, styles.typeLabel]}>Source type</Text>
-
-              <View style={styles.typeOptions}>
-                {(['bank', 'cash', 'credit_card'] as SourceType[]).map(
-                  (type) => (
-                    <Pressable
-                      key={type}
-                      disabled={!!editingSource}
-                      onPress={() => updateField('type', type)}
-                      style={[
-                        styles.typeOption,
-                        form.type === type && styles.selectedType,
-                        !!editingSource && { opacity: 0.65 },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.typeOptionText,
-                          form.type === type && styles.selectedTypeText,
-                        ]}
-                      >
-                        {sourceIcons[type]} {sourceLabels[type]}
-                      </Text>
-                    </Pressable>
-                  ),
-                )}
-              </View>
-
-              {form.type === 'credit_card' ? (
-                <>
-                  {renderAmountField(
-                    `Credit limit (${'\u20B9'})`,
-                    'creditLimit',
-                    form.creditLimit,
-                  )}
-
-                  {renderAmountField(
-                    `Current outstanding (${'\u20B9'})`,
-                    'outstanding',
-                    form.outstanding,
-                  )}
-                </>
-              ) : (
-                renderAmountField(
-                  `Opening balance (${'\u20B9'})`,
-                  'openingBalance',
-                  form.openingBalance,
-                )
-              )}
-
-              <Pressable style={styles.saveButton} onPress={saveSource}>
-                <Text style={styles.saveButtonText}>
-                  {editingSource ? 'Save changes' : 'Add source'}
-                </Text>
-              </Pressable>
-
-              <Pressable style={styles.cancelButton} onPress={closeModal}>
-                <Text style={styles.cancelText}>Cancel</Text>
-              </Pressable>
-            </ScrollView>
-          </View>
+          </Pressable>
         </View>
-      </Modal>
-    </View>
+      )}
+
+      {/* Archived Sources Collapsible Section (ARC-02) */}
+      {archivedSources.length > 0 && (
+        <View style={styles.archivedSection}>
+          <Pressable
+            onPress={() => setArchivedExpanded((prev) => !prev)}
+            style={styles.archivedToggle}
+            accessibilityRole="button"
+            accessibilityLabel={`Archived sources (${archivedSources.length})`}
+          >
+            <Text style={[styles.archivedTitle, { color: subtextColor }]}>
+              Archived ({archivedSources.length})
+            </Text>
+            <MaterialCommunityIcons
+              name={archivedExpanded ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color={subtextColor}
+            />
+          </Pressable>
+
+          {archivedExpanded && (
+            <View style={styles.archivedList}>
+              {archivedSources.map((source) => (
+                <View
+                  key={source.id}
+                  style={[
+                    styles.archivedCard,
+                    { backgroundColor: cardColor, borderColor },
+                  ]}
+                >
+                  <View style={styles.sourceLeft}>
+                    <MaterialCommunityIcons
+                      name={getSourceIcon(source.type) as any}
+                      size={20}
+                      color={subtextColor}
+                    />
+                    <Text style={[styles.archivedName, { color: textColor }]}>
+                      {source.name}
+                    </Text>
+                  </View>
+
+                  <Pressable
+                    onPress={() => setSourceToRestore(source)}
+                    style={[styles.restoreBtn, { borderColor: Colors.primary }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Restore ${source.name}`}
+                  >
+                    <Text style={[styles.restoreBtnText, { color: Colors.primary }]}>
+                      Restore
+                    </Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Toast */}
+      <Toast
+        visible={showToast}
+        message={toastMessage}
+        onDismiss={() => setShowToast(false)}
+      />
+
+      {/* Restore Confirmation Sheet */}
+      {sourceToRestore && (
+        <ConfirmSheet
+          visible={!!sourceToRestore}
+          title={`Restore '${sourceToRestore.name}'?`}
+          cancelLabel="Cancel"
+          confirmLabel="Restore"
+          onKeepEditing={() => setSourceToRestore(null)}
+          onDiscard={handleRestoreSource}
+        />
+      )}
+    </ScrollView>
   );
 }
 
-function createStyles(colors: ThemeColors) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    content: {
-      padding: 20,
-      paddingBottom: 40,
-      maxWidth: 850,
-      width: '100%',
-      alignSelf: 'center',
-    },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 22,
-    },
-    heading: {
-      fontSize: 26,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    subtitle: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginTop: 5,
-    },
-    addButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 18,
-      paddingVertical: 11,
-      borderRadius: 9,
-    },
-    disabledButton: {
-      opacity: 0.5,
-    },
-    addButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 14,
-    },
-    summaryCard: {
-      backgroundColor: colors.primary,
-      padding: 22,
-      borderRadius: 15,
-      marginBottom: 26,
-    },
-    summaryLabel: {
-      fontSize: 13,
-      color: colors.onPrimary,
-    },
-    summaryAmount: {
-      fontSize: 27,
-      fontWeight: '700',
-      color: colors.onPrimary,
-      marginTop: 5,
-    },
-    summaryDivider: {
-      height: 1,
-      backgroundColor: colors.onPrimary,
-      opacity: 0.3,
-      marginVertical: 16,
-    },
-    outstandingAmount: {
-      fontSize: 21,
-      fontWeight: '700',
-      color: colors.onPrimary,
-      marginTop: 5,
-    },
-    listHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 13,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    countText: {
-      fontSize: 13,
-      color: colors.textSecondary,
-    },
-    sourceCard: {
-      backgroundColor: colors.surface,
-      borderRadius: 13,
-      padding: 17,
-      marginBottom: 13,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    sourceTop: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: 10,
-    },
-    sourceIdentity: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      flex: 1,
-    },
-    iconBox: {
-      width: 45,
-      height: 45,
-      borderRadius: 11,
-      backgroundColor: colors.surfaceSecondary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    sourceIcon: {
-      fontSize: 22,
-    },
-    sourceInfo: {
-      flex: 1,
-    },
-    sourceName: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    sourceType: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      marginTop: 4,
-    },
-    actions: {
-      flexDirection: 'row',
-      gap: 5,
-    },
-    actionButton: {
-      paddingHorizontal: 9,
-      paddingVertical: 7,
-    },
-    editText: {
-      color: colors.primary,
-      fontWeight: '600',
-      fontSize: 13,
-    },
-    deleteText: {
-      color: colors.error,
-      fontWeight: '600',
-      fontSize: 13,
-    },
-    sourceDivider: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginVertical: 14,
-    },
-    amountRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 9,
-    },
-    amountLabel: {
-      fontSize: 13,
-      color: colors.textSecondary,
-    },
-    amountValue: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.text,
-    },
-    availableValue: {
-      fontSize: 14,
-      fontWeight: '700',
-      color: colors.success,
-    },
-    deleteErrorBox: {
-      marginTop: 14,
-      padding: 11,
-      borderRadius: 8,
-      backgroundColor: colors.surfaceSecondary,
-      borderWidth: 1,
-      borderColor: colors.error,
-    },
-    deleteErrorText: {
-      color: colors.error,
-      fontSize: 13,
-      lineHeight: 19,
-    },
-    emptyCard: {
-      backgroundColor: colors.surface,
-      borderRadius: 15,
-      padding: 30,
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    emptyIcon: {
-      fontSize: 38,
-      marginBottom: 12,
-    },
-    emptyTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    emptyDescription: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 20,
-      marginTop: 8,
-      marginBottom: 18,
-    },
-    emptyButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 18,
-      paddingVertical: 12,
-      borderRadius: 9,
-    },
-    modalBackdrop: {
-      flex: 1,
-      backgroundColor: colors.overlay,
-      justifyContent: 'center',
-      padding: 18,
-    },
-    modalCard: {
-      backgroundColor: colors.surface,
-      borderRadius: 17,
-      padding: 22,
-      maxHeight: '90%',
-      width: '100%',
-      maxWidth: 500,
-      alignSelf: 'center',
-    },
-    modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 22,
-    },
-    modalTitle: {
-      fontSize: 21,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    closeText: {
-      fontSize: 21,
-      color: colors.textSecondary,
-      padding: 5,
-    },
-    label: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 8,
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 9,
-      paddingHorizontal: 13,
-      paddingVertical: 12,
-      fontSize: 15,
-      fontFamily: typography.fontFamily.regular,
-      color: colors.text,
-      marginBottom: 17,
-      backgroundColor: colors.inputBackground,
-    },
-    typeLabel: {
-      marginTop: 3,
-    },
-    typeOptions: {
-      gap: 8,
-      marginBottom: 20,
-    },
-    typeOption: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      padding: 12,
-      borderRadius: 9,
-    },
-    selectedType: {
-      borderColor: colors.primary,
-      backgroundColor: colors.surfaceSecondary,
-    },
-    typeOptionText: {
-      color: colors.text,
-      fontSize: 14,
-    },
-    selectedTypeText: {
-      color: colors.primary,
-      fontWeight: '700',
-    },
-    field: {
-      marginBottom: 3,
-    },
-    saveButton: {
-      backgroundColor: colors.primary,
-      borderRadius: 9,
-      alignItems: 'center',
-      padding: 14,
-      marginTop: 8,
-    },
-    saveButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '700',
-      fontSize: 15,
-    },
-    cancelButton: {
-      alignItems: 'center',
-      padding: 13,
-      marginTop: 5,
-    },
-    cancelText: {
-      color: colors.textSecondary,
-      fontWeight: '600',
-    },
-  });
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
+    gap: 16,
+    paddingBottom: 72,
+  },
+  topHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  totalsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  totalCard: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  totalLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  totalAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  errorContainer: {
+    padding: 16,
+    alignItems: 'center',
+    gap: 10,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+  },
+  retryBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  groupsContainer: {
+    gap: 20,
+  },
+  groupSection: {
+    gap: 10,
+  },
+  groupTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginLeft: 4,
+  },
+  sourceCard: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    gap: 10,
+  },
+  sourceTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sourceLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nameContainer: {
+    flex: 1,
+  },
+  sourceName: {
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  amountContainer: {
+    alignItems: 'flex-end',
+  },
+  balanceAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  cardAmountCol: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  cardOutstandingText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  cardAvailableText: {
+    fontSize: 13,
+  },
+  usageBarTrack: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  usageBarFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FDECEC',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  warningText: {
+    color: '#DC2626',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  creditBalanceRow: {
+    backgroundColor: '#E7F5EC',
+  },
+  creditBalanceText: {
+    color: '#16A34A',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  dashedAddCard: {
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  dashedAddText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  archivedSection: {
+    marginTop: 10,
+    gap: 10,
+  },
+  archivedToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  archivedTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  archivedList: {
+    gap: 8,
+  },
+  archivedCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  archivedName: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  restoreBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1.5,
+  },
+  restoreBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+});

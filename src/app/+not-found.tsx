@@ -10,12 +10,12 @@ export default function NotFoundScreen() {
 
   return (
     <View
-      style={StyleSheet.flatten([
+      style={[
         styles.container,
         { backgroundColor: theme.background },
-      ])}
+      ]}
     >
-      <Text style={StyleSheet.flatten([styles.title, { color: theme.text }])}>
+      <Text style={[styles.title, { color: theme.text }]}>
         {NavigationText.pageNotFound}
       </Text>
 
