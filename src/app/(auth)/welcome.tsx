@@ -18,7 +18,7 @@ export default function Welcome() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to SaveMode</Text>
+      <Text style={styles.title}>Welcome to WPT 201 - A</Text>
 
       <Text style={styles.description}>Manage your finances in one place.</Text>
 

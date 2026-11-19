@@ -1,5 +1,5 @@
 -- =========================================================
--- SaveMode - Task 4: RLS Isolation Tests
+-- WPT 201 - A - Task 4: RLS Isolation Tests
 -- LOCAL DATABASE ONLY
 -- All test data is rolled back.
 -- =========================================================

@@ -36,7 +36,7 @@ const palettes: ThemePalette[] = [
 export default function ThemePreviewScreen() {
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.heading}>SaveMode Theme Preview</Text>
+      <Text style={styles.heading}>WPT 201 - A Theme Preview</Text>
 
       <Text style={styles.description}>
         Preview of all shared design tokens.
@@ -112,7 +112,7 @@ export default function ThemePreviewScreen() {
                 marginBottom: spacing.sm,
               }}
             >
-              {name} — SaveMode
+              {name} — WPT 201 - A
             </Text>
           ))}
 

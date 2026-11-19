@@ -1,10 +1,10 @@
-﻿# SaveMode Theme System
+﻿# WPT 201 - A Theme System
 
-This folder contains the shared design tokens and theme configuration used throughout SaveMode.
+This folder contains the shared design tokens and theme configuration used throughout WPT 201 - A.
 
 ## Theme modes
 
-SaveMode supports three user-selectable modes:
+WPT 201 - A supports three user-selectable modes:
 
 | Mode   | Behavior                                           |
 | ------ | -------------------------------------------------- |

@@ -1,5 +1,5 @@
 export const NavigationText = {
-  appName: 'SaveMode',
+  appName: 'WPT 201 - A',
   home: 'Home',
   transactions: 'Transactions',
   addTransaction: 'Add transaction',

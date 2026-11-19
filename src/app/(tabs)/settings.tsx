@@ -40,7 +40,7 @@ export default function Settings() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Appearance</Text>
         <Text style={styles.description}>
-          Choose how SaveMode looks on your device.
+          Choose how WPT 201 - A looks on your device.
         </Text>
 
         {themeOptions.map((option) => {

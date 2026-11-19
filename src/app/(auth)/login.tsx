@@ -15,7 +15,7 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log in to SaveMode</Text>
+      <Text style={styles.title}>Log in to WPT 201 - A</Text>
 
       <Text style={styles.description}>
         This is a temporary development login screen.

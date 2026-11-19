@@ -56,7 +56,7 @@ export default function NameScreen() {
         <Text style={styles.title}>What&apos;s your name?</Text>
 
         <Text style={styles.description}>
-          Welcome to SaveMode. Let&apos;s personalize your experience.
+          Welcome to WPT 201 - A. Let&apos;s personalize your experience.
         </Text>
 
         <Text style={styles.label}>Your name</Text>

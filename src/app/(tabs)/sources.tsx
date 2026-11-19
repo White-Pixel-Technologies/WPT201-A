@@ -92,7 +92,7 @@ export default function Sources() {
         window.alert(message);
       }
     } else {
-      Alert.alert('SaveMode', message);
+      Alert.alert('WPT 201 - A', message);
     }
   };
 

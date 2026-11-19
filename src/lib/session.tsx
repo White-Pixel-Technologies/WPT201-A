@@ -5,6 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ONBOARDING_DONE = 3;
 
+const SESSION_STORAGE_KEY = 'wpt201a-session';
+const LEGACY_SESSION_STORAGE_KEY = 'savemode-session';
+
 // Keep wallet for compatibility with previously saved data.
 export type SourceType = 'bank' | 'cash' | 'wallet' | 'credit_card';
 
@@ -90,10 +93,28 @@ const appStorage = {
   getItem: async (name: string) => {
     if (Platform.OS === 'web') {
       if (typeof window === 'undefined') return null;
-      return window.localStorage.getItem(name);
+      const value = window.localStorage.getItem(name);
+      if (value !== null || name !== SESSION_STORAGE_KEY) return value;
+
+      const legacyValue = window.localStorage.getItem(
+        LEGACY_SESSION_STORAGE_KEY,
+      );
+      if (legacyValue !== null) {
+        window.localStorage.setItem(name, legacyValue);
+        window.localStorage.removeItem(LEGACY_SESSION_STORAGE_KEY);
+      }
+      return legacyValue;
     }
 
-    return AsyncStorage.getItem(name);
+    const value = await AsyncStorage.getItem(name);
+    if (value !== null || name !== SESSION_STORAGE_KEY) return value;
+
+    const legacyValue = await AsyncStorage.getItem(LEGACY_SESSION_STORAGE_KEY);
+    if (legacyValue !== null) {
+      await AsyncStorage.setItem(name, legacyValue);
+      await AsyncStorage.removeItem(LEGACY_SESSION_STORAGE_KEY);
+    }
+    return legacyValue;
   },
 
   setItem: async (name: string, value: string) => {
@@ -238,7 +259,7 @@ export const useSession = create<SessionState>()(
         })),
     }),
     {
-      name: 'savemode-session',
+      name: SESSION_STORAGE_KEY,
       storage: createJSONStorage(() => appStorage),
 
       partialize: (state) => ({

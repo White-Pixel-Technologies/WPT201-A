@@ -1,6 +1,8 @@
-﻿# SaveMode
+﻿# WPT 201 - A
 
-SaveMode is a privacy-focused personal expense management application built with Expo, React Native and TypeScript. The BRD and PRD specify Android 9+ and iOS 15.1+; the current Expo SDK 57 configuration requires a separate team decision because its supported iOS minimum is higher.
+WPT 201 - A is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
+
+Supported devices: iPhone with iOS 16.4 or later (iPhone only, no iPad layout). Android phones and tablets with Android 9 or later. Web: latest two versions of Chrome, Edge, Safari and Firefox.
 
 ## Prerequisites
 
@@ -14,8 +16,8 @@ SaveMode is a privacy-focused personal expense management application built with
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/joshitha29-08/SaveMode.git
-cd SaveMode
+git clone https://github.com/joshitha29-08/WPT201-A.git wpt-201-a
+cd wpt-201-a
 ```
 
 ### 2. Install dependencies
@@ -110,7 +112,7 @@ npm run format
 
 ## Theme system
 
-SaveMode supports three theme modes:
+WPT 201 - A supports three theme modes:
 
 - **System:** follows the operating system or browser appearance.
 - **Light:** forces the light theme.
@@ -126,11 +128,11 @@ The current palette is provisional until the official Design Pack v1.0 is availa
 
 ## Supabase configuration
 
-SaveMode uses Supabase for backend and database functionality.
+WPT 201 - A uses Supabase for backend and database functionality.
 
 ### Getting access
 
-1. Request access to the SaveMode Supabase project from the project administrator.
+1. Request access to the WPT 201 - A Supabase project from the project administrator.
 2. Open the Supabase Dashboard.
 3. Locate the project's API settings.
 4. Obtain the approved Project URL and public client key.

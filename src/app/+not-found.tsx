@@ -1,5 +1,11 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { Colors } from '../constants/colors';
 import { NavigationText } from '../constants/navigation';
 
