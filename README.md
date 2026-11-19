@@ -1,6 +1,8 @@
 ﻿# SaveMode
 
-SaveMode is a privacy-focused personal expense management application built with Expo, React Native and TypeScript. The BRD and PRD specify Android 9+ and iOS 15.1+; the current Expo SDK 57 configuration requires a separate team decision because its supported iOS minimum is higher.
+SaveMode is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
+
+Supported devices: iPhone with iOS 16.4 or later (iPhone only, no iPad layout). Android phones and tablets with Android 9 or later. Web: latest two versions of Chrome, Edge, Safari and Firefox.
 
 ## Prerequisites
 
