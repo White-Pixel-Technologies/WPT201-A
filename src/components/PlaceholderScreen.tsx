@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import type { ReactNode } from 'react';
-import Text from './AppText';
 import { useTheme } from '../theme/theme-context';
+import { spacing, typography } from '../theme';
+import Text from './AppText';
 
 export default function PlaceholderScreen({
   title,
@@ -25,9 +26,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: spacing.lg,
   },
   text: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: typography.fontSize.xxl,
+    lineHeight: typography.lineHeight.xxl,
+    fontFamily: typography.fontFamily.semiBold,
+    textAlign: 'center',
   },
 });

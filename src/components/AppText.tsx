@@ -1,6 +1,7 @@
 import { Text, StyleSheet, type TextProps, type TextStyle } from 'react-native';
 
 import { typography } from '../theme/typography';
+import { useTheme } from '../theme/theme-context';
 
 type AppTextProps = TextProps;
 
@@ -22,10 +23,11 @@ function getFontFamily(weight: TextStyle['fontWeight']) {
 }
 
 export default function AppText({ style, ...props }: AppTextProps) {
+  const { colors } = useTheme();
   const flattenedStyle = StyleSheet.flatten(style);
 
   const fontFamily =
     flattenedStyle?.fontFamily ?? getFontFamily(flattenedStyle?.fontWeight);
 
-  return <Text {...props} style={[{ fontFamily }, style]} />;
+  return <Text {...props} style={[{ fontFamily, color: colors.text }, style]} />;
 }

@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
-import { Button, Pressable, View, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import Text from '../../components/AppText';
 import { useSession } from '../../lib/session';
+import { controls, radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/theme-context';
 
 export default function Login() {
@@ -16,20 +17,29 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Log in to SaveMode</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Log in to SaveMode</Text>
 
-      <Text style={styles.description}>
+      <Text style={[styles.description, { color: colors.textSecondary }]}>
         This is a temporary development login screen.
       </Text>
 
-      <Button title="Continue" onPress={handleLogin} />
+      <Pressable
+        accessibilityRole="button"
+        onPress={handleLogin}
+        style={[styles.button, { backgroundColor: colors.primary }]}
+      >
+        <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Continue</Text>
+      </Pressable>
       {__DEV__ && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Open theme preview"
           onPress={() => router.push('/theme-preview')}
-          style={[styles.previewButton, { borderColor: colors.primary }]}
+          style={[
+            styles.previewButton,
+            { borderColor: colors.border, backgroundColor: colors.surface },
+          ]}
         >
           <Text style={{ color: colors.primary }}>Open Theme Preview</Text>
         </Pressable>
@@ -43,25 +53,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    fontSize: typography.fontSize.xxl,
+    lineHeight: typography.lineHeight.xxl,
+    fontFamily: typography.fontFamily.bold,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   description: {
-    fontSize: 16,
+    fontSize: typography.fontSize.md,
+    lineHeight: typography.lineHeight.md,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
+  },
+  button: {
+    width: '100%',
+    maxWidth: 300,
+    minHeight: controls.minTap,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.medium,
+  },
+  buttonText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.md,
+    lineHeight: typography.lineHeight.md,
   },
   previewButton: {
-    minHeight: 44,
+    minHeight: controls.minTap,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
-    paddingHorizontal: 16,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.medium,
   },
 });

@@ -1,6 +1,7 @@
 import type { AuthGate } from '../hooks/useAuthGate';
 
 const ALWAYS_OPEN = new Set([
+  '/forgot-password',
   '/verify',
   '/reset-password',
   '/privacy',
@@ -12,7 +13,6 @@ const GUEST_ONLY = new Set([
   '/welcome',
   '/login',
   '/signup',
-  '/forgot-password',
 ]);
 
 const MAIN_PAGES = new Set(['/home', '/transactions', '/sources', '/settings']);
