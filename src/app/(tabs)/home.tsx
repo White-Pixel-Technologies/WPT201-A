@@ -50,7 +50,9 @@ export default function Home() {
     >
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.heading, { color: textColor }]}>{t('app.name')}</Text>
+      <Text style={[styles.heading, { color: textColor }]}>
+        {t('app.name')}
+      </Text>
       <Text style={[styles.subtitle, { color: subtitleColor }]}>
         {userName ? `Welcome back, ${userName}` : 'Your money, made simple.'}
       </Text>
@@ -64,17 +66,17 @@ export default function Home() {
 
       <View style={styles.row}>
         <View style={[styles.statCard, { backgroundColor: cardColor }]}>
-          <Text style={[styles.statLabel, { color: subtitleColor }]}>Income</Text>
-          <Text style={styles.income}>
-            {formatAmount(0, currencyCode)}
+          <Text style={[styles.statLabel, { color: subtitleColor }]}>
+            Income
           </Text>
+          <Text style={styles.income}>{formatAmount(0, currencyCode)}</Text>
         </View>
 
         <View style={[styles.statCard, { backgroundColor: cardColor }]}>
-          <Text style={[styles.statLabel, { color: subtitleColor }]}>Expenses</Text>
-          <Text style={styles.expense}>
-            {formatAmount(0, currencyCode)}
+          <Text style={[styles.statLabel, { color: subtitleColor }]}>
+            Expenses
           </Text>
+          <Text style={styles.expense}>{formatAmount(0, currencyCode)}</Text>
         </View>
       </View>
 

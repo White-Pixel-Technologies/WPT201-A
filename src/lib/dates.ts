@@ -1,10 +1,18 @@
-
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const MONTHS = [
-  "January", "February", "March", "April",
-  "May", "June", "July", "August",
-  "September", "October", "November", "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 export const MIN_YEAR = 2000;
@@ -26,7 +34,7 @@ export function daysInMonth(year: number, month: number): number {
     month < 0 ||
     month > 11
   ) {
-    throw new RangeError("Invalid year or month.");
+    throw new RangeError('Invalid year or month.');
   }
 
   if (month === 1) {
@@ -38,11 +46,7 @@ export function daysInMonth(year: number, month: number): number {
 
 // Get start of day
 function startOfDay(date: Date): Date {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  );
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 // Validate transaction date
@@ -50,7 +54,7 @@ function startOfDay(date: Date): Date {
 // Maximum: Tomorrow
 export function isValidTransactionDate(
   date: Date,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): boolean {
   if (
     !(date instanceof Date) ||
@@ -72,61 +76,48 @@ export function isValidTransactionDate(
 
 // Format: Sun, 04 Oct 2026
 export function formatFullDate(date: Date): string {
-  if (
-    !(date instanceof Date) ||
-    !Number.isFinite(date.getTime())
-  ) {
-    return "";
+  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) {
+    return '';
   }
 
-  const day = String(date.getDate()).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, '0');
   const month = MONTHS[date.getMonth()].slice(0, 3);
 
   return `${DAYS[date.getDay()]}, ${day} ${month} ${date.getFullYear()}`;
 }
 
 // Format Today, Yesterday or full date
-export function formatRelativeDate(
-  date: Date,
-  now: Date = new Date()
-): string {
+export function formatRelativeDate(date: Date, now: Date = new Date()): string {
   if (
     !(date instanceof Date) ||
     !(now instanceof Date) ||
     !Number.isFinite(date.getTime()) ||
     !Number.isFinite(now.getTime())
   ) {
-    return "";
+    return '';
   }
 
   const difference = Math.round(
-    (startOfDay(now).getTime() - startOfDay(date).getTime()) /
-      86400000
+    (startOfDay(now).getTime() - startOfDay(date).getTime()) / 86400000,
   );
 
-  if (difference === 0) return "Today";
-  if (difference === 1) return "Yesterday";
+  if (difference === 0) return 'Today';
+  if (difference === 1) return 'Yesterday';
 
   return formatFullDate(date);
 }
 
 // Format month and year
 export function formatMonthYear(date: Date): string {
-  if (
-    !(date instanceof Date) ||
-    !Number.isFinite(date.getTime())
-  ) {
-    return "";
+  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) {
+    return '';
   }
 
   return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 // Check previous month navigation
-export function canGoPrevMonth(
-  year: number,
-  month: number
-): boolean {
+export function canGoPrevMonth(year: number, month: number): boolean {
   if (
     !Number.isInteger(year) ||
     !Number.isInteger(month) ||
@@ -136,17 +127,14 @@ export function canGoPrevMonth(
     return false;
   }
 
-  return (
-    year > MIN_YEAR ||
-    (year === MIN_YEAR && month > MIN_MONTH)
-  );
+  return year > MIN_YEAR || (year === MIN_YEAR && month > MIN_MONTH);
 }
 
 // Check next month navigation
 export function canGoNextMonth(
   year: number,
   month: number,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): boolean {
   if (
     !Number.isInteger(year) ||
@@ -177,11 +165,7 @@ export function prevMonth(year: number, month: number) {
 }
 
 // Get next month
-export function nextMonth(
-  year: number,
-  month: number,
-  now: Date = new Date()
-) {
+export function nextMonth(year: number, month: number, now: Date = new Date()) {
   if (!canGoNextMonth(year, month, now)) {
     return { year, month };
   }

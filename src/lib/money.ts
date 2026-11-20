@@ -14,50 +14,50 @@ import { getCurrency } from '../constants/currencies';
  * "1200 Rs" -> 1200.00
  */
 export function cleanPastedAmount(
-    input: string,
-    currencyCode = 'INR'
+  input: string,
+  currencyCode = 'INR',
 ): string | null {
-    if (!input || typeof input !== 'string') return null;
+  if (!input || typeof input !== 'string') return null;
 
-    let str = input.trim();
+  let str = input.trim();
 
-    // 1. Remove trailing "/-" (or "/="), allowing optional whitespace
-    str = str.replace(/\s*\/[-=]\s*$/, '');
+  // 1. Remove trailing "/-" (or "/="), allowing optional whitespace
+  str = str.replace(/\s*\/[-=]\s*$/, '');
 
-    // 2. Remove known symbols and codes
-    const curr = getCurrency(currencyCode);
-    const rawSymbols = ['₹', 'Rs.', 'Rs', 'INR', curr.code, curr.symbol];
-    for (const sym of rawSymbols) {
-        if (!sym) continue;
-        const escaped = sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(escaped, 'gi');
-        str = str.replace(regex, '');
-    }
+  // 2. Remove known symbols and codes
+  const curr = getCurrency(currencyCode);
+  const rawSymbols = ['₹', 'Rs.', 'Rs', 'INR', curr.code, curr.symbol];
+  for (const sym of rawSymbols) {
+    if (!sym) continue;
+    const escaped = sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'gi');
+    str = str.replace(regex, '');
+  }
 
-    // 3. Remove spaces and commas
-    str = str.replace(/[\s,]/g, '');
+  // 3. Remove spaces and commas
+  str = str.replace(/[\s,]/g, '');
 
-    // 4. Handle leading dot e.g. ".50" -> "0.50"
-    if (str.startsWith('.')) {
-        str = '0' + str;
-    }
+  // 4. Handle leading dot e.g. ".50" -> "0.50"
+  if (str.startsWith('.')) {
+    str = '0' + str;
+  }
 
-    // Remove leading zeros ("0050" -> "50", but "0.50" -> "0.50")
-    if (/^0+[0-9]/.test(str)) {
-        str = str.replace(/^0+/, '');
-    }
+  // Remove leading zeros ("0050" -> "50", but "0.50" -> "0.50")
+  if (/^0+[0-9]/.test(str)) {
+    str = str.replace(/^0+/, '');
+  }
 
-    // Validate format (digits with optional 1 or 2 decimal places)
-    if (!/^\d+(\.\d{1,2})?$/.test(str)) {
-        return null;
-    }
+  // Validate format (digits with optional 1 or 2 decimal places)
+  if (!/^\d+(\.\d{1,2})?$/.test(str)) {
+    return null;
+  }
 
-    const num = parseFloat(str);
-    if (!Number.isFinite(num) || num <= 0 || num > 999999999.99) {
-        return null;
-    }
+  const num = parseFloat(str);
+  if (!Number.isFinite(num) || num <= 0 || num > 999999999.99) {
+    return null;
+  }
 
-    return str;
+  return str;
 }
 
 /**
@@ -65,11 +65,11 @@ export function cleanPastedAmount(
  * e.g. 100000 -> "1,00,000"
  */
 function formatIndianGrouping(intStr: string): string {
-    if (intStr.length <= 3) return intStr;
-    const lastThree = intStr.slice(-3);
-    const rest = intStr.slice(0, -3);
-    const pairs = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
-    return pairs + ',' + lastThree;
+  if (intStr.length <= 3) return intStr;
+  const lastThree = intStr.slice(-3);
+  const rest = intStr.slice(0, -3);
+  const pairs = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return pairs + ',' + lastThree;
 }
 
 /**
@@ -77,7 +77,7 @@ function formatIndianGrouping(intStr: string): string {
  * e.g. 1000000 -> "1,000,000"
  */
 function formatStandardGrouping(intStr: string): string {
-    return intStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return intStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /**
@@ -86,35 +86,35 @@ function formatStandardGrouping(intStr: string): string {
  * - hideZeroPaise: if true and whole amount, hide ".00" (e.g. ₹1,200). Always show paise when present (₹1,200.50).
  */
 export function formatAmount(
-    amount: number,
-    currencyCode = 'INR',
-    options: { hideZeroPaise?: boolean } = {}
+  amount: number,
+  currencyCode = 'INR',
+  options: { hideZeroPaise?: boolean } = {},
 ): string {
-    const isNegative = amount < 0;
-    const absAmount = Math.abs(amount);
-    const fixed = absAmount.toFixed(2);
-    const [intPart, decPart] = fixed.split('.');
+  const isNegative = amount < 0;
+  const absAmount = Math.abs(amount);
+  const fixed = absAmount.toFixed(2);
+  const [intPart, decPart] = fixed.split('.');
 
-    const isINR = currencyCode.toUpperCase() === 'INR';
-    const groupedInt = isINR
-        ? formatIndianGrouping(intPart)
-        : formatStandardGrouping(intPart);
+  const isINR = currencyCode.toUpperCase() === 'INR';
+  const groupedInt = isINR
+    ? formatIndianGrouping(intPart)
+    : formatStandardGrouping(intPart);
 
-    let formattedNumber = groupedInt;
-    if (options.hideZeroPaise && decPart === '00') {
-        formattedNumber = groupedInt;
-    } else {
-        formattedNumber = `${groupedInt}.${decPart}`;
-    }
+  let formattedNumber = groupedInt;
+  if (options.hideZeroPaise && decPart === '00') {
+    formattedNumber = groupedInt;
+  } else {
+    formattedNumber = `${groupedInt}.${decPart}`;
+  }
 
-    const curr = getCurrency(currencyCode);
-    const sign = isNegative ? '−' : '';
-    const space = curr.useSpace ? ' ' : '';
+  const curr = getCurrency(currencyCode);
+  const sign = isNegative ? '−' : '';
+  const space = curr.useSpace ? ' ' : '';
 
-    if (curr.prefix) {
-        return `${sign}${curr.symbol}${space}${formattedNumber}`;
-    }
-    return `${sign}${formattedNumber}${space}${curr.symbol}`;
+  if (curr.prefix) {
+    return `${sign}${curr.symbol}${space}${formattedNumber}`;
+  }
+  return `${sign}${formattedNumber}${space}${curr.symbol}`;
 }
 
 /**
@@ -126,49 +126,49 @@ export function formatAmount(
  * - Other currencies: M from 1,000,000 and B from 1,000,000,000
  */
 export function formatShortAmount(
-    amount: number,
-    currencyCode = 'INR'
+  amount: number,
+  currencyCode = 'INR',
 ): string {
-    const isNegative = amount < 0;
-    const abs = Math.abs(amount);
-    const isINR = currencyCode.toUpperCase() === 'INR';
-    const curr = getCurrency(currencyCode);
-    const sign = isNegative ? '−' : '';
-    const space = curr.useSpace ? ' ' : '';
+  const isNegative = amount < 0;
+  const abs = Math.abs(amount);
+  const isINR = currencyCode.toUpperCase() === 'INR';
+  const curr = getCurrency(currencyCode);
+  const sign = isNegative ? '−' : '';
+  const space = curr.useSpace ? ' ' : '';
 
-    let valueStr = '';
-    let suffix = '';
+  let valueStr = '';
+  let suffix = '';
 
-    if (isINR) {
-        if (abs >= 10000000) {
-            // 1 Cr = 1,00,00,000
-            valueStr = (abs / 10000000).toFixed(1);
-            suffix = 'Cr';
-        } else if (abs >= 100000) {
-            // 1 L = 1,00,000
-            valueStr = (abs / 100000).toFixed(1);
-            suffix = 'L';
-        } else if (abs >= 1000) {
-            // 1 K = 1,000
-            valueStr = (abs / 1000).toFixed(1);
-            suffix = 'K';
-        } else {
-            valueStr = Math.round(abs).toString();
-        }
+  if (isINR) {
+    if (abs >= 10000000) {
+      // 1 Cr = 1,00,00,000
+      valueStr = (abs / 10000000).toFixed(1);
+      suffix = 'Cr';
+    } else if (abs >= 100000) {
+      // 1 L = 1,00,000
+      valueStr = (abs / 100000).toFixed(1);
+      suffix = 'L';
+    } else if (abs >= 1000) {
+      // 1 K = 1,000
+      valueStr = (abs / 1000).toFixed(1);
+      suffix = 'K';
     } else {
-        if (abs >= 1000000000) {
-            valueStr = (abs / 1000000000).toFixed(1);
-            suffix = 'B';
-        } else if (abs >= 1000000) {
-            valueStr = (abs / 1000000).toFixed(1);
-            suffix = 'M';
-        } else if (abs >= 1000) {
-            valueStr = (abs / 1000).toFixed(1);
-            suffix = 'K';
-        } else {
-            valueStr = Math.round(abs).toString();
-        }
+      valueStr = Math.round(abs).toString();
     }
+  } else {
+    if (abs >= 1000000000) {
+      valueStr = (abs / 1000000000).toFixed(1);
+      suffix = 'B';
+    } else if (abs >= 1000000) {
+      valueStr = (abs / 1000000).toFixed(1);
+      suffix = 'M';
+    } else if (abs >= 1000) {
+      valueStr = (abs / 1000).toFixed(1);
+      suffix = 'K';
+    } else {
+      valueStr = Math.round(abs).toString();
+    }
+  }
 
-    return `${sign}${curr.symbol}${space}${valueStr}${suffix}`;
+  return `${sign}${curr.symbol}${space}${valueStr}${suffix}`;
 }
