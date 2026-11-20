@@ -579,7 +579,7 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM public.user_settings
         WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid
-          AND currency_code = 'INR'
+          AND currency_code IS NULL
           AND theme = 'system'
           AND onboarding_completed = FALSE
     ) THEN
@@ -622,7 +622,7 @@ BEGIN
     INTO v_bad_tags
     FROM public.tags
     WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid
-      AND (is_default = FALSE OR is_others NOT IN (FALSE, TRUE));
+      AND is_default = FALSE;
 
     IF v_bad_tags <> 0 THEN
         RAISE EXCEPTION 'FAIL: default tags missing is_default';
@@ -658,6 +658,51 @@ BEGIN
     END IF;
 
     RAISE NOTICE 'PASS: setup_user is idempotent';
+END;
+$$;
+
+-- ---------------------------------------------------------
+-- 20A. Deleted and renamed default tags stay unchanged
+-- ---------------------------------------------------------
+
+SELECT set_config('wpt.account_delete', 'on', FALSE);
+
+DELETE FROM public.tags
+WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid
+  AND type = 'expense'
+  AND name = 'Food';
+
+UPDATE public.tags
+SET name = 'Housing'
+WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid
+  AND type = 'expense'
+  AND name = 'Rent';
+
+SELECT set_config('wpt.account_delete', 'off', FALSE);
+
+SELECT private.setup_user('11111111-1111-1111-1111-111111111111'::uuid);
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM public.tags
+        WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid
+          AND type = 'expense'
+          AND name = 'Food'
+    ) THEN
+        RAISE EXCEPTION 'FAIL: deleted Food tag was recreated';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.tags
+        WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid
+          AND type = 'expense'
+          AND name = 'Housing'
+    ) THEN
+        RAISE EXCEPTION 'FAIL: renamed Rent tag was not preserved';
+    END IF;
+
+    RAISE NOTICE 'PASS: deleted and renamed default tags stay unchanged';
 END;
 $$;
 
@@ -718,7 +763,7 @@ BEGIN
     FROM public.tags
     WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid;
 
-    IF v_tag_count <> 17 THEN
+    IF v_tag_count <> 16 THEN
         RAISE EXCEPTION 'FAIL: ensure_user_setup changed the tag count to %',
             v_tag_count;
     END IF;
@@ -739,9 +784,10 @@ $$;
 RESET ROLE;
 
 UPDATE public.user_settings
-SET name = 'Task 6 User'
+SET
+    name = 'Task 6 User',
+    currency_code = 'INR'
 WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid;
-
 SET LOCAL ROLE authenticated;
 
 SELECT set_config(
@@ -848,7 +894,9 @@ WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid;
 SELECT private.setup_user('11111111-1111-1111-1111-111111111111'::uuid);
 
 UPDATE public.user_settings
-SET name = 'Task 6 User'
+SET
+    name = 'Task 6 User',
+    currency_code = 'INR'
 WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid;
 
 SET LOCAL ROLE authenticated;
@@ -906,7 +954,7 @@ WHERE s.name = 'Task 6 Cash'
   AND s.user_id = '11111111-1111-1111-1111-111111111111'::uuid
   AND t.user_id = s.user_id
   AND t.type = 'expense'
-  AND t.name = 'Food';
+  AND t.name = 'Housing';
 
 DO $$
 DECLARE
