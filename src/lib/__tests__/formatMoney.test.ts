@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { cleanPastedAmount, formatAmount, formatShortAmount } from '../formatMoney';
+import { cleanPastedAmount, formatAmount, formatShortAmount } from '../money';
 
 describe('cleanPastedAmount (G-MON-05)', () => {
   it('cleans rupee symbols, trailing /-, spaces and commas', () => {

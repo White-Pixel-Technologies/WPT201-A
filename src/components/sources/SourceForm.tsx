@@ -1,27 +1,27 @@
-import { useState, useMemo } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMemo, useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import {
-  View,
-  Text,
-  TextInput,
+  ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
-  ActivityIndicator,
-  ScrollView,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import { useForm, Controller, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAppTheme } from '../../lib/theme';
-import { useSafeSave } from '../../lib/useSafeSave';
+import { Colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import { cleanPastedAmount, formatAmount } from '../../lib/money';
 import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
-import { t } from '../../i18n';
-import { formatAmount, cleanPastedAmount } from '../../lib/formatMoney';
+import { useAppTheme } from '../../lib/theme';
+import { useSafeSave } from '../../lib/useSafeSave';
 import ConfirmSheet from '../ui/ConfirmSheet';
 import InlineError from '../ui/InlineError';
-import { Colors } from '../../constants/colors';
 
 const MAX_SOURCES = 50;
 

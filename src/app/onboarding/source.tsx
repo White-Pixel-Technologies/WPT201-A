@@ -1,29 +1,29 @@
-import { useState, useRef } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  ScrollView,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
   Switch,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import InlineError from '../../components/ui/InlineError';
+import OfflineBanner from '../../components/ui/OfflineBanner';
+import { Colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import { getDatabaseErrorKey } from '../../lib/databaseErrors';
+import { cleanPastedAmount } from '../../lib/money';
 import { useSession } from '../../lib/session';
+import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../lib/theme';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
-import { supabase } from '../../lib/supabase';
-import { t } from '../../i18n';
-import OfflineBanner from '../../components/ui/OfflineBanner';
-import InlineError from '../../components/ui/InlineError';
-import { cleanPastedAmount } from '../../lib/formatMoney';
 import { generateUUID } from '../../lib/uuid';
-import { getDatabaseErrorKey } from '../../lib/databaseErrors';
-import { Colors } from '../../constants/colors';
 
 type SourceType = 'cash' | 'bank' | 'card';
 

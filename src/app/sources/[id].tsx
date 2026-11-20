@@ -1,23 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAppTheme } from '../../lib/theme';
-import { useSafeSave } from '../../lib/useSafeSave';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import SourceForm, { type SourceItem } from '../../components/sources/SourceForm';
+import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import { Colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import { formatAmount } from '../../lib/money';
 import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
-import { t } from '../../i18n';
-import { formatAmount } from '../../lib/formatMoney';
-import ConfirmSheet from '../../components/ui/ConfirmSheet';
-import SourceForm, { type SourceItem } from '../../components/sources/SourceForm';
-import { Colors } from '../../constants/colors';
+import { useAppTheme } from '../../lib/theme';
+import { useSafeSave } from '../../lib/useSafeSave';
 
 export default function SourceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

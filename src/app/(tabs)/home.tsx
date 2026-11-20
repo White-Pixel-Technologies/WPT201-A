@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useSession } from '../../lib/session';
-import { supabase } from '../../lib/supabase';
-import { formatAmount } from '../../lib/formatMoney';
-import { useAppTheme } from '../../lib/theme';
-import { useNetworkStatus } from '../../lib/useNetworkStatus';
+import { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 import { t } from '../../i18n';
+import { formatAmount } from '../../lib/money';
+import { useSession } from '../../lib/session';
+import { supabase } from '../../lib/supabase';
+import { useAppTheme } from '../../lib/theme';
+import { useNetworkStatus } from '../../lib/useNetworkStatus';
 
 export default function Home() {
   const { currencyCode, userName } = useSession();

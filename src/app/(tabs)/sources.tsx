@@ -1,30 +1,30 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
-import { useSafeSave } from '../../lib/useSafeSave';
-import { useAppTheme } from '../../lib/theme';
-import { useSession } from '../../lib/session';
-import { t } from '../../i18n';
-import { formatAmount } from '../../lib/formatMoney';
-import OfflineBanner from '../../components/ui/OfflineBanner';
-import EmptyState from '../../components/ui/EmptyState';
-import Toast from '../../components/ui/Toast';
-import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import SourceForm, {
   type SourceItem,
   type SourceType,
 } from '../../components/sources/SourceForm';
+import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import EmptyState from '../../components/ui/EmptyState';
+import OfflineBanner from '../../components/ui/OfflineBanner';
+import Toast from '../../components/ui/Toast';
 import { Colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import { formatAmount } from '../../lib/money';
+import { useSession } from '../../lib/session';
+import { supabase } from '../../lib/supabase';
+import { useAppTheme } from '../../lib/theme';
+import { useSafeSave } from '../../lib/useSafeSave';
 
 type SourceTotals = {
   bankCashTotal: number;
