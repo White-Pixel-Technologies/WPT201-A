@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { t } from '../../i18n';
-import { useAppTheme } from '../../lib/theme';
+import { useTheme } from '../../theme/theme-context';
 
 export type EmptyStateProps = {
   title?: string;
@@ -27,7 +27,7 @@ export default function EmptyState({
   onAction,
   onAddSource,
 }: EmptyStateProps) {
-  const { isDark } = useAppTheme();
+  const { colors } = useTheme();
 
   const handleAction = onAction ?? onAddSource;
   const resolvedActionLabel = actionLabel ?? (onAddSource ? t('action.add.source') : undefined);
@@ -42,7 +42,7 @@ export default function EmptyState({
       <MaterialCommunityIcons
         name={iconName as keyof typeof MaterialCommunityIcons.glyphMap}
         size={44}
-        color={isDark ? '#FFFFFF' : '#555555'}
+        color={colors.textSecondary}
         accessible={false}
       />
     );
@@ -55,7 +55,7 @@ export default function EmptyState({
       <Text
         style={[
           styles.title,
-          { color: isDark ? '#FFFFFF' : '#333333' },
+          { color: colors.text },
         ]}
       >
         {resolvedTitle}
@@ -65,7 +65,7 @@ export default function EmptyState({
         <Text
           style={[
             styles.description,
-            { color: isDark ? '#A3A3A3' : '#666666' },
+            { color: colors.textSecondary },
           ]}
         >
           {description}
@@ -77,9 +77,9 @@ export default function EmptyState({
           accessibilityRole="button"
           accessibilityLabel={resolvedActionLabel}
           onPress={handleAction}
-          style={styles.button}
+          style={[styles.button, { backgroundColor: colors.primary }]}
         >
-          <Text style={styles.buttonText}>
+          <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
             {resolvedActionLabel}
           </Text>
         </Pressable>

@@ -13,7 +13,7 @@ import { supabase } from './supabase';
 import { RESET_REDIRECT_URL, VERIFY_REDIRECT_URL } from '../constants/urls';
 
 export const ONBOARDING_DONE = 3;
-const ONBOARDING_KEY = 'savemode-onboarding-step';
+const ONBOARDING_KEY = 'app-onboarding-step';
 
 type SessionValue = {
   ready: boolean;
@@ -77,16 +77,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (data.onboarding_completed) {
         setOnboardingStepState(ONBOARDING_DONE);
         await AsyncStorage.setItem(ONBOARDING_KEY, String(ONBOARDING_DONE));
+      } else if (!data.name || data.name.trim().length === 0) {
+        // Missing name: step 1 (D9)
+        setOnboardingStepState(0);
+        await AsyncStorage.setItem(ONBOARDING_KEY, '0');
+      } else if (!data.currency_code) {
+        // Missing currency: step 2 (D9)
+        setOnboardingStepState(1);
+        await AsyncStorage.setItem(ONBOARDING_KEY, '1');
       } else {
-        if (!data.name || data.name.trim().length === 0) {
-          setOnboardingStepState(0);
-          await AsyncStorage.setItem(ONBOARDING_KEY, '0');
-        } else {
-          const parsed = Number(savedStep);
-          const stepToSet = parsed === 2 ? 2 : 1;
-          setOnboardingStepState(stepToSet);
-          await AsyncStorage.setItem(ONBOARDING_KEY, String(stepToSet));
-        }
+        // Otherwise: step 3 (D9)
+        setOnboardingStepState(2);
+        await AsyncStorage.setItem(ONBOARDING_KEY, String(2));
       }
     } catch {
       // Keep app functioning with local state.
@@ -253,9 +255,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         password,
       });
 
-      return error?.message ?? null;
+      if (!error) return null;
+
+      const msg = error.message?.toLowerCase() || '';
+      if (msg.includes('email not confirmed') || msg.includes('unverified')) {
+        return 'unverified';
+      }
+      if (msg.includes('rate') || msg.includes('too many') || msg.includes('attempts')) {
+        return 'ratelimit';
+      }
+      if (msg.includes('network') || msg.includes('failed to fetch')) {
+        return 'network';
+      }
+
+      // Default (AUTH-09: wrong email or password always shows 'Email or password is incorrect.')
+      return 'invalid_credentials';
     } catch {
-      return 'Unable to log in. Please try again.';
+      return 'network';
     }
   }, []);
 
@@ -301,7 +317,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         password,
       });
 
-      return error?.message ?? null;
+      if (error) {
+        return error.message ?? null;
+      }
+
+      // AUTH-23: After password update, sign out all other active sessions
+      // so they cannot continue using old credentials on other devices.
+      try {
+        await supabase.auth.signOut({ scope: 'others' });
+      } catch {
+        // signOut 'others' is best-effort — do not fail password update if it errors.
+      }
+
+      return null;
     } catch {
       return 'Unable to update your password. Please try again.';
     }

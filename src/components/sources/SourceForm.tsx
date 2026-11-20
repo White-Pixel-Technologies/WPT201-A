@@ -17,6 +17,7 @@ import { useAppTheme } from '../../lib/theme';
 import { useSafeSave } from '../../lib/useSafeSave';
 import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
+import { generateUUID } from '../../lib/uuid';
 import { t } from '../../i18n';
 import { formatAmount, cleanPastedAmount } from '../../lib/formatMoney';
 import ConfirmSheet from '../ui/ConfirmSheet';
@@ -231,12 +232,13 @@ export default function SourceForm({
         return error;
       }
 
+      const newId = generateUUID();
       const { error } = await supabase.from('financial_sources').insert({
+        id: newId,
         type: values.type,
         name: values.name.trim(),
         opening_amount: finalOpening,
         credit_limit: finalCreditLimit,
-        is_archived: false,
       });
 
       return error;

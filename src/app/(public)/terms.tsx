@@ -6,19 +6,19 @@ export default function TermsOfUse() {
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: 'Terms of Use' }} />
 
-      <Text style={styles.title}>SaveMode Terms of Use</Text>
+      <Text style={styles.title}>WPT 201 - A Terms of Use</Text>
       <Text style={styles.updated}>Last updated: November 2026</Text>
 
       <Text style={styles.heading}>1. Agreement to Terms</Text>
       <Text style={styles.body}>
-        By creating an account or using SaveMode, you agree to these Terms of
+        By creating an account or using WPT 201 - A, you agree to these Terms of
         Use and our Privacy Policy. If you do not agree, please do not use the
         app.
       </Text>
 
       <Text style={styles.heading}>2. Description of Service</Text>
       <Text style={styles.body}>
-        SaveMode is a personal finance management tool designed to help you track
+        WPT 201 - A is a personal finance management tool designed to help you track
         bank accounts, cash balances, credit card balances, and expenses. The
         service is provided for your personal, non-commercial management.
       </Text>
@@ -32,15 +32,15 @@ export default function TermsOfUse() {
 
       <Text style={styles.heading}>4. Financial Information Disclaimer</Text>
       <Text style={styles.body}>
-        SaveMode is an informational and tracking utility. We do not provide
+        WPT 201 - A is an informational and tracking utility. We do not provide
         financial, investment, legal, accounting, or tax advice. You are solely
         responsible for verifying the accuracy of balances and transactions
-        entered into SaveMode.
+        entered into WPT 201 - A.
       </Text>
 
       <Text style={styles.heading}>5. Acceptable Use</Text>
       <Text style={styles.body}>
-        You agree not to misuse SaveMode, reverse engineer the application,
+        You agree not to misuse WPT 201 - A, reverse engineer the application,
         attempt unauthorized access to our systems, or use the service for any
         unlawful activity.
       </Text>
@@ -55,9 +55,9 @@ export default function TermsOfUse() {
 
       <Text style={styles.heading}>7. Limitation of Liability</Text>
       <Text style={styles.body}>
-        SaveMode is provided on an &quot;as is&quot; and &quot;as available&quot; basis without
+        WPT 201 - A is provided on an &quot;as is&quot; and &quot;as available&quot; basis without
         warranties of any kind. To the maximum extent permitted by applicable
-        law, SaveMode and its operators shall not be liable for any indirect,
+        law, WPT 201 - A and its operators shall not be liable for any indirect,
         incidental, or consequential damages resulting from your use of the app.
       </Text>
 

@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
 import AppText from '../components/AppText';
 import { useTheme } from '../theme/theme-context';
@@ -9,13 +10,17 @@ const modes = ['system', 'light', 'dark'] as const;
 export default function ThemePreviewScreen() {
   const { mode, setMode, colors, tagColors } = useTheme();
 
+  if (!__DEV__) {
+    return <Redirect href="/+not-found" />;
+  }
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
       <AppText style={[styles.heading, { color: colors.text }]}>
-        SaveMode Theme Preview
+        WPT 201 - A Theme Preview
       </AppText>
 
       <AppText style={[styles.description, { color: colors.textSecondary }]}>
@@ -104,7 +109,7 @@ export default function ThemePreviewScreen() {
               marginBottom: spacing.sm,
             }}
           >
-            {name} — SaveMode
+            {name} — WPT 201 - A
           </AppText>
         ))}
 

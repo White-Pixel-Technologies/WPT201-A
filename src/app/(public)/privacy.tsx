@@ -7,19 +7,19 @@ export default function PrivacyPolicy() {
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: 'Privacy Policy' }} />
 
-      <Text style={styles.title}>SaveMode Privacy Policy</Text>
+      <Text style={styles.title}>WPT 201 - A Privacy Policy</Text>
       <Text style={styles.updated}>Last updated: November 2026</Text>
 
       <Text style={styles.heading}>1. Information We Collect</Text>
       <Text style={styles.body}>
-        SaveMode collects information you provide when creating an account,
+        WPT 201 - A collects information you provide when creating an account,
         including your name and email address. You may also enter financial
         information such as account names, balances and transactions.
       </Text>
 
       <Text style={styles.heading}>2. How We Use Your Information</Text>
       <Text style={styles.body}>
-        We use your information to provide and maintain SaveMode, manage your
+        We use your information to provide and maintain WPT 201 - A, manage your
         account, display your savings and transactions, and improve the app.
       </Text>
 
@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
       <Text style={styles.heading}>4. Sharing of Information</Text>
       <Text style={styles.body}>
         We do not sell your personal information. Information may be processed
-        by service providers when necessary to operate SaveMode or when
+        by service providers when necessary to operate WPT 201 - A or when
         required by law.
       </Text>
 
@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
 
       <Text style={styles.heading}>6. Children&apos;s Privacy</Text>
       <Text style={styles.body}>
-        SaveMode is not intended for children under 13. We do not knowingly
+        WPT 201 - A is not intended for children under 13. We do not knowingly
         collect personal information from children under 13.
       </Text>
 
@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
 
       <Text style={styles.heading}>8. Contact Us</Text>
       <Text style={styles.body}>
-        For privacy questions or requests, contact the SaveMode support team
+        For privacy questions or requests, contact the WPT 201 - A support team
         through the support channel provided in the app.
       </Text>
     </ScrollView>

@@ -1,6 +1,5 @@
-
-
 import { useState } from 'react';
+import { Redirect } from 'expo-router';
 import {
   Button,
   ScrollView,
@@ -18,10 +17,20 @@ import Toast from '../components/ui/Toast';
 import { useAppTheme } from '../lib/theme';
 
 export default function ComponentTest() {
+  // D3-PROD-GUARD: This page is for development only.
+  // In production builds, redirect to 404 so the route is not exposed.
+  if (!__DEV__) {
+    return <Redirect href="/+not-found" />;
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { isDark, setThemeMode } = useAppTheme();
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [showOffline, setShowOffline] = useState(true);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [showConfirm, setShowConfirm] = useState(false);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [showToast, setShowToast] = useState(false);
 
   const textColor = isDark ? '#FFFFFF' : '#222222';
@@ -40,7 +49,7 @@ export default function ComponentTest() {
         color: textColor,
         marginBottom: 20,
       }}>
-        SaveMode UI Components
+        WPT 201 - A UI Components
       </Text>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

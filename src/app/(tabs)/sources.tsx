@@ -20,6 +20,7 @@ import OfflineBanner from '../../components/ui/OfflineBanner';
 import EmptyState from '../../components/ui/EmptyState';
 import Toast from '../../components/ui/Toast';
 import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import { ErrorBox } from '../../components/ui/ErrorBox';
 import SourceForm, {
   type SourceItem,
   type SourceType,
@@ -99,30 +100,17 @@ export default function SourcesScreen() {
       const { data: totalsData, error: totalsError } =
         await supabase.rpc('source_totals');
 
-      if (!totalsError && totalsData && totalsData.length > 0) {
-        const row = totalsData[0];
-        setTotals({
-          bankCashTotal: Number(row.bank_cash_total ?? 0),
-          cardOutstandingTotal: Number(row.card_outstanding_total ?? 0),
-        });
-      } else {
-        // Fallback calculation from active sources
-        let bankCash = 0;
-        let cardOut = 0;
-        for (const s of fetchedSources) {
-          if (!s.is_archived) {
-            if (s.type === 'card') {
-              cardOut += Number(s.current_amount);
-            } else {
-              bankCash += Number(s.current_amount);
-            }
-          }
-        }
-        setTotals({
-          bankCashTotal: bankCash,
-          cardOutstandingTotal: cardOut,
-        });
+      if (totalsError || !totalsData || totalsData.length === 0) {
+        // D10: Prohibit client-side totals fallback. On DB failure, set listError
+        setListError(t('err.generic'));
+        return;
       }
+
+      const row = totalsData[0];
+      setTotals({
+        bankCashTotal: Number(row.bank_cash_total ?? 0),
+        cardOutstandingTotal: Number(row.card_outstanding_total ?? 0),
+      });
     } catch {
       setListError(t('err.generic'));
     }
@@ -433,17 +421,13 @@ export default function SourcesScreen() {
         </View>
       </View>
 
-      {/* Error state */}
+      {/* Error state (D10) */}
       {!!listError && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{listError}</Text>
-          <Pressable
-            onPress={loadData}
-            style={[styles.retryBtn, { backgroundColor: Colors.primary }]}
-          >
-            <Text style={styles.retryBtnText}>Retry</Text>
-          </Pressable>
-        </View>
+        <ErrorBox
+          message={listError}
+          onRetry={loadData}
+          isDark={isDark}
+        />
       )}
 
       {/* Loading state */}

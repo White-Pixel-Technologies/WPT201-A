@@ -14,16 +14,16 @@ export default function DeleteAccountInfo() {
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: 'Delete Account' }} />
 
-      <Text style={styles.title}>How to Delete Your SaveMode Account</Text>
+      <Text style={styles.title}>How to Delete Your WPT 201 - A Account</Text>
       <Text style={styles.subtitle}>
-        In compliance with Google Play and privacy regulations, SaveMode provides
+        In compliance with Google Play and privacy regulations, WPT 201 - A provides
         a simple and permanent way to delete your account and all associated data.
       </Text>
 
       <View style={styles.section}>
         <Text style={styles.heading}>Step-by-Step Instructions (In-App)</Text>
         <Text style={styles.step}>
-          1. Open the SaveMode app and log in to your account.
+          1. Open the WPT 201 - A app and log in to your account.
         </Text>
         <Text style={styles.step}>
           2. Tap the <Text style={styles.bold}>Settings</Text> tab in the bottom

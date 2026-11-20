@@ -6,9 +6,9 @@ import {
   StyleSheet,
   Text,
   View,
-  useColorScheme,
 } from 'react-native';
 import { t } from '../../i18n';
+import { useTheme } from '../../theme/theme-context';
 
 type LoadingStateProps = {
   onRetry?: () => void;
@@ -19,11 +19,11 @@ export default function LoadingState({
   onRetry,
   spinnerSize = 'large',
 }: LoadingStateProps) {
-  const isDark = useColorScheme() === 'dark';
+  const { colors } = useTheme();
   const [isSlow, setIsSlow] = useState(false);
 
-  const textColor = isDark ? '#FFFFFF' : '#222222';
-  const skeletonColor = isDark ? '#444444' : '#E5E5E5';
+  const textColor = colors.text;
+  const skeletonColor = colors.surfaceSecondary;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -41,7 +41,7 @@ export default function LoadingState({
     >
       <ActivityIndicator
         size={spinnerSize}
-        color={textColor}
+        color={colors.primary}
       />
 
       <View
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   retryText: {
-    color: '#2457C5',
+    color: '#0F6E56',
     fontSize: 14,
     fontWeight: '600',
   },
