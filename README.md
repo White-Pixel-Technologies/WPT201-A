@@ -11,6 +11,16 @@ The BRD and PRD specify Android 9+ and iOS 15.1+. The current Expo SDK 57 config
 - Visual Studio Code or another code editor
 - Expo Go for testing on a compatible Android device
 
+## Main Branch Protection Rules
+
+To maintain code quality and protect the main branch, the following rules must be followed:
+
+1. Never push code directly to the main branch.
+2. Every code change must be submitted through a Pull Request (PR).
+3. Every Pull Request must receive at least one approving review from another team member before merging.
+4. Pull Requests must not be merged if any required status check is failing.
+5. All changes must be reviewed and approved before they are merged into the main branch.
+
 ## Getting Started
 
 ### 1. Clone the Repository
