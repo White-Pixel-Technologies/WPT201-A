@@ -5,7 +5,7 @@ export default function TermsOfUse() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: 'Terms of Use' }} />
-      <Text style={styles.title}>WPT201-A  Terms of Use</Text>
+      <Text style={styles.title}>WPT201-A Terms of Use</Text>
       <Text style={styles.updated}>Last updated: Fri, 20 Nov 2026</Text>
       <Text style={styles.heading}>1. Agreement to Terms</Text>
       <Text style={styles.body}>
@@ -15,7 +15,7 @@ export default function TermsOfUse() {
       </Text>
       <Text style={styles.heading}>2. Description of Service</Text>
       <Text style={styles.body}>
-        WPT201-A  is a manual-entry expense tracker that helps you record and
+        WPT201-A is a manual-entry expense tracker that helps you record and
         review your expenses. You are responsible for entering your own
         financial information.
       </Text>
@@ -27,10 +27,10 @@ export default function TermsOfUse() {
       </Text>
       <Text style={styles.heading}>4. Financial Information Disclaimer</Text>
       <Text style={styles.body}>
-        WPT201-A  is an informational and tracking utility. We do not provide
+        WPT201-A is an informational and tracking utility. We do not provide
         financial, investment, legal, accounting, or tax advice. You are
         responsible for ensuring that all information you manually enter into
-        WPT201-A  is accurate and complete.
+        WPT201-A is accurate and complete.
       </Text>
       <Text style={styles.heading}>5. Acceptable Use</Text>
       <Text style={styles.body}>
@@ -40,17 +40,17 @@ export default function TermsOfUse() {
       </Text>
       <Text style={styles.heading}>6. Account Termination and Deletion</Text>
       <Text style={styles.body}>
-        You may stop using WPT201-A  at any time. For information about account
+        You may stop using WPT201-A at any time. For information about account
         deletion, please contact us at contactus@whitepixeltechnologies.in. We
         reserve the right to suspend or terminate accounts that violate these
         Terms.
       </Text>
       <Text style={styles.heading}>7. Limitation of Liability</Text>
       <Text style={styles.body}>
-        WPT201-A  is provided on an &quot;as is&quot; and &quot;as
+        WPT201-A is provided on an &quot;as is&quot; and &quot;as
         available&quot; basis without warranties of any kind. To the maximum
-        extent permitted by applicable law, WPT201-A  and its operators shall
-        not be liable for any indirect, incidental, or consequential damages
+        extent permitted by applicable law, WPT201-A and its operators shall not
+        be liable for any indirect, incidental, or consequential damages
         resulting from your use of the app.
       </Text>
       <Text style={styles.heading}>8. Changes to Terms</Text>
