@@ -21,15 +21,11 @@ const webStorage = {
   },
 };
 
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseKey,
-  {
-    auth: {
-      storage: Platform.OS === 'web' ? webStorage : AsyncStorage,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
-    },
-  }
-);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    storage: Platform.OS === 'web' ? webStorage : AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
