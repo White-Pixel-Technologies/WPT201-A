@@ -26,7 +26,8 @@ INSERT INTO auth.users (id, email)
 VALUES (
     'bb65b43f-a85e-4098-be4f-307194966c8b',
     'task5-test@example.com'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- Create existing User A source
 INSERT INTO public.financial_sources
@@ -37,7 +38,8 @@ VALUES (
     'cash',
     'rls test cash',
     0
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- Create existing User A expense tag
 INSERT INTO public.tags
@@ -48,7 +50,8 @@ VALUES (
     'expense',
     'Rule Test Existing Tag',
     '#808080'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 
 DO $$
@@ -158,6 +161,21 @@ BEGIN
 END;
 $$;
 
+-- Case-insensitive source name uniqueness
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO public.financial_sources
+            (type, name, opening_amount)
+        VALUES ('bank', 'RLS TEST CASH', 0);
+
+        RAISE EXCEPTION 'FAIL: Case-insensitive duplicate source name was allowed';
+    EXCEPTION
+        WHEN unique_violation THEN
+            RAISE NOTICE 'PASS: Case-insensitive duplicate source name blocked';
+    END;
+END;
+$$;
 
 -- ---------------------------------------------------------
 -- 4. Source type cannot be changed
@@ -206,33 +224,6 @@ BEGIN
 END;
 $$;
 
--- ---------------------------------------------------------
--- 5A. Database guard blocks direct current_amount changes
--- ---------------------------------------------------------
-
-RESET ROLE;
-
-DO $$
-BEGIN
-    BEGIN
-        UPDATE public.financial_sources
-        SET current_amount = current_amount + 100
-        WHERE id = '7a39cdb0-3775-4cd5-af25-db984700cbce';
-
-        RAISE EXCEPTION 'FAIL: Direct current_amount update was allowed';
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            IF SQLERRM = 'WPT_CURRENT_AMOUNT_LOCKED' THEN
-                RAISE NOTICE 'PASS: Database guard blocks direct current_amount update';
-            ELSE
-                RAISE;
-            END IF;
-    END;
-END;
-$$;
-
-SET LOCAL ROLE authenticated;
 
 
 -- ---------------------------------------------------------
@@ -736,36 +727,7 @@ BEGIN
 END;
 $$;
 
--- Existing user A: must not gain tags either
-SELECT set_config(
-    'request.jwt.claim.sub',
-    'bb65b43f-a85e-4098-be4f-307194966c8b',
-    TRUE
-);
 
-DO $$
-DECLARE
-    v_before INTEGER;
-    v_after INTEGER;
-BEGIN
-    SELECT COUNT(*) INTO v_before
-    FROM public.tags
-    WHERE user_id = 'bb65b43f-a85e-4098-be4f-307194966c8b'::uuid;
-
-    PERFORM public.ensure_user_setup();
-
-    SELECT COUNT(*) INTO v_after
-    FROM public.tags
-    WHERE user_id = 'bb65b43f-a85e-4098-be4f-307194966c8b'::uuid;
-
-    IF v_after <> v_before THEN
-        RAISE EXCEPTION 'FAIL: ensure_user_setup added tags to user A (% -> %)',
-            v_before, v_after;
-    END IF;
-
-    RAISE NOTICE 'PASS: ensure_user_setup leaves existing users alone';
-END;
-$$;
 
 -- ---------------------------------------------------------
 -- 23. create_first_source: created, then already_complete

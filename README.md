@@ -1,9 +1,8 @@
-﻿# SaveMode
+# WPT 201 - A
 
-SaveMode is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
+WPT 201 - A is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
 
 Supported devices: iPhone with iOS 16.4 or later (iPhone only, no iPad layout). Android phones and tablets with Android 9 or later. Web: latest two versions of Chrome, Edge, Safari and Firefox.
-
 ## Prerequisites
 
 - Node.js LTS
@@ -11,42 +10,46 @@ Supported devices: iPhone with iOS 16.4 or later (iPhone only, no iPad layout). 
 - Visual Studio Code or another code editor
 - Expo Go for testing on a compatible Android device
 
-## Getting started
+## Getting Started
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/joshitha29-08/SaveMode.git
-cd SaveMode
+git clone https://github.com/joshitha29-08/WPT201-A.git
+cd WPT201-A
 ```
 
-### 2. Install dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Configure Environment Variables
 
-Create your local environment file:
+Create your local environment file.
 
-Windows:
+**Windows:**
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Mac/Linux:
+**Mac/Linux:**
 
 ```bash
 cp .env.example .env
 ```
 
-Configure the Supabase values using the instructions below.
+Configure these variables in your `.env` file:
+
+- `EXPO_PUBLIC_SUPABASE_URL` — Your Supabase Project URL.
+- `EXPO_PUBLIC_SUPABASE_KEY` — Your Supabase Key.
+- `EXPO_PUBLIC_WEB_URL` — Your application website URL.
 
 Never commit `.env` or expose secret keys.
 
-## Running the application
+## Running the Application
 
 ### Web
 
@@ -73,7 +76,7 @@ npm start
 
 If the default port is busy, use the port displayed by Expo.
 
-## Development checks
+## Development Checks
 
 Run these checks before submitting changes:
 
@@ -90,7 +93,7 @@ To format project files:
 npm run format
 ```
 
-## Project structure
+## Project Structure
 
 | Folder           | Responsibility                                 |
 | ---------------- | ---------------------------------------------- |
@@ -110,9 +113,9 @@ npm run format
 | `docs`           | Project documentation                          |
 | `.github`        | Repository workflows and templates             |
 
-## Theme system
+## Theme System
 
-SaveMode supports three theme modes:
+WPT 201 - A supports three theme modes:
 
 - **System:** follows the operating system or browser appearance.
 - **Light:** forces the light theme.
@@ -126,34 +129,73 @@ See `src/theme/README.md` for implementation guidance.
 
 The current palette is provisional until the official Design Pack v1.0 is available for verification.
 
-## Supabase configuration
+## Supabase Configuration
 
-SaveMode uses Supabase for backend and database functionality.
+WPT 201 - A uses Supabase for backend and database functionality.
 
-### Getting access
+### Getting Access
 
-1. Request access to the SaveMode Supabase project from the project administrator.
+1. Request access to the WPT 201 - A Supabase project from the project administrator.
 2. Open the Supabase Dashboard.
 3. Locate the project's API settings.
 4. Obtain the approved Project URL and public client key.
 5. Add them to your local `.env` file.
 
-### Environment variables
+### Environment Variables
 
 Use the variable names defined in `.env.example`:
 
 - `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `EXPO_PUBLIC_SUPABASE_KEY`
+- `EXPO_PUBLIC_WEB_URL`
 
-### Security guidelines
+### Security Guidelines
 
 - Never commit `.env`.
 - Never expose Supabase Secret Keys or `service_role` keys in client code.
 - Keep `.env.example` limited to placeholder values.
 - Use only the approved public client key in the application.
 
+## Cloudflare Pages Setup
+
+WPT 201 - A web application is hosted using Cloudflare Pages.
+
+### Deployment Details
+
+- Project Name: wpt201a
+- Hosting Platform: Cloudflare Pages
+- GitHub Repository: WPT201-A
+- Production Branch: main
+- Build Command: `npx expo export -p web`
+- Build Output Directory: `dist`
+- Website URL: http://wpt201a.pages.dev
+
+### Deployment Process
+
+1. The GitHub repository is connected to Cloudflare Pages.
+2. The main branch is selected as the production branch.
+3. Cloudflare automatically builds the application using the configured build command.
+4. The generated files from the dist folder are deployed to the website.
+5. Whenever changes are merged into the main branch, a new deployment is triggered.
+
+### Application Routes
+
+- `/verify` – Used for email verification.
+- `/reset-password` – Used for password recovery.
+
+### Notes
+
+- The Cloudflare URL is used as the fixed web address during development.
+- The `/verify` route has been checked.
+- The `/reset-password` route needs to be tested.
+- Final production hosting will be decided by WPT.
+- Custom SMTP configuration will be handled by WPT before the beta release.
+- No paid hosting or custom SMTP configuration is required at this stage.
+
 ## Documentation
 
 Each major project folder contains a README describing its responsibility.
 
 Project-specific requirements, architecture decisions and handover information belong in `docs`.
+
+Deployment verification: Testing automatic Cloudflare Pages deployment after repository rename.

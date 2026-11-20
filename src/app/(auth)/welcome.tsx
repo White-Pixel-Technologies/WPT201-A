@@ -1,87 +1,125 @@
-import { router } from 'expo-router';
+import { Link } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import Text from '../../components/AppText';
-import { useSession } from '../../lib/session';
 import { controls, radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/theme-context';
 
 export default function Welcome() {
-  const startOnboarding = useSession((state) => state.startOnboarding);
   const { colors } = useTheme();
-
-  const handleGetStarted = () => {
-    startOnboarding();
-    router.push('/onboarding/name');
-  };
-
-  const handleLogin = () => {
-    router.push('/(auth)/login');
-  };
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Welcome to SaveMode</Text>
+  <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <Text style={[styles.logo, { color: colors.primary }]}>WPT 201 - A</Text>
 
-      <Text style={[styles.description, { color: colors.textSecondary }]}>
-        Manage your finances in one place.
-      </Text>
+    <Text style={[styles.title, { color: colors.text }]}>
+      Take control of your money.
+    </Text>
 
-      <View style={styles.buttonContainer}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleLogin}
-          style={[styles.button, { backgroundColor: colors.primary }]}
-        >
-          <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Log in</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleGetStarted}
-          style={[styles.button, { backgroundColor: colors.primary }]}
-        >
-          <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Get started</Text>
-        </Pressable>
-      </View>
+    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+      A simpler way to understand and manage your spending.
+    </Text>
+
+    <Link href="/(auth)/signup" asChild>
+      <Pressable
+        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+      >
+        <Text style={[styles.primaryText, { color: colors.onPrimary }]}>
+          Create account
+        </Text>
+      </Pressable>
+    </Link>
+
+    <Link href="/(auth)/login" asChild>
+      <Pressable
+        style={[
+          styles.secondaryButton,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.secondaryText, { color: colors.text }]}>
+          Log in
+        </Text>
+      </Pressable>
+    </Link>
+
+    <Text style={[styles.footer, { color: colors.textSecondary }]}>
+      By continuing, you agree to our
+    </Text>
+
+    <View style={styles.links}>
+      <Link href="/terms" style={[styles.link, { color: colors.primary }]}>
+        Terms
+      </Link>
+      <Text style={[styles.footer, { color: colors.textSecondary }]}>and</Text>
+      <Link
+        href="/privacy"
+        style={[styles.link, { color: colors.primary }]}
+      >
+        Privacy Policy
+      </Link>
     </View>
-  );
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
+    padding: spacing.xl,
+    gap: spacing.lg,
   },
-  title: {
+  logo: {
     fontSize: typography.fontSize.xxl,
     lineHeight: typography.lineHeight.xxl,
     fontFamily: typography.fontFamily.bold,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
   },
-  description: {
+  title: {
+    fontSize: typography.fontSize.display,
+    lineHeight: typography.lineHeight.display,
+    fontFamily: typography.fontFamily.bold,
+  },
+  subtitle: {
     fontSize: typography.fontSize.md,
     lineHeight: typography.lineHeight.md,
-    marginBottom: spacing.xl,
-    textAlign: 'center',
   },
-  buttonContainer: {
-    width: '100%',
-    maxWidth: 300,
-    gap: spacing.lg,
-  },
-  button: {
+  primaryButton: {
     minHeight: controls.minTap,
+    padding: spacing.lg,
+    borderRadius: radius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.medium,
   },
-  buttonText: {
-    fontFamily: typography.fontFamily.semiBold,
+  primaryText: {
     fontSize: typography.fontSize.md,
     lineHeight: typography.lineHeight.md,
+    fontFamily: typography.fontFamily.semiBold,
+  },
+  secondaryButton: {
+    minHeight: controls.minTap,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderRadius: radius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryText: {
+    fontSize: typography.fontSize.md,
+    lineHeight: typography.lineHeight.md,
+    fontFamily: typography.fontFamily.semiBold,
+  },
+  footer: {
+    fontSize: typography.fontSize.sm,
+    lineHeight: typography.lineHeight.sm,
+    textAlign: 'center',
+  },
+  links: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
+  link: {
+    fontSize: typography.fontSize.sm,
+    fontFamily: typography.fontFamily.semiBold,
   },
 });

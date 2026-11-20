@@ -1,4 +1,5 @@
 import { ONBOARDING_DONE, useSession } from '../lib/session';
+import { nextOnboardingHref } from '../lib/routing';
 
 export type AuthGate = {
   loading: boolean;
@@ -8,16 +9,12 @@ export type AuthGate = {
 };
 
 export function useAuthGate(): AuthGate {
-  const loading = useSession((state) => !state.ready);
-  const loggedIn = useSession((state) => state.isLoggedIn);
-  const onboardingStep = useSession((state) => state.onboardingStep);
-  const onboardingSteps = ['name', 'currency', 'source'] as const;
+  const { ready, isLoggedIn, onboardingStep } = useSession();
 
   return {
-    loading,
-    loggedIn,
+    loading: !ready,
+    loggedIn: isLoggedIn,
     onboardingComplete: onboardingStep >= ONBOARDING_DONE,
-    nextOnboardingStep:
-      onboardingSteps[onboardingStep] ?? onboardingSteps[0],
+    nextOnboardingStep: String(nextOnboardingHref(onboardingStep)),
   };
 }

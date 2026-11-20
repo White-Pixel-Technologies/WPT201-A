@@ -1,7 +1,8 @@
-import { StyleSheet, View } from 'react-native';
 import type { ReactNode } from 'react';
-import { useTheme } from '../theme/theme-context';
+import { ScrollView, StyleSheet } from 'react-native';
+
 import { spacing, typography } from '../theme';
+import { useTheme } from '../theme/theme-context';
 import Text from './AppText';
 
 export default function PlaceholderScreen({
@@ -14,19 +15,26 @@ export default function PlaceholderScreen({
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       <Text style={[styles.text, { color: colors.text }]}>{title}</Text>
       {children}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.lg,
+    gap: spacing.lg,
+    padding: spacing.xl,
   },
   text: {
     fontSize: typography.fontSize.xxl,
