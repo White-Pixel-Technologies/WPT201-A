@@ -15,7 +15,7 @@ import { getCurrency } from '../constants/currencies';
  */
 export function cleanPastedAmount(
   input: string,
-  currencyCode = 'INR'
+  currencyCode = 'INR',
 ): string | null {
   if (!input || typeof input !== 'string') return null;
 
@@ -88,7 +88,7 @@ function formatStandardGrouping(intStr: string): string {
 export function formatAmount(
   amount: number,
   currencyCode = 'INR',
-  options: { hideZeroPaise?: boolean } = {}
+  options: { hideZeroPaise?: boolean } = {},
 ): string {
   const isNegative = amount < 0;
   const absAmount = Math.abs(amount);
@@ -127,7 +127,7 @@ export function formatAmount(
  */
 export function formatShortAmount(
   amount: number,
-  currencyCode = 'INR'
+  currencyCode = 'INR',
 ): string {
   const isNegative = amount < 0;
   const abs = Math.abs(amount);
