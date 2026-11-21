@@ -15,7 +15,7 @@ import { useSafeSave } from '../../lib/useSafeSave';
 import { useAppTheme } from '../../lib/theme';
 import { useSession } from '../../lib/session';
 import { t } from '../../i18n';
-import { formatAmount } from '../../lib/formatMoney';
+import { formatAmount } from '../../lib/money';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 import EmptyState from '../../components/ui/EmptyState';
 import Toast from '../../components/ui/Toast';
@@ -55,7 +55,9 @@ export default function SourcesScreen() {
   const [archivedExpanded, setArchivedExpanded] = useState(false);
 
   // Restore confirm
-  const [sourceToRestore, setSourceToRestore] = useState<SourceItem | null>(null);
+  const [sourceToRestore, setSourceToRestore] = useState<SourceItem | null>(
+    null,
+  );
 
   // Toast
   const [toastMessage, setToastMessage] = useState('');
@@ -79,7 +81,9 @@ export default function SourcesScreen() {
         // Fallback to table query if RPC is not present
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('financial_sources')
-          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
+          .select(
+            'id, type, name, opening_amount, current_amount, credit_limit, is_archived',
+          )
           .order('name');
 
         if (fallbackError) {
@@ -145,11 +149,11 @@ export default function SourcesScreen() {
   // Group active sources (SRC-06): 1. Bank accounts, 2. Cash, 3. Credit cards; alphabetical by name
   const activeSources = useMemo(
     () => sources.filter((s) => !s.is_archived),
-    [sources]
+    [sources],
   );
   const archivedSources = useMemo(
     () => sources.filter((s) => s.is_archived),
-    [sources]
+    [sources],
   );
 
   const bankAccounts = useMemo(
@@ -157,9 +161,9 @@ export default function SourcesScreen() {
       activeSources
         .filter((s) => s.type === 'bank')
         .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
         ),
-    [activeSources]
+    [activeSources],
   );
 
   const cashSources = useMemo(
@@ -167,9 +171,9 @@ export default function SourcesScreen() {
       activeSources
         .filter((s) => s.type === 'cash')
         .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
         ),
-    [activeSources]
+    [activeSources],
   );
 
   const creditCards = useMemo(
@@ -177,9 +181,9 @@ export default function SourcesScreen() {
       activeSources
         .filter((s) => s.type === 'card')
         .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
         ),
-    [activeSources]
+    [activeSources],
   );
 
   const handleOpenAdd = () => {
@@ -236,7 +240,9 @@ export default function SourcesScreen() {
     const isBelowZero = !isCard && source.current_amount < 0;
 
     const usagePercent =
-      isCard && limit > 0 ? Math.min(100, Math.max(0, (outstanding / limit) * 100)) : 0;
+      isCard && limit > 0
+        ? Math.min(100, Math.max(0, (outstanding / limit) * 100))
+        : 0;
 
     return (
       <Pressable
@@ -286,10 +292,18 @@ export default function SourcesScreen() {
                     { color: isCreditBalance ? '#16A34A' : textColor },
                   ]}
                 >
-                  Outstanding {formatAmount(outstanding, currencyCode, { hideZeroPaise: true })}
+                  Outstanding{' '}
+                  {formatAmount(outstanding, currencyCode, {
+                    hideZeroPaise: true,
+                  })}
                 </Text>
-                <Text style={[styles.cardAvailableText, { color: subtextColor }]}>
-                  Available {formatAmount(availableCredit, currencyCode, { hideZeroPaise: true })}
+                <Text
+                  style={[styles.cardAvailableText, { color: subtextColor }]}
+                >
+                  Available{' '}
+                  {formatAmount(availableCredit, currencyCode, {
+                    hideZeroPaise: true,
+                  })}
                 </Text>
               </View>
             )}
@@ -336,7 +350,10 @@ export default function SourcesScreen() {
               color="#DC2626"
             />
             <Text style={styles.warningText}>
-              Over limit by {formatAmount(outstanding - limit, currencyCode, { hideZeroPaise: true })}
+              Over limit by{' '}
+              {formatAmount(outstanding - limit, currencyCode, {
+                hideZeroPaise: true,
+              })}
             </Text>
           </View>
         )}
@@ -349,7 +366,10 @@ export default function SourcesScreen() {
               color="#16A34A"
             />
             <Text style={styles.creditBalanceText}>
-              Credit balance {formatAmount(Math.abs(outstanding), currencyCode, { hideZeroPaise: true })}
+              Credit balance{' '}
+              {formatAmount(Math.abs(outstanding), currencyCode, {
+                hideZeroPaise: true,
+              })}
             </Text>
           </View>
         )}
@@ -399,7 +419,10 @@ export default function SourcesScreen() {
       {/* Two Separate Totals at the Top (SRC-08) */}
       <View style={styles.totalsContainer}>
         <View
-          style={[styles.totalCard, { backgroundColor: cardColor, borderColor }]}
+          style={[
+            styles.totalCard,
+            { backgroundColor: cardColor, borderColor },
+          ]}
         >
           <Text style={[styles.totalLabel, { color: subtextColor }]}>
             Total Balance
@@ -410,7 +433,10 @@ export default function SourcesScreen() {
         </View>
 
         <View
-          style={[styles.totalCard, { backgroundColor: cardColor, borderColor }]}
+          style={[
+            styles.totalCard,
+            { backgroundColor: cardColor, borderColor },
+          ]}
         >
           <Text style={[styles.totalLabel, { color: subtextColor }]}>
             Total Card Outstanding
@@ -471,7 +497,10 @@ export default function SourcesScreen() {
           {/* Dashed "Add source" Card at End of List (Task 10 Requirement) */}
           <Pressable
             onPress={handleOpenAdd}
-            style={[styles.dashedAddCard, { borderColor: isDark ? '#3F3F46' : '#94A3B8' }]}
+            style={[
+              styles.dashedAddCard,
+              { borderColor: isDark ? '#3F3F46' : '#94A3B8' },
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Add source"
           >
@@ -533,7 +562,9 @@ export default function SourcesScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Restore ${source.name}`}
                   >
-                    <Text style={[styles.restoreBtnText, { color: Colors.primary }]}>
+                    <Text
+                      style={[styles.restoreBtnText, { color: Colors.primary }]}
+                    >
                       Restore
                     </Text>
                   </Pressable>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { cleanPastedAmount, formatAmount, formatShortAmount } from '../formatMoney';
+import { cleanPastedAmount, formatAmount, formatShortAmount } from '../money';
 
 describe('cleanPastedAmount (G-MON-05)', () => {
   it('cleans rupee symbols, trailing /-, spaces and commas', () => {
@@ -32,7 +32,9 @@ describe('formatAmount (G-MON-06, G-MON-07)', () => {
 
   it('supports hiding .00 when whole amount (lists/home)', () => {
     expect(formatAmount(1200, 'INR', { hideZeroPaise: true })).toBe('₹1,200');
-    expect(formatAmount(1200.5, 'INR', { hideZeroPaise: true })).toBe('₹1,200.50');
+    expect(formatAmount(1200.5, 'INR', { hideZeroPaise: true })).toBe(
+      '₹1,200.50',
+    );
   });
 
   it('formats negative amounts with minus sign', () => {

@@ -19,7 +19,7 @@ import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
 import { generateUUID } from '../../lib/uuid';
 import { t } from '../../i18n';
-import { formatAmount, cleanPastedAmount } from '../../lib/formatMoney';
+import { formatAmount, cleanPastedAmount } from '../../lib/money';
 import ConfirmSheet from '../ui/ConfirmSheet';
 import InlineError from '../ui/InlineError';
 import { Colors } from '../../constants/colors';
@@ -41,7 +41,7 @@ export type SourceItem = {
 
 const createSourceSchema = (
   existingSources: { id?: string; name: string }[],
-  currentId?: string
+  currentId?: string,
 ) =>
   z.object({
     type: z.enum(['bank', 'cash', 'card']),
@@ -54,10 +54,10 @@ const createSourceSchema = (
         (val) => {
           const lower = val.trim().toLowerCase();
           return !existingSources.some(
-            (s) => s.id !== currentId && s.name.trim().toLowerCase() === lower
+            (s) => s.id !== currentId && s.name.trim().toLowerCase() === lower,
           );
         },
-        { message: t('err.name.duplicate.source') }
+        { message: t('err.name.duplicate.source') },
       ),
     openingAmount: z.string().min(1, t('err.amount.invalid')),
     isOverdrawn: z.boolean(),
@@ -125,7 +125,7 @@ export default function SourceForm({
 
   const schema = useMemo(
     () => createSourceSchema(existingSources, initialSource?.id),
-    [existingSources, initialSource?.id]
+    [existingSources, initialSource?.id],
   );
 
   const {
@@ -153,7 +153,7 @@ export default function SourceForm({
 
   const handleAmountInput = (
     val: string,
-    field: 'openingAmount' | 'creditLimit'
+    field: 'openingAmount' | 'creditLimit',
   ) => {
     clearError();
     setFormError('');
@@ -201,7 +201,11 @@ export default function SourceForm({
     let finalCreditLimit: number | null = null;
     if (values.type === 'card') {
       const parsedLimit = Number(values.creditLimit);
-      if (!values.creditLimit || !Number.isFinite(parsedLimit) || parsedLimit <= 0) {
+      if (
+        !values.creditLimit ||
+        !Number.isFinite(parsedLimit) ||
+        parsedLimit <= 0
+      ) {
         setFormError(t('err.limit.zero'));
         return;
       }
@@ -317,7 +321,11 @@ export default function SourceForm({
               [
                 { key: 'bank', label: 'Bank account', icon: 'bank' },
                 { key: 'cash', label: 'Cash', icon: 'cash' },
-                { key: 'card', label: 'Credit card', icon: 'credit-card-outline' },
+                {
+                  key: 'card',
+                  label: 'Credit card',
+                  icon: 'credit-card-outline',
+                },
               ] as const
             ).map((item) => {
               const isSelected = selectedType === item.key;
@@ -362,7 +370,9 @@ export default function SourceForm({
         {/* Source Name Field */}
         <View style={styles.inputGroup}>
           <View style={styles.labelRow}>
-            <Text style={[styles.label, { color: textColor }]}>Source name</Text>
+            <Text style={[styles.label, { color: textColor }]}>
+              Source name
+            </Text>
             {watchedName?.length >= 24 && (
               <Text style={[styles.counter, { color: subtextColor }]}>
                 {watchedName.length}/30
@@ -486,7 +496,9 @@ export default function SourceForm({
         {/* Credit Limit Field (Cards Only) */}
         {selectedType === 'card' && (
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: textColor }]}>Credit limit</Text>
+            <Text style={[styles.label, { color: textColor }]}>
+              Credit limit
+            </Text>
             <Controller
               control={control}
               name="creditLimit"
@@ -523,7 +535,9 @@ export default function SourceForm({
               )}
 
             {errors.creditLimit && (
-              <Text style={styles.fieldError}>{errors.creditLimit.message}</Text>
+              <Text style={styles.fieldError}>
+                {errors.creditLimit.message}
+              </Text>
             )}
           </View>
         )}

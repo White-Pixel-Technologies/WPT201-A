@@ -1,23 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAppTheme } from '../../lib/theme';
-import { useSafeSave } from '../../lib/useSafeSave';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import SourceForm, {
+  type SourceItem,
+} from '../../components/sources/SourceForm';
+import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import { Colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import { formatAmount } from '../../lib/money';
 import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
-import { t } from '../../i18n';
-import { formatAmount } from '../../lib/formatMoney';
-import ConfirmSheet from '../../components/ui/ConfirmSheet';
-import SourceForm, { type SourceItem } from '../../components/sources/SourceForm';
-import { Colors } from '../../constants/colors';
+import { useAppTheme } from '../../lib/theme';
+import { useSafeSave } from '../../lib/useSafeSave';
 
 export default function SourceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -55,7 +57,9 @@ export default function SourceDetailScreen() {
         // Fallback to table query if RPC is not available
         const { data: directData, error: directErr } = await supabase
           .from('financial_sources')
-          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
+          .select(
+            'id, type, name, opening_amount, current_amount, credit_limit, is_archived',
+          )
           .order('name');
 
         if (directErr) {
@@ -225,7 +229,11 @@ export default function SourceDetailScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back to sources"
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={textColor} />
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={24}
+            color={textColor}
+          />
           <Text style={[styles.backText, { color: textColor }]}>Sources</Text>
         </Pressable>
 
@@ -237,7 +245,12 @@ export default function SourceDetailScreen() {
       </View>
 
       {/* Summary Card (SRC-10) */}
-      <View style={[styles.summaryCard, { backgroundColor: cardColor, borderColor }]}>
+      <View
+        style={[
+          styles.summaryCard,
+          { backgroundColor: cardColor, borderColor },
+        ]}
+      >
         <View style={styles.sourceTitleRow}>
           <View
             style={[
@@ -332,7 +345,8 @@ export default function SourceDetailScreen() {
                   color="#DC2626"
                 />
                 <Text style={styles.warningTagText}>
-                  Over limit by {formatAmount(outstanding - limit, currencyCode)}
+                  Over limit by{' '}
+                  {formatAmount(outstanding - limit, currencyCode)}
                 </Text>
               </View>
             )}
@@ -345,7 +359,8 @@ export default function SourceDetailScreen() {
                   color="#16A34A"
                 />
                 <Text style={styles.creditBalanceTagText}>
-                  Credit balance {formatAmount(Math.abs(outstanding), currencyCode)}
+                  Credit balance{' '}
+                  {formatAmount(Math.abs(outstanding), currencyCode)}
                 </Text>
               </View>
             )}
@@ -381,15 +396,17 @@ export default function SourceDetailScreen() {
                   params: { sourceId: source.id },
                 });
               }}
-              style={[styles.actionBtn, { backgroundColor: Colors.primary, borderColor: Colors.primary }]}
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: Colors.primary,
+                  borderColor: Colors.primary,
+                },
+              ]}
               accessibilityRole="button"
               accessibilityLabel="Add transaction"
             >
-              <MaterialCommunityIcons
-                name="plus"
-                size={18}
-                color="#FFFFFF"
-              />
+              <MaterialCommunityIcons name="plus" size={18} color="#FFFFFF" />
               <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>
                 Add transaction
               </Text>
@@ -435,7 +452,9 @@ export default function SourceDetailScreen() {
         </Text>
       </View>
 
-      <View style={[styles.emptyBox, { backgroundColor: cardColor, borderColor }]}>
+      <View
+        style={[styles.emptyBox, { backgroundColor: cardColor, borderColor }]}
+      >
         <MaterialCommunityIcons
           name="receipt-text-outline"
           size={40}

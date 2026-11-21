@@ -1,29 +1,29 @@
-import { useState, useRef } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  ScrollView,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
   Switch,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import InlineError from '../../components/ui/InlineError';
+import OfflineBanner from '../../components/ui/OfflineBanner';
+import { Colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import { getDatabaseErrorKey } from '../../lib/databaseErrors';
+import { cleanPastedAmount } from '../../lib/money';
 import { useSession } from '../../lib/session';
+import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../lib/theme';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
-import { supabase } from '../../lib/supabase';
-import { t } from '../../i18n';
-import OfflineBanner from '../../components/ui/OfflineBanner';
-import InlineError from '../../components/ui/InlineError';
-import { cleanPastedAmount } from '../../lib/formatMoney';
 import { generateUUID } from '../../lib/uuid';
-import { getDatabaseErrorKey } from '../../lib/databaseErrors';
-import { Colors } from '../../constants/colors';
 
 type SourceType = 'cash' | 'bank' | 'card';
 
@@ -31,7 +31,8 @@ export default function OnboardingSourceScreen() {
   const router = useRouter();
   const { isDark } = useAppTheme();
   const { isOnline } = useNetworkStatus();
-  const { currencyCode, setOnboardingStep, markOnboardingComplete } = useSession();
+  const { currencyCode, setOnboardingStep, markOnboardingComplete } =
+    useSession();
 
   // Keep a stable UUID for idempotent retries (G-FRM-05)
   const sourceIdRef = useRef<string>(generateUUID());
@@ -63,19 +64,25 @@ export default function OnboardingSourceScreen() {
   const handleTypeChange = (newType: SourceType) => {
     setType(newType);
     setError('');
-    if (newType === 'cash' && (!name || name === 'Bank Account' || name === 'Credit Card')) {
+    if (
+      newType === 'cash' &&
+      (!name || name === 'Bank Account' || name === 'Credit Card')
+    ) {
       setName('Cash');
-    } else if (newType === 'bank' && (!name || name === 'Cash' || name === 'Credit Card')) {
+    } else if (
+      newType === 'bank' &&
+      (!name || name === 'Cash' || name === 'Credit Card')
+    ) {
       setName('Bank Account');
-    } else if (newType === 'card' && (!name || name === 'Cash' || name === 'Bank Account')) {
+    } else if (
+      newType === 'card' &&
+      (!name || name === 'Cash' || name === 'Bank Account')
+    ) {
       setName('Credit Card');
     }
   };
 
-  const handleAmountChange = (
-    val: string,
-    setter: (v: string) => void
-  ) => {
+  const handleAmountChange = (val: string, setter: (v: string) => void) => {
     setError('');
     // Check if pasted with symbols
     if (/[₹$,a-zA-Z]/.test(val)) {
@@ -161,13 +168,16 @@ export default function OnboardingSourceScreen() {
 
     setIsSaving(true);
     try {
-      const { data, error: rpcError } = await supabase.rpc('create_first_source', {
-        p_id: sourceIdRef.current,
-        p_type: type,
-        p_name: trimmedName,
-        p_opening: openingNum,
-        p_credit_limit: limitNum,
-      });
+      const { data, error: rpcError } = await supabase.rpc(
+        'create_first_source',
+        {
+          p_id: sourceIdRef.current,
+          p_type: type,
+          p_name: trimmedName,
+          p_opening: openingNum,
+          p_credit_limit: limitNum,
+        },
+      );
 
       if (rpcError) {
         const errorKey = getDatabaseErrorKey(rpcError);
@@ -217,7 +227,9 @@ export default function OnboardingSourceScreen() {
                   size={24}
                   color={textColor}
                 />
-                <Text style={[styles.backText, { color: textColor }]}>Back</Text>
+                <Text style={[styles.backText, { color: textColor }]}>
+                  Back
+                </Text>
               </Pressable>
 
               <Text style={[styles.progressText, { color: Colors.primary }]}>
@@ -230,17 +242,24 @@ export default function OnboardingSourceScreen() {
             </Text>
 
             <Text style={[styles.subtitle, { color: subtextColor }]}>
-              Add where your money is: a bank account, cash in hand, or a credit card. You can add more later.
+              Add where your money is: a bank account, cash in hand, or a credit
+              card. You can add more later.
             </Text>
 
             {/* Source Type Selector */}
-            <Text style={[styles.label, { color: textColor }]}>Source type</Text>
+            <Text style={[styles.label, { color: textColor }]}>
+              Source type
+            </Text>
             <View style={styles.typeSelector}>
               {(
                 [
                   { key: 'cash', label: 'Cash', icon: 'cash' },
                   { key: 'bank', label: 'Bank account', icon: 'bank' },
-                  { key: 'card', label: 'Credit card', icon: 'credit-card-outline' },
+                  {
+                    key: 'card',
+                    label: 'Credit card',
+                    icon: 'credit-card-outline',
+                  },
                 ] as const
               ).map((item) => {
                 const isSelected = type === item.key;
@@ -280,7 +299,9 @@ export default function OnboardingSourceScreen() {
             {/* Source Name Input */}
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: textColor }]}>Source name</Text>
+                <Text style={[styles.label, { color: textColor }]}>
+                  Source name
+                </Text>
                 {name.length >= 24 && (
                   <Text style={[styles.counter, { color: subtextColor }]}>
                     {name.length}/30
@@ -296,7 +317,14 @@ export default function OnboardingSourceScreen() {
                 maxLength={30}
                 placeholder="e.g. Cash in hand"
                 placeholderTextColor={subtextColor}
-                style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                style={[
+                  styles.input,
+                  {
+                    color: textColor,
+                    borderColor: inputBorder,
+                    backgroundColor: inputBg,
+                  },
+                ]}
                 accessibilityLabel="Source name"
               />
               <Text style={[styles.helperText, { color: subtextColor }]}>
@@ -312,11 +340,20 @@ export default function OnboardingSourceScreen() {
                 </Text>
                 <TextInput
                   value={openingBalance}
-                  onChangeText={(val) => handleAmountChange(val, setOpeningBalance)}
+                  onChangeText={(val) =>
+                    handleAmountChange(val, setOpeningBalance)
+                  }
                   placeholder="0.00"
                   placeholderTextColor={subtextColor}
                   keyboardType="decimal-pad"
-                  style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                  style={[
+                    styles.input,
+                    {
+                      color: textColor,
+                      borderColor: inputBorder,
+                      backgroundColor: inputBg,
+                    },
+                  ]}
                   accessibilityLabel="Opening balance"
                 />
 
@@ -334,15 +371,16 @@ export default function OnboardingSourceScreen() {
                   </View>
                 )}
 
-                {(isOverdrawn || Number(openingBalance) < 0) && type === 'bank' && (
-                  <View style={styles.warningBox}>
-                    <InlineError
-                      message={t('warn.bank.starts.negative')}
-                      variant="warning"
-                      isDark={isDark}
-                    />
-                  </View>
-                )}
+                {(isOverdrawn || Number(openingBalance) < 0) &&
+                  type === 'bank' && (
+                    <View style={styles.warningBox}>
+                      <InlineError
+                        message={t('warn.bank.starts.negative')}
+                        variant="warning"
+                        isDark={isDark}
+                      />
+                    </View>
+                  )}
               </View>
             )}
 
@@ -350,14 +388,25 @@ export default function OnboardingSourceScreen() {
             {type === 'card' && (
               <>
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { color: textColor }]}>Credit limit</Text>
+                  <Text style={[styles.label, { color: textColor }]}>
+                    Credit limit
+                  </Text>
                   <TextInput
                     value={creditLimit}
-                    onChangeText={(val) => handleAmountChange(val, setCreditLimit)}
+                    onChangeText={(val) =>
+                      handleAmountChange(val, setCreditLimit)
+                    }
                     placeholder="e.g. 50000"
                     placeholderTextColor={subtextColor}
                     keyboardType="decimal-pad"
-                    style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                    style={[
+                      styles.input,
+                      {
+                        color: textColor,
+                        borderColor: inputBorder,
+                        backgroundColor: inputBg,
+                      },
+                    ]}
                     accessibilityLabel="Credit limit"
                   />
                 </View>
@@ -368,11 +417,20 @@ export default function OnboardingSourceScreen() {
                   </Text>
                   <TextInput
                     value={currentOutstanding}
-                    onChangeText={(val) => handleAmountChange(val, setCurrentOutstanding)}
+                    onChangeText={(val) =>
+                      handleAmountChange(val, setCurrentOutstanding)
+                    }
                     placeholder="0.00"
                     placeholderTextColor={subtextColor}
                     keyboardType="decimal-pad"
-                    style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBg }]}
+                    style={[
+                      styles.input,
+                      {
+                        color: textColor,
+                        borderColor: inputBorder,
+                        backgroundColor: inputBg,
+                      },
+                    ]}
                     accessibilityLabel="Current outstanding"
                   />
                   {Number(creditLimit) > 0 &&
