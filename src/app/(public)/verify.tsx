@@ -112,23 +112,33 @@ export default function VerifyEmail() {
           typeParam === 'email' ? 'email' : 'signup';
 
         verificationPromise.current ??= (async () => {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: otpType,
-          });
-
-          if (!error) return true;
-
-          // If signup failed and type was not explicit, try 'email' fallback
-          if (!typeParam && otpType === 'signup') {
-            const retry = await supabase.auth.verifyOtp({
+          try {
+            const { error } = await supabase.auth.verifyOtp({
               token_hash: tokenHash,
-              type: 'email',
+              type: otpType,
             });
-            return !retry.error;
-          }
 
-          return false;
+            if (!error) return true;
+
+            // If signup failed and type was not explicit, try 'email' fallback
+            if (!typeParam && otpType === 'signup') {
+              const { error: fallbackError } = await supabase.auth.verifyOtp({
+                token_hash: tokenHash,
+                type: 'email',
+              });
+              if (!fallbackError) return true;
+              setErrorMessage(fallbackError.message ?? t('info.link.expired'));
+              return false;
+            }
+
+            // Set Supabase error message
+            setErrorMessage(error.message ?? t('info.link.expired'));
+            return false;
+          } catch (e: any) {
+            // Unexpected error handling
+            setErrorMessage(e?.message ?? t('verify.unexpected_error'));
+            return false;
+          }
         })();
 
         const verified = await verificationPromise.current;
