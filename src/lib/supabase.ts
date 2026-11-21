@@ -10,7 +10,7 @@ console.log(
   'Supabase URL loaded:',
   Boolean(supabaseUrl),
   'URL length:',
-  supabaseUrl?.length
+  supabaseUrl?.length,
 );
 
 const webStorage = {
