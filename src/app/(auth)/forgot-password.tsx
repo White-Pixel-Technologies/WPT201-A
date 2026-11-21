@@ -63,7 +63,9 @@ export default function ForgotPassword() {
     >
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>Forgot password?</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Forgot password?
+      </Text>
 
       {message ? (
         <Text
@@ -83,14 +85,18 @@ export default function ForgotPassword() {
           <Text style={[styles.message, { color: colors.textSecondary }]}>
             {t('info.reset.sent')}
           </Text>
-          <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
+          <Link
+            href="/(auth)/login"
+            style={[styles.link, { color: colors.primary }]}
+          >
             Back to log in
           </Link>
         </>
       ) : (
         <>
           <Text style={[styles.message, { color: colors.textSecondary }]}>
-            Enter your email address and we&apos;ll send you a password reset link.
+            Enter your email address and we&apos;ll send you a password reset
+            link.
           </Text>
 
           <TextInput
@@ -128,7 +134,10 @@ export default function ForgotPassword() {
             </Text>
           </Pressable>
 
-          <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
+          <Link
+            href="/(auth)/login"
+            style={[styles.link, { color: colors.primary }]}
+          >
             Back to log in
           </Link>
         </>

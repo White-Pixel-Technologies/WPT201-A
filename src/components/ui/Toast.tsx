@@ -1,10 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-} from 'react-native';
+import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import { t } from '../../i18n';
 import { useTheme } from '../../theme/theme-context';
 

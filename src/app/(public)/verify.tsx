@@ -54,9 +54,7 @@ export default function VerifyEmail() {
         if (active) {
           setStatus('failed');
           setErrorMessage(
-            errorDesc
-              ? decodeURIComponent(errorDesc)
-              : t('info.link.expired'),
+            errorDesc ? decodeURIComponent(errorDesc) : t('info.link.expired'),
           );
         }
         return;
@@ -99,8 +97,17 @@ export default function VerifyEmail() {
         }
       }
 
-      // 3. If token_hash / token is present, call verifyOtp
+      // 3. If token_hash / token is present, validate type and call verifyOtp
       if (tokenHash) {
+        // Validate type URL parameter: only 'email' and 'signup' are valid for this route
+        if (typeParam && typeParam !== 'email' && typeParam !== 'signup') {
+          if (active) {
+            setStatus('failed');
+            setErrorMessage(t('info.link.expired'));
+          }
+          return;
+        }
+
         const otpType: EmailOtpType =
           typeParam === 'email' ? 'email' : 'signup';
 
@@ -164,7 +171,7 @@ export default function VerifyEmail() {
     if (status !== 'verified') return;
 
     const timer = setTimeout(() => {
-      router.replace('/');
+      router.replace('/(auth)/login');
     }, 1500);
 
     return () => clearTimeout(timer);
@@ -172,7 +179,9 @@ export default function VerifyEmail() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {status === 'loading' && <ActivityIndicator size="large" color={colors.primary} />}
+      {status === 'loading' && (
+        <ActivityIndicator size="large" color={colors.primary} />
+      )}
 
       <Text
         style={[styles.title, { color: colors.text }]}
@@ -180,10 +189,10 @@ export default function VerifyEmail() {
         accessibilityLiveRegion="polite"
       >
         {status === 'loading'
-          ? 'Verifying your email...'
+          ? t('verify.loading')
           : status === 'verified'
             ? t('info.verified')
-            : 'Email verification failed'}
+            : t('verify.failed')}
       </Text>
 
       {status === 'failed' && (
@@ -194,12 +203,12 @@ export default function VerifyEmail() {
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Go to log in"
+            accessibilityLabel={t('verify.go_to_login')}
             onPress={() => router.replace('/(auth)/login')}
             style={[styles.button, { backgroundColor: colors.primary }]}
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-              Go to log in
+              {t('verify.go_to_login')}
             </Text>
           </Pressable>
         </>

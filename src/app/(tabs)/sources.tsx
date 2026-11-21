@@ -449,11 +449,7 @@ export default function SourcesScreen() {
 
       {/* Error state (D10) */}
       {!!listError && (
-        <ErrorBox
-          message={listError}
-          onRetry={loadData}
-          isDark={isDark}
-        />
+        <ErrorBox message={listError} onRetry={loadData} isDark={isDark} />
       )}
 
       {/* Loading state */}

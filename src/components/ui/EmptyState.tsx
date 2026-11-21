@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { t } from '../../i18n';
 import { useTheme } from '../../theme/theme-context';
@@ -30,7 +25,8 @@ export default function EmptyState({
   const { colors } = useTheme();
 
   const handleAction = onAction ?? onAddSource;
-  const resolvedActionLabel = actionLabel ?? (onAddSource ? t('action.add.source') : undefined);
+  const resolvedActionLabel =
+    actionLabel ?? (onAddSource ? t('action.add.source') : undefined);
   const resolvedTitle = title ?? t('empty.state.sources');
 
   const renderIcon = () => {
@@ -52,22 +48,12 @@ export default function EmptyState({
     <View style={styles.container}>
       {renderIcon()}
 
-      <Text
-        style={[
-          styles.title,
-          { color: colors.text },
-        ]}
-      >
+      <Text style={[styles.title, { color: colors.text }]}>
         {resolvedTitle}
       </Text>
 
       {description ? (
-        <Text
-          style={[
-            styles.description,
-            { color: colors.textSecondary },
-          ]}
-        >
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
           {description}
         </Text>
       ) : null}

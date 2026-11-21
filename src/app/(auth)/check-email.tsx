@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
@@ -15,9 +10,7 @@ import { t } from '../../i18n';
 
 export default function CheckEmail() {
   const params = useLocalSearchParams<{ email?: string | string[] }>();
-  const email = Array.isArray(params.email)
-    ? params.email[0]
-    : params.email;
+  const email = Array.isArray(params.email) ? params.email[0] : params.email;
 
   const { isOnline } = useNetworkStatus();
   const { colors } = useTheme();
@@ -78,13 +71,17 @@ export default function CheckEmail() {
       <OfflineBanner visible={!isOnline} />
 
       <Text style={[styles.icon, { color: colors.primary }]}>✉</Text>
-      <Text style={[styles.title, { color: colors.text }]}>Check your email</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Check your email
+      </Text>
 
       <Text style={[styles.message, { color: colors.textSecondary }]}>
         {t('info.signup.check', { email: email || 'your email' })}
       </Text>
 
-      {!!email && <Text style={[styles.email, { color: colors.text }]}>{email}</Text>}
+      {!!email && (
+        <Text style={[styles.email, { color: colors.text }]}>{email}</Text>
+      )}
 
       {message ? (
         <Text
@@ -119,11 +116,17 @@ export default function CheckEmail() {
         </Text>
       </Pressable>
 
-      <Link href="/(auth)/signup" style={[styles.link, { color: colors.primary }]}>
+      <Link
+        href="/(auth)/signup"
+        style={[styles.link, { color: colors.primary }]}
+      >
         Use a different email
       </Link>
 
-      <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
+      <Link
+        href="/(auth)/login"
+        style={[styles.link, { color: colors.primary }]}
+      >
         Go to log in
       </Link>
     </View>

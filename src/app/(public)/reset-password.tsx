@@ -64,7 +64,7 @@ export default function ResetPassword() {
         return;
       }
 
-      // 2. Hash params on web
+      // 2. Hash params on web (Supabase implicit / recovery flow)
       if (typeof window !== 'undefined' && window.location?.hash) {
         const hash = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hash);
@@ -77,9 +77,12 @@ export default function ResetPassword() {
           return;
         }
 
+        const hashType = hashParams.get('type');
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-        if (accessToken && refreshToken) {
+
+        // Only accept if type is specifically recovery
+        if (hashType === 'recovery' && accessToken && refreshToken) {
           try {
             const { error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
@@ -95,7 +98,7 @@ export default function ResetPassword() {
         }
       }
 
-      // 3. token_hash param
+      // 3. token_hash param (Supabase PKCE / email recovery link)
       const rawTokenHash = params.token_hash ?? params.token;
       const tokenHash = Array.isArray(rawTokenHash)
         ? rawTokenHash[0]
@@ -104,8 +107,16 @@ export default function ResetPassword() {
       const typeParam = Array.isArray(rawType) ? rawType[0] : rawType;
 
       if (tokenHash) {
-        const otpType: EmailOtpType =
-          typeParam === 'recovery' ? 'recovery' : 'recovery';
+        // Enforce recovery type if provided; reject unexpected types
+        if (typeParam && typeParam !== 'recovery') {
+          if (active) {
+            setStatus('invalid');
+            setMessage(t('info.link.expired'));
+          }
+          return;
+        }
+
+        const otpType: EmailOtpType = 'recovery';
 
         const { error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
@@ -124,17 +135,7 @@ export default function ResetPassword() {
         return;
       }
 
-      // 4. Existing active session
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session?.user && active) {
-          setStatus('ready');
-          return;
-        }
-      } catch {
-        // continue
-      }
-
+      // 4. Do NOT accept generic existing sessions - only genuine recovery links
       if (active) {
         setStatus('invalid');
         setMessage(t('info.link.expired'));
@@ -165,7 +166,6 @@ export default function ResetPassword() {
       setMessage('Passwords do not match.');
       return;
     }
-
     if (!isPasswordValid) {
       setMessage(t('err.password.rule'));
       return;
@@ -195,7 +195,9 @@ export default function ResetPassword() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>Set new password</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        {t('reset.title')}
+      </Text>
 
       {message ? (
         <Text
@@ -225,7 +227,7 @@ export default function ResetPassword() {
                 color: colors.text,
               },
             ]}
-            placeholder="New password"
+            placeholder={t('reset.new_password')}
             placeholderTextColor={colors.textMuted}
             value={password}
             onChangeText={setPassword}
@@ -234,7 +236,7 @@ export default function ResetPassword() {
             autoCorrect={false}
             autoComplete="new-password"
             maxLength={64}
-            accessibilityLabel="New password"
+            accessibilityLabel={t('reset.new_password')}
           />
 
           <TextInput
@@ -246,7 +248,7 @@ export default function ResetPassword() {
                 color: colors.text,
               },
             ]}
-            placeholder="Confirm new password"
+            placeholder={t('reset.confirm_password')}
             placeholderTextColor={colors.textMuted}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -255,12 +257,17 @@ export default function ResetPassword() {
             autoCorrect={false}
             autoComplete="new-password"
             maxLength={64}
-            accessibilityLabel="Confirm new password"
+            accessibilityLabel={t('reset.confirm_password')}
           />
 
-          <View style={[styles.checklist, { backgroundColor: colors.surfaceSecondary }]}>
+          <View
+            style={[
+              styles.checklist,
+              { backgroundColor: colors.surfaceSecondary },
+            ]}
+          >
             <Text style={[styles.checkTitle, { color: colors.text }]}>
-              Password requirements
+              {t('reset.requirements')}
             </Text>
             <Text
               style={
@@ -269,13 +276,25 @@ export default function ResetPassword() {
                   : { color: colors.textMuted }
               }
             >
-              {hasMinLength && hasMaxLength ? '✓' : '○'} 8–64 characters
+              {hasMinLength && hasMaxLength ? '✓' : '○'} {t('reset.req.length')}
             </Text>
-            <Text style={hasLetter ? { color: colors.success } : { color: colors.textMuted }}>
-              {hasLetter ? '✓' : '○'} At least one letter
+            <Text
+              style={
+                hasLetter
+                  ? { color: colors.success }
+                  : { color: colors.textMuted }
+              }
+            >
+              {hasLetter ? '✓' : '○'} {t('reset.req.letter')}
             </Text>
-            <Text style={hasNumber ? { color: colors.success } : { color: colors.textMuted }}>
-              {hasNumber ? '✓' : '○'} At least one number
+            <Text
+              style={
+                hasNumber
+                  ? { color: colors.success }
+                  : { color: colors.textMuted }
+              }
+            >
+              {hasNumber ? '✓' : '○'} {t('reset.req.number')}
             </Text>
             <Text
               style={
@@ -284,7 +303,7 @@ export default function ResetPassword() {
                   : { color: colors.textMuted }
               }
             >
-              {hasAllowedCharacters ? '✓' : '○'} English letters, numbers and symbols
+              {hasAllowedCharacters ? '✓' : '○'} {t('reset.req.chars')}
             </Text>
           </View>
 
@@ -299,7 +318,7 @@ export default function ResetPassword() {
             accessibilityRole="button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-              {loading ? 'Updating password...' : 'Update password'}
+              {loading ? t('reset.updating') : t('reset.update')}
             </Text>
           </Pressable>
         </>
@@ -308,12 +327,12 @@ export default function ResetPassword() {
       {status === 'invalid' && (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Request a new link"
+          accessibilityLabel={t('reset.request_new')}
           onPress={() => router.replace('/(auth)/forgot-password')}
           style={[styles.button, { backgroundColor: colors.primary }]}
         >
           <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-            Request a new link
+            {t('reset.request_new')}
           </Text>
         </Pressable>
       )}

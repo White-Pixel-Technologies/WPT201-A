@@ -65,10 +65,7 @@ export default function ConfirmSheet({
         >
           {!isDesktop && (
             <View
-              style={[
-                styles.handle,
-                { backgroundColor: colors.border },
-              ]}
+              style={[styles.handle, { backgroundColor: colors.border }]}
               accessible={false}
             />
           )}
@@ -78,12 +75,7 @@ export default function ConfirmSheet({
           </Text>
 
           {description ? (
-            <Text
-              style={[
-                styles.description,
-                { color: colors.textSecondary },
-              ]}
-            >
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
               {description}
             </Text>
           ) : null}
@@ -93,13 +85,8 @@ export default function ConfirmSheet({
               onPress={onKeepEditing}
               disabled={loading}
               accessibilityRole="button"
-              accessibilityLabel={
-                cancelLabel ?? t('confirm.discard.keep')
-              }
-              style={[
-                styles.cancelButton,
-                loading && styles.disabledButton,
-              ]}
+              accessibilityLabel={cancelLabel ?? t('confirm.discard.keep')}
+              style={[styles.cancelButton, loading && styles.disabledButton]}
             >
               <Text style={[styles.cancelText, { color: colors.primary }]}>
                 {cancelLabel ?? t('confirm.discard.keep')}
@@ -110,9 +97,7 @@ export default function ConfirmSheet({
               onPress={onDiscard}
               disabled={disabled}
               accessibilityRole="button"
-              accessibilityLabel={
-                confirmLabel ?? t('confirm.discard.discard')
-              }
+              accessibilityLabel={confirmLabel ?? t('confirm.discard.discard')}
               style={[
                 styles.confirmButton,
                 { backgroundColor: confirmButtonBg },

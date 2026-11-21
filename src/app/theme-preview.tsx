@@ -67,9 +67,7 @@ export default function ThemePreviewScreen() {
 
         {Object.entries(colors).map(([name, value]) => (
           <View key={name} style={styles.tokenRow}>
-            <View
-              style={[styles.colorSwatch, { backgroundColor: value }]}
-            />
+            <View style={[styles.colorSwatch, { backgroundColor: value }]} />
             <View style={styles.tokenInfo}>
               <AppText style={{ color: colors.text }}>{name}</AppText>
               <AppText style={{ color: colors.textSecondary }}>{value}</AppText>
@@ -84,9 +82,7 @@ export default function ThemePreviewScreen() {
         <View style={styles.tagGrid}>
           {Object.entries(tagColors).map(([name, value]) => (
             <View key={name} style={styles.tagItem}>
-              <View
-                style={[styles.tagSwatch, { backgroundColor: value }]}
-              />
+              <View style={[styles.tagSwatch, { backgroundColor: value }]} />
               <AppText style={{ color: colors.text }}>{name}</AppText>
             </View>
           ))}
@@ -136,10 +132,16 @@ export default function ThemePreviewScreen() {
         </AppText>
 
         <AppText style={{ color: colors.text }}>
-          Spacing: {Object.entries(spacing).map(([key, value]) => `${key}: ${value}`).join(' | ')}
+          Spacing:{' '}
+          {Object.entries(spacing)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(' | ')}
         </AppText>
         <AppText style={[styles.metric, { color: colors.text }]}>
-          Radius: {Object.entries(radius).map(([key, value]) => `${key}: ${value}`).join(' | ')}
+          Radius:{' '}
+          {Object.entries(radius)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(' | ')}
         </AppText>
         <AppText style={[styles.metric, { color: colors.text }]}>
           Minimum tap target: {controls.minTap} px

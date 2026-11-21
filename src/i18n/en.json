@@ -100,5 +100,19 @@
   "welcome.consent.privacy": "Privacy Policy",
   "welcome.credit": "by White Pixel Technologies",
   "action.resend_email": "Resend email",
-  "info.resend.sent": "A new verification link has been sent."
+  "info.resend.sent": "A new verification link has been sent.",
+  "verify.loading": "Verifying your email…",
+  "verify.failed": "Email verification failed",
+  "verify.go_to_login": "Go to log in",
+  "reset.title": "Set new password",
+  "reset.new_password": "New password",
+  "reset.confirm_password": "Confirm new password",
+  "reset.requirements": "Password requirements",
+  "reset.req.length": "8–64 characters",
+  "reset.req.letter": "At least one letter",
+  "reset.req.number": "At least one number",
+  "reset.req.chars": "English letters, numbers and symbols",
+  "reset.updating": "Updating password…",
+  "reset.update": "Update password",
+  "reset.request_new": "Request a new link"
 }

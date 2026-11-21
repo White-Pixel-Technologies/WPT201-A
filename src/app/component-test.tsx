@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { Redirect } from 'expo-router';
-import {
-  Button,
-  ScrollView,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
+import { Button, ScrollView, Switch, Text, View } from 'react-native';
 
 import ConfirmSheet from '../components/ui/ConfirmSheet';
 import EmptyState from '../components/ui/EmptyState';
@@ -43,12 +37,14 @@ export default function ComponentTest() {
         backgroundColor: isDark ? '#121212' : '#FFFFFF',
       }}
     >
-      <Text style={{
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: textColor,
-        marginBottom: 20,
-      }}>
+      <Text
+        style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          color: textColor,
+          marginBottom: 20,
+        }}
+      >
         WPT 201 - A UI Components
       </Text>
 
@@ -58,9 +54,7 @@ export default function ComponentTest() {
         </Text>
         <Switch
           value={isDark}
-          onValueChange={(value) =>
-            setThemeMode(value ? 'dark' : 'light')
-          }
+          onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
         />
       </View>
 
@@ -73,9 +67,7 @@ export default function ComponentTest() {
         onPress={() => setShowOffline(!showOffline)}
       />
 
-      <Text style={{ color: textColor, marginTop: 20 }}>
-        C02 - Empty State
-      </Text>
+      <Text style={{ color: textColor, marginTop: 20 }}>C02 - Empty State</Text>
       <EmptyState onAddSource={() => setShowToast(true)} />
 
       <Text style={{ color: textColor, marginTop: 20 }}>
@@ -93,48 +85,28 @@ export default function ComponentTest() {
         message="This account starts below zero."
       />
 
-      <InlineError
-        variant="info"
-        message="Connect to the internet to save."
-      />
+      <InlineError variant="info" message="Connect to the internet to save." />
 
-      <InlineError
-        variant="success"
-        message="Changes saved successfully."
-      />
+      <InlineError variant="success" message="Changes saved successfully." />
 
       <Text style={{ color: textColor, marginTop: 20 }}>
         C04 - Loading State
       </Text>
-      <LoadingState
-        spinnerSize="small"
-        onRetry={() => setShowToast(true)}
-      />
-      <LoadingState
-        spinnerSize="large"
-        onRetry={() => setShowToast(true)}
-      />
+      <LoadingState spinnerSize="small" onRetry={() => setShowToast(true)} />
+      <LoadingState spinnerSize="large" onRetry={() => setShowToast(true)} />
 
       <Text style={{ color: textColor, marginTop: 20 }}>
         C05 - Confirm Sheet
       </Text>
-      <Button
-        title="Open Confirm Sheet"
-        onPress={() => setShowConfirm(true)}
-      />
+      <Button title="Open Confirm Sheet" onPress={() => setShowConfirm(true)} />
       <ConfirmSheet
         visible={showConfirm}
         onKeepEditing={() => setShowConfirm(false)}
         onDiscard={() => setShowConfirm(false)}
       />
 
-      <Text style={{ color: textColor, marginTop: 20 }}>
-        C06 - Toast
-      </Text>
-      <Button
-        title="Show Toast"
-        onPress={() => setShowToast(true)}
-      />
+      <Text style={{ color: textColor, marginTop: 20 }}>C06 - Toast</Text>
+      <Button title="Show Toast" onPress={() => setShowToast(true)} />
       <Toast
         visible={showToast}
         message="Changes saved"

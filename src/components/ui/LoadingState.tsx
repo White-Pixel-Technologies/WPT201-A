@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -39,17 +38,9 @@ export default function LoadingState({
       accessibilityRole="progressbar"
       accessibilityLabel={t('loading.label')}
     >
-      <ActivityIndicator
-        size={spinnerSize}
-        color={colors.primary}
-      />
+      <ActivityIndicator size={spinnerSize} color={colors.primary} />
 
-      <View
-        style={[
-          styles.skeleton,
-          { backgroundColor: skeletonColor },
-        ]}
-      />
+      <View style={[styles.skeleton, { backgroundColor: skeletonColor }]} />
       <View
         style={[
           styles.skeleton,
@@ -73,9 +64,7 @@ export default function LoadingState({
               accessibilityLabel={t('action.retry')}
               style={styles.retryButton}
             >
-              <Text style={styles.retryText}>
-                {t('action.retry')}
-              </Text>
+              <Text style={styles.retryText}>{t('action.retry')}</Text>
             </Pressable>
           )}
         </View>

@@ -45,7 +45,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     async function loadThemeMode() {
       try {
-        const savedMode = (await AsyncStorage.getItem(STORAGE_KEY)) || (await AsyncStorage.getItem(LEGACY_STORAGE_KEY));
+        const savedMode =
+          (await AsyncStorage.getItem(STORAGE_KEY)) ||
+          (await AsyncStorage.getItem(LEGACY_STORAGE_KEY));
 
         if (
           isActive &&

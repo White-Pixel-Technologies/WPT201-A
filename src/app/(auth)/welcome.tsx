@@ -9,7 +9,9 @@ export default function Welcome() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.logo, { color: colors.primary }]}>{t('app.name')}</Text>
+        <Text style={[styles.logo, { color: colors.primary }]}>
+          {t('app.name')}
+        </Text>
         <Text style={[styles.tagline, { color: colors.accent }]}>
           {t('welcome.tagline')}
         </Text>
@@ -22,7 +24,10 @@ export default function Welcome() {
       <View style={styles.actions}>
         <Link href="/(auth)/signup" asChild>
           <Pressable
-            style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+            style={StyleSheet.flatten([
+              styles.primaryButton,
+              { backgroundColor: colors.primary },
+            ])}
             accessibilityRole="button"
             accessibilityLabel={t('welcome.create_account')}
           >
@@ -34,10 +39,10 @@ export default function Welcome() {
 
         <Link href="/(auth)/login" asChild>
           <Pressable
-            style={[
+            style={StyleSheet.flatten([
               styles.secondaryButton,
               { borderColor: colors.border, backgroundColor: colors.surface },
-            ]}
+            ])}
             accessibilityRole="button"
             accessibilityLabel={t('welcome.login')}
           >
@@ -51,11 +56,17 @@ export default function Welcome() {
       <View style={styles.consentContainer}>
         <Text style={[styles.consentText, { color: colors.textMuted }]}>
           {t('welcome.consent.prefix')}{' '}
-          <Link href="/(public)/terms" style={[styles.link, { color: colors.primary }]}>
+          <Link
+            href="/(public)/terms"
+            style={StyleSheet.flatten([styles.link, { color: colors.primary }])}
+          >
             {t('welcome.consent.terms')}
           </Link>{' '}
           {t('welcome.consent.and')}{' '}
-          <Link href="/(public)/privacy" style={[styles.link, { color: colors.primary }]}>
+          <Link
+            href="/(public)/privacy"
+            style={StyleSheet.flatten([styles.link, { color: colors.primary }])}
+          >
             {t('welcome.consent.privacy')}
           </Link>
         </Text>

@@ -21,10 +21,7 @@ export default function OfflineBanner({ visible }: OfflineBannerProps) {
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: bannerBg },
-      ]}
+      style={[styles.container, { backgroundColor: bannerBg }]}
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
     >

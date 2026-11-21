@@ -34,8 +34,7 @@ export default function Signup() {
   // AUTH-03, EC-AUTH-10: spaces are allowed in passwords (\x20 to \x7E)
   const validCharacters = /^[\x20-\x7E]+$/.test(password);
 
-  const validPassword =
-    hasLength && hasLetter && hasNumber && validCharacters;
+  const validPassword = hasLength && hasLetter && hasNumber && validCharacters;
 
   async function handleSignup() {
     if (submitting.current) return;
@@ -117,7 +116,9 @@ export default function Signup() {
     >
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Create your account
+      </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Start managing your money with {t('app.name')}.
       </Text>
@@ -210,24 +211,39 @@ export default function Signup() {
       </View>
 
       <View
-        style={[
-          styles.checklist,
-          { backgroundColor: colors.surfaceSecondary },
-        ]}
+        style={[styles.checklist, { backgroundColor: colors.surfaceSecondary }]}
       >
         <Text style={[styles.checkTitle, { color: colors.text }]}>
           Password requirements
         </Text>
-        <Text style={hasLength ? { color: colors.success } : { color: colors.textMuted }}>
+        <Text
+          style={
+            hasLength ? { color: colors.success } : { color: colors.textMuted }
+          }
+        >
           {hasLength ? '✓' : '○'} 8–64 characters
         </Text>
-        <Text style={hasLetter ? { color: colors.success } : { color: colors.textMuted }}>
+        <Text
+          style={
+            hasLetter ? { color: colors.success } : { color: colors.textMuted }
+          }
+        >
           {hasLetter ? '✓' : '○'} At least one letter
         </Text>
-        <Text style={hasNumber ? { color: colors.success } : { color: colors.textMuted }}>
+        <Text
+          style={
+            hasNumber ? { color: colors.success } : { color: colors.textMuted }
+          }
+        >
           {hasNumber ? '✓' : '○'} At least one number
         </Text>
-        <Text style={validCharacters ? { color: colors.success } : { color: colors.textMuted }}>
+        <Text
+          style={
+            validCharacters
+              ? { color: colors.success }
+              : { color: colors.textMuted }
+          }
+        >
           {validCharacters ? '✓' : '○'} English letters, numbers and symbols
         </Text>
       </View>
@@ -250,17 +266,26 @@ export default function Signup() {
 
       <Text style={[styles.footer, { color: colors.textMuted }]}>
         Already have an account?{' '}
-        <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
+        <Link
+          href="/(auth)/login"
+          style={[styles.link, { color: colors.primary }]}
+        >
           Log in
         </Link>
       </Text>
 
       <View style={styles.legal}>
-        <Link href="/terms" style={[styles.link, { color: colors.primary }]}>
+        <Link
+          href="/(public)/terms"
+          style={[styles.link, { color: colors.primary }]}
+        >
           Terms
         </Link>
         <Text style={[styles.footer, { color: colors.textMuted }]}> · </Text>
-        <Link href="/privacy" style={[styles.link, { color: colors.primary }]}>
+        <Link
+          href="/(public)/privacy"
+          style={[styles.link, { color: colors.primary }]}
+        >
           Privacy Policy
         </Link>
       </View>

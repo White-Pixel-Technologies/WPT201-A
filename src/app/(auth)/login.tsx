@@ -213,7 +213,10 @@ export default function Login() {
         accessibilityLabel="Password"
       />
 
-      <Link href="/forgot-password" style={[styles.link, { color: colors.primary }]}>
+      <Link
+        href="/(auth)/forgot-password"
+        style={[styles.link, { color: colors.primary }]}
+      >
         Forgot password?
       </Link>
 
@@ -238,7 +241,10 @@ export default function Login() {
 
       <Text style={[styles.footer, { color: colors.textMuted }]}>
         Don&apos;t have an account?{' '}
-        <Link href="/(auth)/signup" style={[styles.link, { color: colors.primary }]}>
+        <Link
+          href="/(auth)/signup"
+          style={[styles.link, { color: colors.primary }]}
+        >
           Create account
         </Link>
       </Text>
