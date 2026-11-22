@@ -1,13 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import ConfirmSheet from '../../components/ui/ConfirmSheet';
 import { t } from '../../i18n';
 import { useSession } from '../../lib/session';
@@ -53,20 +46,13 @@ export default function Settings() {
 
   return (
     <>
-      <ScrollView
-        style={[
-          styles.container,
-          { backgroundColor: isDark ? '#121212' : '#FFFFFF' },
-        ]}
-      >
+      <ScrollView style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
         <Text style={[styles.heading, { color: textColor }]}>Settings</Text>
 
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <View>
             <Text style={[styles.title, { color: textColor }]}>Theme</Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>
-              Choose app appearance
-            </Text>
+            <Text style={[styles.subtitle, { color: textColor }]}>Choose app appearance</Text>
           </View>
 
           <View style={styles.themeOptions}>
@@ -74,10 +60,7 @@ export default function Settings() {
               <Pressable
                 key={mode}
                 onPress={() => setThemeMode(mode)}
-                style={[
-                  styles.themeButton,
-                  themeMode === mode && styles.selected,
-                ]}
+                style={[styles.themeButton, themeMode === mode && styles.selected]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: themeMode === mode }}
               >
@@ -95,45 +78,29 @@ export default function Settings() {
 
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <View>
-            <Text style={[styles.title, { color: textColor }]}>
-              Notifications
-            </Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>
-              Manage app notifications
-            </Text>
+            <Text style={[styles.title, { color: textColor }]}>Notifications</Text>
+            <Text style={[styles.subtitle, { color: textColor }]}>Manage app notifications</Text>
           </View>
           <Switch value={notifications} onValueChange={setNotifications} />
         </View>
 
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <View>
-            <Text style={[styles.title, { color: textColor }]}>
-              Offline Mode
-            </Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>
-              Enable offline experience
-            </Text>
+            <Text style={[styles.title, { color: textColor }]}>Offline Mode</Text>
+            <Text style={[styles.subtitle, { color: textColor }]}>Enable offline experience</Text>
           </View>
           <Switch value={offlineMode} onValueChange={setOfflineMode} />
         </View>
 
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <View>
-            <Text style={[styles.title, { color: textColor }]}>
-              About {t('app.name')}
-            </Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>
-              Version 1.0.0
-            </Text>
+            <Text style={[styles.title, { color: textColor }]}>About {t('app.name')}</Text>
+            <Text style={[styles.subtitle, { color: textColor }]}>Version 1.0.0</Text>
           </View>
         </View>
 
         {logoutError ? (
-          <Text
-            style={styles.errorText}
-            accessibilityRole="alert"
-            accessibilityLiveRegion="polite"
-          >
+          <Text style={styles.errorText} accessibilityRole="alert" accessibilityLiveRegion="polite">
             {logoutError}
           </Text>
         ) : null}

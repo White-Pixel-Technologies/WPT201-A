@@ -1,11 +1,5 @@
 import { useRouter } from 'expo-router';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { Colors } from '../constants/colors';
 import { NavigationText } from '../constants/navigation';
 
@@ -16,9 +10,7 @@ export default function NotFoundScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.text }]}>
-        {NavigationText.pageNotFound}
-      </Text>
+      <Text style={[styles.title, { color: theme.text }]}>{NavigationText.pageNotFound}</Text>
 
       <Pressable
         accessibilityRole="button"

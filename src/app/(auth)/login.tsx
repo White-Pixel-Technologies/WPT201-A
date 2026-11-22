@@ -1,12 +1,6 @@
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 import { t } from '../../i18n';
 import { useSession } from '../../lib/session';
@@ -42,10 +36,7 @@ export default function Login() {
       return;
     }
 
-    if (
-      cleanEmail.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
-    ) {
+    if (cleanEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setMessage('Enter a valid email address.');
       return;
     }
@@ -78,11 +69,7 @@ export default function Login() {
       <Text style={styles.subtitle}>Log in to your WPT 201 - A account.</Text>
 
       {message || params.sessionExpired === '1' ? (
-        <Text
-          style={styles.error}
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-        >
+        <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite">
           {message || t('err.session.expired')}
         </Text>
       ) : null}
@@ -126,9 +113,7 @@ export default function Login() {
           busy: loading,
         }}
       >
-        <Text style={styles.buttonText}>
-          {loading ? 'Logging in...' : 'Log in'}
-        </Text>
+        <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Log in'}</Text>
       </Pressable>
 
       <Text style={styles.footer}>
