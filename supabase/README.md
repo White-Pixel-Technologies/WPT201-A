@@ -1,6 +1,6 @@
 ﻿# Supabase
 
-This folder contains database-related scripts and configuration for SaveMode.
+This folder contains database-related scripts and configuration for WPT 201 - A.
 
 Expected responsibilities include:
 

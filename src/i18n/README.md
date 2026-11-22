@@ -1,6 +1,6 @@
 ﻿# Internationalization
 
-This folder contains localization resources for SaveMode.
+This folder contains localization resources for WPT 201 - A.
 
 The planned English resource file is:
 

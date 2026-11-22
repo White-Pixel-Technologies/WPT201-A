@@ -1,3 +1,9 @@
+﻿# WPT 201 - A
+
+WPT 201 - A is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
+
+Supported devices: iPhone with iOS 16.4 or later (iPhone only, no iPad layout). Android phones and tablets with Android 9 or later. Web: latest two versions of Chrome, Edge, Safari and Firefox.
+
 # WPT 201 - A
 
 WPT 201 - A is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
@@ -17,7 +23,7 @@ To maintain code quality and protect the main branch, the following rules must b
 
 1. Never push code directly to the main branch.
 2. Every code change must be submitted through a Pull Request (PR).
-3. Every Pull Request must receive at least one approving review from another team member before merging.
+3. Every Pull Request must receive one approving review from someone in another team before merging.
 4. Pull Requests must not be merged if any required status check is failing.
 5. All changes must be reviewed and approved before they are merged into the main branch.
 
@@ -26,8 +32,10 @@ To maintain code quality and protect the main branch, the following rules must b
 ### 1. Clone the Repository
 
 ```bash
+
 git clone https://github.com/joshitha29-08/WPT201-A.git
 cd WPT201-A
+
 ```
 
 ### 2. Install Dependencies
@@ -179,7 +187,7 @@ WPT 201 - A web application is hosted using Cloudflare Pages.
 - Production Branch: main
 - Build Command: `npx expo export -p web`
 - Build Output Directory: `dist`
-- Website URL: http://wpt201a.pages.dev
+- Website URL: https://wpt201a.pages.dev
 
 ### Deployment Process
 

@@ -20,9 +20,7 @@ export default function NotFoundScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>
-        {NavigationText.pageNotFound}
-      </Text>
+      <Text style={[styles.title, { color: colors.text }]}>{NavigationText.pageNotFound}</Text>
 
       <Pressable
         accessibilityRole="button"

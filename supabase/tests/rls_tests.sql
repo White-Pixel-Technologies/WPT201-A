@@ -1,8 +1,13 @@
 -- =========================================================
+-- WPT 201 - A - Task 4: RLS Isolation Tests
+-- LOCAL DATABASE ONLY
+-- All test data is rolled back.
+
 -- E4: REPEATABLE ROW LEVEL SECURITY TEST
 -- Creates two temporary Auth users and their own test data.
 -- Run as postgres in Supabase SQL Editor.
 -- All test data is rolled back at the end.
+
 -- =========================================================
 
 BEGIN;

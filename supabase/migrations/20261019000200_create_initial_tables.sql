@@ -1,5 +1,5 @@
 -- =========================================================
--- Migration 002: SaveMode Initial Tables
+-- Migration 002: WPT 201 - A Initial Tables
 -- =========================================================
 
 -- 1. USER SETTINGS

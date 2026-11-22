@@ -53,10 +53,7 @@ export default function Login() {
       return;
     }
 
-    if (
-      cleanEmail.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
-    ) {
+    if (cleanEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setMessage(t('err.email.invalid'));
       return;
     }
@@ -119,12 +116,7 @@ export default function Login() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: colors.background },
-      ]}
-    >
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <OfflineBanner visible={!isOnline} />
 
       <Text style={[styles.title, { color: colors.text }]}>Welcome back</Text>
@@ -164,9 +156,7 @@ export default function Login() {
           )}
 
           {!!resendMessage && (
-            <Text style={[styles.resendMessage, { color: colors.text }]}>
-              {resendMessage}
-            </Text>
+            <Text style={[styles.resendMessage, { color: colors.text }]}>{resendMessage}</Text>
           )}
         </View>
       ) : null}
@@ -213,10 +203,7 @@ export default function Login() {
         accessibilityLabel="Password"
       />
 
-      <Link
-        href="/(auth)/forgot-password"
-        style={[styles.link, { color: colors.primary }]}
-      >
+      <Link href="/(auth)/forgot-password" style={[styles.link, { color: colors.primary }]}>
         Forgot password?
       </Link>
 
@@ -241,10 +228,7 @@ export default function Login() {
 
       <Text style={[styles.footer, { color: colors.textMuted }]}>
         Don&apos;t have an account?{' '}
-        <Link
-          href="/(auth)/signup"
-          style={[styles.link, { color: colors.primary }]}
-        >
+        <Link href="/(auth)/signup" style={[styles.link, { color: colors.primary }]}>
           Create account
         </Link>
       </Text>
