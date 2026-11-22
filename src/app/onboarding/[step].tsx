@@ -5,9 +5,7 @@ import { NavigationText } from '../../constants/navigation';
 export default function OnboardingStep() {
   const { step } = useLocalSearchParams<{ step: string }>();
 
-  const title = step
-    ? `${NavigationText.onboarding}: ${step}`
-    : NavigationText.onboarding;
+  const title = step ? `${NavigationText.onboarding}: ${step}` : NavigationText.onboarding;
 
   return <PlaceholderScreen title={title} />;
 }

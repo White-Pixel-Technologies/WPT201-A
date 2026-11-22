@@ -25,7 +25,8 @@ type ThemeContextValue = {
   isReady: boolean;
 };
 
-const STORAGE_KEY = '@savemode/theme-mode';
+const STORAGE_KEY = '@wpt201a/theme-mode';
+const LEGACY_STORAGE_KEY = '@savemode/theme-mode';
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
@@ -44,14 +45,18 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     async function loadThemeMode() {
       try {
-        const savedMode = await AsyncStorage.getItem(STORAGE_KEY);
+        let savedMode = await AsyncStorage.getItem(STORAGE_KEY);
 
-        if (
-          isActive &&
-          (savedMode === 'system' ||
-            savedMode === 'light' ||
-            savedMode === 'dark')
-        ) {
+        if (savedMode === null) {
+          const legacyMode = await AsyncStorage.getItem(LEGACY_STORAGE_KEY);
+          if (legacyMode === 'system' || legacyMode === 'light' || legacyMode === 'dark') {
+            savedMode = legacyMode;
+            await AsyncStorage.setItem(STORAGE_KEY, legacyMode);
+            await AsyncStorage.removeItem(LEGACY_STORAGE_KEY);
+          }
+        }
+
+        if (isActive && (savedMode === 'system' || savedMode === 'light' || savedMode === 'dark')) {
           setModeState(savedMode);
         }
       } catch (error) {
@@ -78,17 +83,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     });
   }, []);
 
-  const resolvedMode =
-    mode === 'system'
-      ? systemColorScheme === 'dark'
-        ? 'dark'
-        : 'light'
-      : mode;
+  const resolvedMode = mode === 'system' ? (systemColorScheme === 'dark' ? 'dark' : 'light') : mode;
 
   const colors = resolvedMode === 'dark' ? darkColors : lightColors;
 
-  const tagColors: TagColors =
-    resolvedMode === 'dark' ? darkTagColors : lightTagColors;
+  const tagColors: TagColors = resolvedMode === 'dark' ? darkTagColors : lightTagColors;
 
   const value = useMemo(
     () => ({
@@ -102,9 +101,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     [mode, resolvedMode, colors, tagColors, setMode, isReady],
   );
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
