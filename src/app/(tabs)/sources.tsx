@@ -127,10 +127,9 @@ export default function SourcesScreen() {
           cardOutstandingTotal: cardOut,
         });
       }
-
     } catch {
-  setListError(t('err.generic'));
-}
+      setListError(t('err.generic'));
+    }
   }, []);
 
   const loadData = useCallback(async () => {

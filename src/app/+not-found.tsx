@@ -15,12 +15,7 @@ export default function NotFoundScreen() {
   const theme = dark ? Colors.dark : Colors.light;
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.background },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Text style={[styles.title, { color: theme.text }]}>
         {NavigationText.pageNotFound}
       </Text>

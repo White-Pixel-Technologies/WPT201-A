@@ -1,4 +1,3 @@
-
 ﻿# WPT 201 - A
 
 WPT 201 - A is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.

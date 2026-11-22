@@ -87,7 +87,6 @@ export default function Settings() {
                   }}
                 >
                   {mode.charAt(0).toUpperCase() + mode.slice(1)}
-
                 </Text>
               </Pressable>
             ))}

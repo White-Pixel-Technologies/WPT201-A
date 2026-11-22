@@ -74,7 +74,6 @@ export default function Login() {
     <ScrollView contentContainerStyle={styles.container}>
       <OfflineBanner visible={!isOnline} />
 
-
       <Text style={styles.title}>Welcome back</Text>
       <Text style={styles.subtitle}>Log in to your WPT 201 - A account.</Text>
 
