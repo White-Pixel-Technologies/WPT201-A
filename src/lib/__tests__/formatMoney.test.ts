@@ -1,3 +1,4 @@
+
 import { describe, expect, it } from '@jest/globals';
 import { cleanPastedAmount, formatAmount, formatShortAmount } from '../money';
 
@@ -44,6 +45,9 @@ describe('formatAmount (G-MON-06, G-MON-07)', () => {
   it('formats other currencies with standard grouping', () => {
     expect(formatAmount(1234567.89, 'USD')).toBe('$1,234,567.89');
     expect(formatAmount(1250, 'AED')).toBe('AED 1,250.00');
+    expect(formatAmount(1250, 'SGD')).toBe('S$ 1,250.00');
+    expect(formatAmount(1250, 'AUD')).toBe('A$ 1,250.00');
+    expect(formatAmount(1250, 'CAD')).toBe('C$ 1,250.00');
   });
 });
 
