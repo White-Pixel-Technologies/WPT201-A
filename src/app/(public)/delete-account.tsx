@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+=======
 import { Stack, useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function DeleteAccountInfo() {
   const router = useRouter();
@@ -11,6 +13,9 @@ export default function DeleteAccountInfo() {
       <Text style={styles.title}>How to Delete Your WPT 201 - A Account</Text>
       <Text style={styles.subtitle}>
         In compliance with Google Play and privacy regulations, WPT 201 - A
+      <Text style={styles.updated}>Last updated: 21 November 2026</Text>
+      <Text style={styles.subtitle}>
+        In compliance with Google Play and privacy regulations, SaveMode
         provides a simple and permanent way to delete your account and all
         associated data.
       </Text>
@@ -91,6 +96,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111111',
     marginBottom: 8,
+  },
+  updated: {
+    fontSize: 13,
+    color: '#666666',
+    marginBottom: 16,
   },
   subtitle: {
     fontSize: 15,
