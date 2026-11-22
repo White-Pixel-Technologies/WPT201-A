@@ -36,7 +36,7 @@ export default function PrivacyPolicy() {
         Only you can see your financial entries. Your personal information and
         financial data are not shared with other users or used for advertising.
         {'\n\n'}
-        WPT counts only overall numbers, never looks at or shares anyone's
+        WPT counts only overall numbers, never looks at or shares anyone&apos;s
         amounts or descriptions, and never sells data.
       </Text>
 
