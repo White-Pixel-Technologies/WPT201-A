@@ -35,6 +35,9 @@ export default function PrivacyPolicy() {
       <Text style={styles.body}>
         Only you can see your financial entries. Your personal information and
         financial data are not shared with other users or used for advertising.
+        {'\n\n'}
+        WPT counts only overall numbers, never looks at or shares anyone's
+        amounts or descriptions, and never sells data.
       </Text>
 
       <Text style={styles.heading}>4. Services We Use</Text>
@@ -102,12 +105,6 @@ export default function PrivacyPolicy() {
         {'\n\n'}
         contactus@whitepixeltechnologies.in
       </Text>
-
-      <Text style={styles.notice}>
-        This is a draft privacy policy. It is not final until approved by This
-        privacy policy is a draft and is subject to review and approval by WPT
-        before launch.
-      </Text>
     </ScrollView>
   );
 }
@@ -139,12 +136,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: '#444444',
-  },
-  notice: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#777777',
-    marginTop: 28,
-    fontStyle: 'italic',
   },
 });
