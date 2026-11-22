@@ -1,5 +1,3 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-=======
 import { Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -11,11 +9,9 @@ export default function DeleteAccountInfo() {
       <Stack.Screen options={{ title: 'Delete Account' }} />
 
       <Text style={styles.title}>How to Delete Your WPT 201 - A Account</Text>
-      <Text style={styles.subtitle}>
-        In compliance with Google Play and privacy regulations, WPT 201 - A
       <Text style={styles.updated}>Last updated: 21 November 2026</Text>
       <Text style={styles.subtitle}>
-        In compliance with Google Play and privacy regulations, SaveMode
+        In compliance with Google Play and privacy regulations, WPT 201 - A
         provides a simple and permanent way to delete your account and all
         associated data.
       </Text>
