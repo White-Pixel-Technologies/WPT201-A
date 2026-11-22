@@ -1,13 +1,7 @@
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  useFonts,
-} from '@expo-google-fonts/inter';
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
+import { useFonts } from 'expo-font';
 import { SessionProvider, useSession, ONBOARDING_DONE } from '../lib/session';
 import { nextOnboardingHref } from '../lib/routing';
 import { ThemeProvider } from '../theme/theme-context';
@@ -63,14 +57,14 @@ function AppContent() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+  const [loaded, error] = useFonts({
+    Inter_400Regular: require('../../assets/fonts/Inter_400Regular.ttf'),
+    Inter_500Medium: require('../../assets/fonts/Inter_500Medium.ttf'),
+    Inter_600SemiBold: require('../../assets/fonts/Inter_600SemiBold.ttf'),
+    Inter_700Bold: require('../../assets/fonts/Inter_700Bold.ttf'),
   });
 
-  if (!fontsLoaded) {
+  if (!loaded && !error) {
     return null;
   }
 

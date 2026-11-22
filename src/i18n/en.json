@@ -90,7 +90,6 @@
   "err.source.limit": "You've reached the maximum of 50 sources.",
   "err.source.negative_cash": "Cash can't be below zero.",
   "err.source.type_locked": "You can't change a source's type after creating it.",
-  "welcome.tagline": "Activate Your Savings",
   "welcome.subtitle": "A simpler way to understand and manage your spending.",
   "welcome.create_account": "Sign up with email",
   "welcome.login": "I already have an account",

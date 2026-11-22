@@ -12,9 +12,6 @@ export default function Welcome() {
         <Text style={[styles.logo, { color: colors.primary }]}>
           {t('app.name')}
         </Text>
-        <Text style={[styles.tagline, { color: colors.accent }]}>
-          {t('welcome.tagline')}
-        </Text>
       </View>
 
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -93,12 +90,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     letterSpacing: 0.5,
-  },
-  tagline: {
-    fontSize: 16,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
   },
   subtitle: {
     fontSize: 16,
