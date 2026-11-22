@@ -17,7 +17,7 @@ To maintain code quality and protect the main branch, the following rules must b
 
 1. Never push code directly to the main branch.
 2. Every code change must be submitted through a Pull Request (PR).
-3. Every Pull Request must receive at least one approving review from another team member before merging.
+3. Every Pull Request must receive one approving review from someone in another team before merging.
 4. Pull Requests must not be merged if any required status check is failing.
 5. All changes must be reviewed and approved before they are merged into the main branch.
 
