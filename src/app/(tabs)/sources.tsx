@@ -128,13 +128,9 @@ export default function SourcesScreen() {
         });
       }
 
-    } else {
-      Alert.alert('WPT 201 - A', message);
-
     } catch {
-      setListError(t('err.generic'));
-
-    }
+  setListError(t('err.generic'));
+}
   }, []);
 
   const loadData = useCallback(async () => {

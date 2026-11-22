@@ -4,8 +4,6 @@ import { ONBOARDING_DONE, useSession } from '../lib/session';
 
 export default function Index() {
 
-  return null;
-
   const { ready, isLoggedIn, onboardingStep } = useSession();
 
   if (!ready) return null;

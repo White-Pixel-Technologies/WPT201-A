@@ -15,51 +15,6 @@ import { RESET_REDIRECT_URL, VERIFY_REDIRECT_URL } from '../constants/urls';
 export const ONBOARDING_DONE = 3;
 const ONBOARDING_KEY = 'savemode-onboarding-step';
 
-const SESSION_STORAGE_KEY = 'wpt201a-session';
-const LEGACY_SESSION_STORAGE_KEY = 'savemode-session';
-
-// Keep wallet for compatibility with previously saved data.
-export type SourceType = 'bank' | 'cash' | 'wallet' | 'credit_card';
-
-export type OnboardingData = {
-  name: string;
-  currency: string;
-  sourceName: string;
-  sourceType: SourceType;
-  initialBalance: number;
-  creditLimit: number;
-  outstanding: number;
-};
-
-export type Source = {
-  id: string;
-  name: string;
-  type: SourceType;
-  openingBalance: number;
-  creditLimit: number;
-  outstanding: number;
-};
-
-type NewSource = Omit<Source, 'id'>;
-
-export type TransactionType = 'income' | 'expense' | 'transfer' | 'adjustment';
-
-export type Transaction = {
-  id: string;
-  type: TransactionType;
-  date: string;
-  description?: string;
-  amount: number;
-  tag?: string;
-  sourceId?: string;
-  fromSourceId?: string;
-  toSourceId?: string;
-};
-
-export type NewTransaction = Omit<Transaction, 'id'>;
-
-type SessionState = {
-
 type SessionValue = {
   ready: boolean;
   isLoggedIn: boolean;
@@ -83,33 +38,6 @@ type SessionValue = {
   refreshUserSettings: () => Promise<void>;
   markOnboardingComplete: () => Promise<void>;
 };
-
-
-const createSource = (data: NewSource): Source => ({
-  ...data,
-  id: `source-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-});
-
-const createTransaction = (data: NewTransaction): Transaction => ({
-  ...data,
-  id: `transaction-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-});
-
-const appStorage = {
-  getItem: async (name: string) => {
-    if (Platform.OS === 'web') {
-      if (typeof window === 'undefined') return null;
-      const value = window.localStorage.getItem(name);
-      if (value !== null || name !== SESSION_STORAGE_KEY) return value;
-
-      const legacyValue = window.localStorage.getItem(
-        LEGACY_SESSION_STORAGE_KEY,
-      );
-      if (legacyValue !== null) {
-        window.localStorage.setItem(name, legacyValue);
-        window.localStorage.removeItem(LEGACY_SESSION_STORAGE_KEY);
-      }
-      return legacyValue;
 
 const SessionContext = createContext<SessionValue | null>(null);
 
@@ -162,25 +90,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
     } catch {
       // Keep app functioning with local state.
-
     }
   }, []);
 
-
-    const value = await AsyncStorage.getItem(name);
-    if (value !== null || name !== SESSION_STORAGE_KEY) return value;
-
-    const legacyValue = await AsyncStorage.getItem(LEGACY_SESSION_STORAGE_KEY);
-    if (legacyValue !== null) {
-      await AsyncStorage.setItem(name, legacyValue);
-      await AsyncStorage.removeItem(LEGACY_SESSION_STORAGE_KEY);
-    }
-    return legacyValue;
-  },
-
   useEffect(() => {
     let mounted = true;
-
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
@@ -257,53 +171,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         }
       }
     }
-
-
-      addTransaction: (transaction) =>
-        set((state) => ({
-          transactions: [...state.transactions, createTransaction(transaction)],
-        })),
-    }),
-    {
-      name: SESSION_STORAGE_KEY,
-      storage: createJSONStorage(() => appStorage),
-
-      partialize: (state) => ({
-        isLoggedIn: state.isLoggedIn,
-        onboardingStep: state.onboardingStep,
-        onboardingData: state.onboardingData,
-        sources: state.sources,
-        transactions: state.transactions,
-      }),
-
-      onRehydrateStorage: () => (state) => {
-        if (!state) return;
-
-        const migratedSources: Source[] = Array.isArray(state.sources)
-          ? state.sources
-          : state.onboardingData?.sourceName?.trim()
-            ? [
-                createSource({
-                  name: state.onboardingData.sourceName.trim(),
-                  type: state.onboardingData.sourceType,
-                  openingBalance: state.onboardingData.initialBalance ?? 0,
-                  creditLimit: state.onboardingData.creditLimit ?? 0,
-                  outstanding: state.onboardingData.outstanding ?? 0,
-                }),
-              ]
-            : [];
-
-        useSession.setState({
-          sources: migratedSources,
-          transactions: Array.isArray(state.transactions)
-            ? state.transactions
-            : [],
-          ready: true,
-        });
-      },
-    },
-  ),
-);
 
     void initialize();
 
@@ -491,4 +358,3 @@ export function useSession(): SessionValue {
 
   return value;
 }
-

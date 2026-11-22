@@ -90,39 +90,6 @@ export default function OnboardingNameScreen() {
       style={[styles.container, { backgroundColor }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-
-      <View style={styles.content}>
-        <Text style={styles.step}>STEP 1 OF 3</Text>
-
-        <Text style={styles.title}>What&apos;s your name?</Text>
-
-        <Text style={styles.description}>
-          Welcome to WPT 201 - A. Let&apos;s personalize your experience.
-        </Text>
-
-        <Text style={styles.label}>Your name</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your name"
-          placeholderTextColor={colors.textMuted}
-          value={name}
-          onChangeText={(value) => {
-            setName(value);
-            setError('');
-          }}
-          autoCapitalize="words"
-          maxLength={50}
-          accessibilityLabel="Your name"
-        />
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
-        <Pressable style={styles.button} onPress={handleContinue}>
-          <Text style={styles.buttonText}>Continue</Text>
-        </Pressable>
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -209,7 +176,6 @@ export default function OnboardingNameScreen() {
           </View>
         </View>
       </ScrollView>
-
     </KeyboardAvoidingView>
   );
 }

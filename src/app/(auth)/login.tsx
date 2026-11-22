@@ -1,3 +1,4 @@
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   Pressable,
@@ -6,11 +7,10 @@ import {
   Text,
   TextInput,
 } from 'react-native';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { useSession } from '../../lib/session';
-import { useNetworkStatus } from '../../lib/useNetworkStatus';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 import { t } from '../../i18n';
+import { useSession } from '../../lib/session';
+import { useNetworkStatus } from '../../lib/useNetworkStatus';
 
 export default function Login() {
   const router = useRouter();
@@ -71,9 +71,6 @@ export default function Login() {
   }
 
   return (
-
-    <View style={styles.container}>
-      <Text style={styles.title}>Log in to WPT 201 - A</Text>
     <ScrollView contentContainerStyle={styles.container}>
       <OfflineBanner visible={!isOnline} />
 

@@ -4,17 +4,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 export default function Welcome() {
   return (
     <View style={styles.container}>
-
-      <Text style={styles.title}>Welcome to WPT 201 - A</Text>
-
-      <Text style={styles.description}>Manage your finances in one place.</Text>
-
       <Text style={styles.logo}>WPT 201 - A</Text>
       <Text style={styles.title}>Take control of your money.</Text>
       <Text style={styles.subtitle}>
         A simpler way to understand and manage your spending.
       </Text>
-
 
       <Link href="/(auth)/signup" asChild>
         <Pressable style={styles.primaryButton}>

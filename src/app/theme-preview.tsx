@@ -76,42 +76,9 @@ export default function ThemePreviewScreen() {
           16 Tag Colors
         </AppText>
 
-
-export default function ThemePreviewScreen() {
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.heading}>WPT 201 - A Theme Preview</Text>
-
-      <Text style={styles.description}>
-        Preview of all shared design tokens.
-      </Text>
-
-      {palettes.map((palette) => (
-        <View
-          key={palette.name}
-          style={[
-            styles.palette,
-            {
-              backgroundColor: palette.colors.background,
-              borderColor: palette.colors.border,
-            },
-          ]}
-        >
-          <Text style={[styles.paletteTitle, { color: palette.colors.text }]}>
-            {palette.name}
-          </Text>
-
-          <Text style={[styles.sectionTitle, { color: palette.colors.text }]}>
-            Main Colours
-          </Text>
-
-          {Object.entries(palette.colors).map(([name, value]) => (
-            <View key={name} style={styles.tokenRow}>
-
         <View style={styles.tagGrid}>
           {Object.entries(tagColors).map(([name, value]) => (
             <View key={name} style={styles.tagItem}>
-
               <View
                 style={[styles.tagSwatch, { backgroundColor: value }]}
               />
@@ -120,63 +87,9 @@ export default function ThemePreviewScreen() {
           ))}
         </View>
 
-
-          <Text style={[styles.sectionTitle, { color: palette.colors.text }]}>
-            16 Tag Colours
-          </Text>
-
-          <View style={styles.tagGrid}>
-            {Object.entries(palette.tags).map(([name, value]) => (
-              <View key={name} style={[styles.tag, { backgroundColor: value }]}>
-                <Text style={{ color: palette.colors.text }}>{name}</Text>
-              </View>
-            ))}
-          </View>
-
-          <Text style={[styles.sectionTitle, { color: palette.colors.text }]}>
-            Typography
-          </Text>
-
-          {Object.entries(typography.fontSize).map(([name, size]) => (
-            <Text
-              key={name}
-              style={{
-                color: palette.colors.text,
-                fontSize: size,
-                lineHeight:
-                  typography.lineHeight[
-                    name as keyof typeof typography.lineHeight
-                  ],
-                fontFamily: typography.fontFamily.regular,
-                marginBottom: spacing.sm,
-              }}
-            >
-              {name} — WPT 201 - A
-            </Text>
-          ))}
-
-          <Text style={[styles.sectionTitle, { color: palette.colors.text }]}>
-            Font Weights
-          </Text>
-
-          {Object.entries(typography.fontFamily).map(([name, font]) => (
-            <Text
-              key={name}
-              style={{
-                color: palette.colors.text,
-                fontFamily: font,
-                fontSize: 16,
-                marginBottom: spacing.sm,
-              }}
-            >
-              {name} — Inter
-            </Text>
-          ))}
-
         <AppText style={[styles.sectionTitle, { color: colors.text }]}>
           Typography
         </AppText>
-
 
         {Object.entries(typography.fontSize).map(([name, size]) => (
           <AppText

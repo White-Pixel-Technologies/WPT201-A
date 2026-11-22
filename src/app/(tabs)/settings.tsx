@@ -1,17 +1,17 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  View,
-  Text,
-  Switch,
-  StyleSheet,
-  ScrollView,
   Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAppTheme, ThemeMode } from '../../lib/theme';
-import { useSession } from '../../lib/session';
 import ConfirmSheet from '../../components/ui/ConfirmSheet';
 import { t } from '../../i18n';
+import { useSession } from '../../lib/session';
+import { ThemeMode, useAppTheme } from '../../lib/theme';
 
 export default function Settings() {
   const router = useRouter();
@@ -52,32 +52,6 @@ export default function Settings() {
   }
 
   return (
-
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Settings</Text>
-      <Text style={styles.subtitle}>Manage your app preferences.</Text>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Appearance</Text>
-        <Text style={styles.description}>
-          Choose how WPT 201 - A looks on your device.
-        </Text>
-
-        {themeOptions.map((option) => {
-          const selected = mode === option.value;
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => setMode(option.value)}
-              style={[styles.option, selected && styles.selectedOption]}
-            >
-              <View style={styles.optionText}>
-                <Text style={styles.optionTitle}>{option.label}</Text>
-                <Text style={styles.optionDescription}>
-                  {option.description}
-
     <>
       <ScrollView
         style={[
