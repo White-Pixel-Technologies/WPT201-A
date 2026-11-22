@@ -1,3 +1,6 @@
+import { ONBOARDING_DONE, useSession } from '../lib/session';
+import { nextOnboardingHref } from '../lib/routing';
+
 export type AuthGate = {
   loading: boolean;
   loggedIn: boolean;
@@ -6,10 +9,12 @@ export type AuthGate = {
 };
 
 export function useAuthGate(): AuthGate {
+  const { ready, isLoggedIn, onboardingStep } = useSession();
+
   return {
-    loading: false,
-    loggedIn: false,
-    onboardingComplete: false,
-    nextOnboardingStep: 'profile',
+    loading: !ready,
+    loggedIn: isLoggedIn,
+    onboardingComplete: onboardingStep >= ONBOARDING_DONE,
+    nextOnboardingStep: String(nextOnboardingHref(onboardingStep)),
   };
 }

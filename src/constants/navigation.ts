@@ -1,5 +1,11 @@
+import { t } from '../i18n';
+
 export const NavigationText = {
   appName: 'WPT 201 - A',
+  get appName() {
+    return t('app.name');
+  },
+
   home: 'Home',
   transactions: 'Transactions',
   addTransaction: 'Add transaction',

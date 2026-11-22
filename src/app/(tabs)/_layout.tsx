@@ -1,206 +1,283 @@
 import { Feather } from '@expo/vector-icons';
-import { Slot, usePathname, useRouter } from 'expo-router';
+import { Tabs, usePathname, useRouter } from 'expo-router';
 import type { ComponentProps } from 'react';
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
+  useColorScheme,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from '../../constants/colors';
 import { NavigationText } from '../../constants/navigation';
-import { useTheme } from '../../theme/theme-context';
 
-const places = [
-  { label: NavigationText.home, path: '/home', icon: 'home' as const },
-  {
-    label: NavigationText.transactions,
-    path: '/transactions',
-    icon: 'list' as const,
-  },
-  {
-    label: NavigationText.sources,
-    path: '/sources',
-    icon: 'credit-card' as const,
-  },
-  {
-    label: NavigationText.settings,
-    path: '/settings',
-    icon: 'settings' as const,
-  },
-];
+type IconName = ComponentProps<typeof Feather>['name'];
 
-function NavigationLink({
-  label,
-  path,
-  icon,
-  active,
-  vertical = false,
-  mutedColor,
-  activeColor,
-}: {
+interface DesktopNavItem {
   label: string;
   path: string;
-  icon: ComponentProps<typeof Feather>['name'];
-  active: boolean;
-  vertical?: boolean;
-  mutedColor: string;
-  activeColor: string;
-}) {
-  const color = active ? activeColor : mutedColor;
-  const router = useRouter();
-  return (
-    <Pressable
-      accessibilityRole="link"
-      onPress={() => {
-        router.push(path as never);
-      }}
-      style={StyleSheet.flatten([
-        styles.navLink,
-        vertical ? styles.verticalLink : undefined,
-      ])}
-    >
-      <Feather name={icon} size={20} color={color} />
-      <Text style={StyleSheet.flatten([styles.navLabel, { color }])}>
-        {label}
-      </Text>
-    </Pressable>
-  );
+  basePath: string;
+  icon: IconName;
+}
+
+const desktopNavItems: DesktopNavItem[] = [
+  { label: NavigationText.home, path: '/home', basePath: '/home', icon: 'home' },
+  { label: NavigationText.transactions, path: '/transactions', basePath: '/transactions', icon: 'list' },
+  { label: NavigationText.addTransaction, path: '/transactions?add=true', basePath: '/transactions?add=true', icon: 'plus-circle' },
+  { label: NavigationText.sources, path: '/sources', basePath: '/sources', icon: 'credit-card' },
+  { label: NavigationText.settings, path: '/settings', basePath: '/settings', icon: 'settings' },
+];
+
+interface CustomTabBarProps {
+  state: {
+    index: number;
+    routes: { key: string; name: string }[];
+  };
+  navigation: {
+    navigate: (name: string) => void;
+  };
 }
 
 export default function TabsLayout() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const { colors } = useTheme();
+  const router = useRouter();
+  const dark = useColorScheme() === 'dark';
   const desktop = width >= 1024;
-  const background = colors.background;
-  const foreground = colors.text;
-  const mutedColor = colors.textMuted;
-  const border = colors.border;
-  const showAdd = pathname === '/home' || pathname === '/transactions';
 
-  return (
-    <View
-      style={StyleSheet.flatten([
-        styles.screen,
-        { backgroundColor: background },
-      ])}
-    >
-      {desktop && (
-        <View
-          style={StyleSheet.flatten([
-            styles.sidebar,
-            { borderRightColor: border },
-          ])}
+  const theme = dark ? Colors.dark : Colors.light;
+  const background = theme.background;
+  const foreground = theme.text;
+  const mutedColor = theme.muted;
+  const border = theme.border;
+
+  const renderMobileTabBar = (props: CustomTabBarProps) => {
+    const { state, navigation } = props;
+    const routes = state.routes;
+
+    const isHomeFocused = state.index === 0;
+    const isTransactionsFocused = state.index === 1;
+    const isSourcesFocused = state.index === 2;
+    const isSettingsFocused = state.index === 3;
+
+    return (
+      <View
+        style={[
+          styles.bottomBar,
+          {
+            backgroundColor: background,
+            borderTopColor: border,
+            paddingBottom: Math.max(insets.bottom, 8),
+          },
+        ]}
+      >
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: isHomeFocused }}
+          accessibilityLabel={NavigationText.home}
+          onPress={() => navigation.navigate(routes[0].name)}
+          style={styles.navLink}
         >
+          <Feather
+            name="home"
+            size={20}
+            color={isHomeFocused ? Colors.primary : mutedColor}
+          />
           <Text
-            style={StyleSheet.flatten([styles.brand, { color: foreground }])}
+            style={[
+              styles.navLabel,
+              { color: isHomeFocused ? Colors.primary : mutedColor },
+            ]}
           >
+            {NavigationText.home}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: isTransactionsFocused }}
+          accessibilityLabel={NavigationText.transactions}
+          onPress={() => navigation.navigate(routes[1].name)}
+          style={styles.navLink}
+        >
+          <Feather
+            name="list"
+            size={20}
+            color={isTransactionsFocused ? Colors.primary : mutedColor}
+          />
+          <Text
+            style={[
+              styles.navLabel,
+              { color: isTransactionsFocused ? Colors.primary : mutedColor },
+            ]}
+          >
+            {NavigationText.transactions}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={NavigationText.addTransaction}
+          onPress={() => router.push('/transactions?add=true' as never)}
+          style={[
+            styles.plusButton,
+            { backgroundColor: Colors.primary, borderColor: background },
+          ]}
+        >
+          <Feather name="plus" size={26} color="#FFFFFF" />
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: isSourcesFocused }}
+          accessibilityLabel={NavigationText.sources}
+          onPress={() => navigation.navigate(routes[2].name)}
+          style={styles.navLink}
+        >
+          <Feather
+            name="credit-card"
+            size={20}
+            color={isSourcesFocused ? Colors.primary : mutedColor}
+          />
+          <Text
+            style={[
+              styles.navLabel,
+              { color: isSourcesFocused ? Colors.primary : mutedColor },
+            ]}
+          >
+            {NavigationText.sources}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: isSettingsFocused }}
+          accessibilityLabel={NavigationText.settings}
+          onPress={() => navigation.navigate(routes[3].name)}
+          style={styles.navLink}
+        >
+          <Feather
+            name="settings"
+            size={20}
+            color={isSettingsFocused ? Colors.primary : mutedColor}
+          />
+          <Text
+            style={[
+              styles.navLabel,
+              { color: isSettingsFocused ? Colors.primary : mutedColor },
+            ]}
+          >
+            {NavigationText.settings}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
+  if (desktop) {
+    return (
+      <View style={[styles.screen, { backgroundColor: background }]}>
+        <View
+          style={[
+            styles.sidebar,
+            { borderRightColor: border, backgroundColor: background },
+          ]}
+        >
+          <Text style={[styles.brand, { color: foreground }]}>
             {NavigationText.appName}
           </Text>
 
-          {places.map((place) => (
-            <NavigationLink
-              key={place.path}
-              {...place}
-              vertical
-              mutedColor={mutedColor}
-              activeColor={colors.primary}
-              active={pathname === place.path}
-            />
-          ))}
-        </View>
-      )}
+          {desktopNavItems.map((item) => {
+            const isActive =
+              item.basePath === '/transactions?add=true'
+                ? pathname === '/transactions' && item.path.includes('add=true')
+                : pathname.startsWith(item.basePath);
+            const activeColor = isActive ? Colors.primary : mutedColor;
 
-      <View style={styles.main}>
-        {desktop && showAdd && (
-          <View
-            style={StyleSheet.flatten([
-              styles.header,
-              { borderBottomColor: border },
-            ])}
-          >
-            {showAdd && (
+            return (
               <Pressable
-                accessibilityRole="button"
-                style={StyleSheet.flatten([
-                  styles.addButton,
-                  { backgroundColor: colors.primary },
-                ])}
+                key={item.path}
+                accessibilityRole="link"
+                accessibilityLabel={item.label}
+                onPress={() => router.push(item.path as never)}
+                style={[
+                  styles.desktopNavLink,
+                  isActive && { backgroundColor: dark ? '#1E2D27' : '#E8F5E9' },
+                ]}
               >
-                <Feather name="plus" size={18} color="#FFFFFF" />
-                <Text style={styles.addButtonText}>
-                  {NavigationText.addTransaction}
+                <Feather name={item.icon} size={20} color={activeColor} />
+                <Text
+                  style={[
+                    styles.desktopNavLabel,
+                    { color: activeColor, fontWeight: isActive ? '700' : '500' },
+                  ]}
+                >
+                  {item.label}
                 </Text>
               </Pressable>
-            )}
-          </View>
-        )}
+            );
+          })}
+        </View>
 
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-        >
-          <View style={styles.contentWidth}>
-            <Slot />
-          </View>
-        </ScrollView>
-
-        {!desktop && (
+        <View style={styles.main}>
           <View
-            style={StyleSheet.flatten([
-              styles.bottomBar,
-              {
-                backgroundColor: background,
-                borderTopColor: border,
-                paddingBottom: Math.max(insets.bottom, 8),
-              },
-            ])}
+            style={[
+              styles.header,
+              { borderBottomColor: border, backgroundColor: background },
+            ]}
           >
-            <NavigationLink
-              {...places[0]}
-              mutedColor={mutedColor}
-              activeColor={colors.primary}
-              active={pathname === places[0].path}
-            />
-            <NavigationLink
-              {...places[1]}
-              mutedColor={mutedColor}
-              activeColor={colors.primary}
-              active={pathname === places[1].path}
-            />
-
-            {showAdd && (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={NavigationText.addTransaction}
-                style={StyleSheet.flatten([
-                  styles.plusButton,
-                  { backgroundColor: colors.primary, borderColor: background },
-                ])}
-              >
-                <Feather name="plus" size={26} color="#FFFFFF" />
-              </Pressable>
-            )}
-
-            <NavigationLink
-              {...places[2]}
-              mutedColor={mutedColor}
-              activeColor={colors.primary}
-              active={pathname === places[2].path}
-            />
-            <NavigationLink
-              {...places[3]}
-              mutedColor={mutedColor}
-              activeColor={colors.primary}
-              active={pathname === places[3].path}
-            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={NavigationText.addTransaction}
+              onPress={() => router.push('/transactions?add=true' as never)}
+              style={[styles.addButton, { backgroundColor: Colors.primary }]}
+            >
+              <Feather name="plus" size={18} color="#FFFFFF" />
+              <Text style={styles.addButtonText}>
+                {NavigationText.addTransaction}
+              </Text>
+            </Pressable>
           </View>
-        )}
+
+          <View style={styles.tabsContainer}>
+            <Tabs
+              screenOptions={{
+                headerShown: false,
+                tabBarStyle: { display: 'none' },
+              }}
+            >
+              <Tabs.Screen name="home" options={{ title: NavigationText.home }} />
+              <Tabs.Screen name="transactions" options={{ title: NavigationText.transactions }} />
+              <Tabs.Screen name="sources" options={{ title: NavigationText.sources }} />
+              <Tabs.Screen name="settings" options={{ title: NavigationText.settings }} />
+            </Tabs>
+          </View>
+        </View>
       </View>
+    );
+  }
+
+  return (
+    <View style={[styles.screen, { backgroundColor: background }]}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: background,
+            borderTopColor: border,
+            minHeight: 68,
+          },
+        }}
+        tabBar={(props) => renderMobileTabBar(props as unknown as CustomTabBarProps)}
+      >
+        <Tabs.Screen name="home" options={{ title: NavigationText.home }} />
+        <Tabs.Screen name="transactions" options={{ title: NavigationText.transactions }} />
+        <Tabs.Screen name="sources" options={{ title: NavigationText.sources }} />
+        <Tabs.Screen name="settings" options={{ title: NavigationText.settings }} />
+      </Tabs>
     </View>
   );
 }
@@ -211,32 +288,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   sidebar: {
-    width: 224,
+    width: 240,
     borderRightWidth: StyleSheet.hairlineWidth,
-    padding: 20,
-    gap: 12,
+    padding: 24,
+    gap: 8,
   },
   brand: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
-    marginBottom: 20,
+    marginBottom: 24,
+    letterSpacing: 0.5,
+  },
+  desktopNavLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    minHeight: 44,
+  },
+  desktopNavLabel: {
+    fontSize: 15,
   },
   main: {
     flex: 1,
     minWidth: 0,
   },
   header: {
-    minHeight: 72,
+    height: 68,
     borderBottomWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
     paddingHorizontal: 24,
   },
   addButton: {
-    position: 'absolute',
-    right: 24,
     borderRadius: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -245,19 +334,9 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 14,
   },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    flexGrow: 1,
-    alignItems: 'center',
-    padding: 24,
-    paddingBottom: 16,
-  },
-  contentWidth: {
-    width: '100%',
-    maxWidth: 1200,
+  tabsContainer: {
     flex: 1,
   },
   bottomBar: {
@@ -275,15 +354,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 3,
   },
-  verticalLink: {
-    minHeight: 44,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 12,
-    paddingHorizontal: 12,
-  },
   navLabel: {
     fontSize: 11,
+    fontWeight: '500',
   },
   plusButton: {
     width: 52,
@@ -293,5 +366,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: -24,
     borderWidth: 4,
+    elevation: 4,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
 });

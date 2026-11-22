@@ -1,9 +1,19 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { Platform } from 'react-native';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Session, User } from '@supabase/supabase-js';
+import { supabase } from './supabase';
+import { RESET_REDIRECT_URL, VERIFY_REDIRECT_URL } from '../constants/urls';
 
 export const ONBOARDING_DONE = 3;
+const ONBOARDING_KEY = 'savemode-onboarding-step';
 
 const SESSION_STORAGE_KEY = 'wpt201a-session';
 const LEGACY_SESSION_STORAGE_KEY = 'savemode-session';
@@ -49,35 +59,31 @@ export type Transaction = {
 export type NewTransaction = Omit<Transaction, 'id'>;
 
 type SessionState = {
+
+type SessionValue = {
   ready: boolean;
   isLoggedIn: boolean;
+  user: User | null;
+  userName: string;
+  currencyCode: string;
   onboardingStep: number;
-  onboardingData: OnboardingData;
-  sources: Source[];
-  transactions: Transaction[];
-
-  startOnboarding: () => void;
-  login: (step?: number) => void;
-  updateOnboardingData: (data: Partial<OnboardingData>) => void;
+  signUp: (
+    email: string,
+    password: string,
+    fullName?: string,
+  ) => Promise<string | null>;
+  login: (email: string, password: string) => Promise<string | null>;
+  logout: () => Promise<string | null>;
+  resetPassword: (email: string) => Promise<string | null>;
+  updatePassword: (password: string) => Promise<string | null>;
   finishOnboardingStep: () => void;
-  completeOnboarding: () => void;
-  logout: () => void;
-
-  addSource: (source: NewSource) => void;
-  updateSource: (id: string, data: Partial<NewSource>) => void;
-  deleteSource: (id: string) => boolean;
-  addTransaction: (transaction: NewTransaction) => void;
+  setOnboardingStep: (step: number) => void;
+  setUserName: (name: string) => void;
+  setCurrencyCode: (code: string) => void;
+  refreshUserSettings: () => Promise<void>;
+  markOnboardingComplete: () => Promise<void>;
 };
 
-const initialData: OnboardingData = {
-  name: '',
-  currency: 'INR',
-  sourceName: '',
-  sourceType: 'bank',
-  initialBalance: 0,
-  creditLimit: 0,
-  outstanding: 0,
-};
 
 const createSource = (data: NewSource): Source => ({
   ...data,
@@ -104,7 +110,62 @@ const appStorage = {
         window.localStorage.removeItem(LEGACY_SESSION_STORAGE_KEY);
       }
       return legacyValue;
+
+const SessionContext = createContext<SessionValue | null>(null);
+
+export function SessionProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [currencyCode, setCurrencyCode] = useState<string>('INR');
+  const [onboardingStep, setOnboardingStepState] = useState(0);
+  const [ready, setReady] = useState(false);
+
+  const syncUserSettings = useCallback(async (userId: string, savedStep: string | null) => {
+    try {
+      try {
+        await supabase.rpc('ensure_user_setup');
+      } catch {
+        // Continue if RPC is unavailable.
+      }
+
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('name, currency_code, onboarding_completed')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error || !data) {
+        return;
+      }
+
+      if (data.name) {
+        setUserName(data.name);
+      }
+
+      if (data.currency_code) {
+        setCurrencyCode(data.currency_code);
+      }
+
+      if (data.onboarding_completed) {
+        setOnboardingStepState(ONBOARDING_DONE);
+        await AsyncStorage.setItem(ONBOARDING_KEY, String(ONBOARDING_DONE));
+      } else {
+        if (!data.name || data.name.trim().length === 0) {
+          setOnboardingStepState(0);
+          await AsyncStorage.setItem(ONBOARDING_KEY, '0');
+        } else {
+          const parsed = Number(savedStep);
+          const stepToSet = parsed === 2 ? 2 : 1;
+          setOnboardingStepState(stepToSet);
+          await AsyncStorage.setItem(ONBOARDING_KEY, String(stepToSet));
+        }
+      }
+    } catch {
+      // Keep app functioning with local state.
+
     }
+  }, []);
+
 
     const value = await AsyncStorage.getItem(name);
     if (value !== null || name !== SESSION_STORAGE_KEY) return value;
@@ -117,141 +178,86 @@ const appStorage = {
     return legacyValue;
   },
 
-  setItem: async (name: string, value: string) => {
-    if (Platform.OS === 'web') {
-      if (typeof window === 'undefined') return;
-      window.localStorage.setItem(name, value);
-      return;
-    }
+  useEffect(() => {
+    let mounted = true;
 
-    await AsyncStorage.setItem(name, value);
-  },
 
-  removeItem: async (name: string) => {
-    if (Platform.OS === 'web') {
-      if (typeof window === 'undefined') return;
-      window.localStorage.removeItem(name);
-      return;
-    }
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        if (!mounted) return;
 
-    await AsyncStorage.removeItem(name);
-  },
-};
+        setSession(newSession);
 
-export const useSession = create<SessionState>()(
-  persist(
-    (set, get) => ({
-      ready: false,
-      isLoggedIn: false,
-      onboardingStep: 0,
-      onboardingData: initialData,
-      sources: [],
-      transactions: [],
+        if (newSession?.user) {
+          const metaName = (
+            newSession.user.user_metadata?.full_name ||
+            newSession.user.user_metadata?.name ||
+            ''
+          ) as string;
 
-      startOnboarding: () =>
-        set({
-          isLoggedIn: true,
-          onboardingStep: 0,
-          onboardingData: initialData,
-        }),
+          if (metaName) {
+            setUserName((prev) => prev || metaName);
+          }
 
-      login: (step = ONBOARDING_DONE) =>
-        set({
-          isLoggedIn: true,
-          onboardingStep: Math.max(0, Math.min(step, ONBOARDING_DONE)),
-        }),
-
-      updateOnboardingData: (data) =>
-        set((state) => ({
-          onboardingData: {
-            ...state.onboardingData,
-            ...data,
-          },
-        })),
-
-      finishOnboardingStep: () =>
-        set((state) => ({
-          onboardingStep: Math.min(state.onboardingStep + 1, ONBOARDING_DONE),
-        })),
-
-      completeOnboarding: () =>
-        set((state) => {
-          const data = state.onboardingData;
-          const sourceName = data.sourceName.trim();
-
-          const alreadyExists = state.sources.some(
-            (source) => source.name.toLowerCase() === sourceName.toLowerCase(),
-          );
-
-          const sources =
-            sourceName && !alreadyExists
-              ? [
-                  ...state.sources,
-                  createSource({
-                    name: sourceName,
-                    type: data.sourceType,
-                    openingBalance:
-                      data.sourceType === 'credit_card'
-                        ? 0
-                        : data.initialBalance,
-                    creditLimit:
-                      data.sourceType === 'credit_card'
-                        ? (data.creditLimit ?? 0)
-                        : 0,
-                    outstanding:
-                      data.sourceType === 'credit_card'
-                        ? (data.outstanding ?? 0)
-                        : 0,
-                  }),
-                ]
-              : state.sources;
-
-          return {
-            isLoggedIn: true,
-            onboardingStep: ONBOARDING_DONE,
-            sources,
-          };
-        }),
-
-      logout: () =>
-        set({
-          isLoggedIn: false,
-          onboardingStep: 0,
-          onboardingData: initialData,
-        }),
-
-      addSource: (source) =>
-        set((state) => ({
-          sources: [...state.sources, createSource(source)],
-        })),
-
-      updateSource: (id, data) =>
-        set((state) => ({
-          sources: state.sources.map((source) =>
-            source.id === id ? { ...source, ...data } : source,
-          ),
-        })),
-
-      deleteSource: (id) => {
-        const state = get();
-
-        const hasTransactions = state.transactions.some(
-          (transaction) =>
-            transaction.sourceId === id ||
-            transaction.fromSourceId === id ||
-            transaction.toSourceId === id,
-        );
-
-        if (hasTransactions) {
-          return false;
+          void AsyncStorage.getItem(ONBOARDING_KEY).then((saved) => {
+            if (mounted) {
+              void syncUserSettings(newSession.user.id, saved);
+            }
+          });
         }
-
-        set((currentState) => ({
-          sources: currentState.sources.filter((source) => source.id !== id),
-        }));
-
-        return true;
       },
+    );
+
+    async function initialize() {
+      try {
+        const [sessionResult, savedStep] = await Promise.all([
+          supabase.auth.getSession(),
+          AsyncStorage.getItem(ONBOARDING_KEY),
+        ]);
+
+        if (!mounted) return;
+
+        const currentSession = sessionResult.error
+          ? null
+          : sessionResult.data.session;
+
+        setSession(currentSession);
+
+        if (currentSession?.user) {
+          const metaName = (
+            currentSession.user.user_metadata?.full_name ||
+            currentSession.user.user_metadata?.name ||
+            ''
+          ) as string;
+
+          if (metaName) {
+            setUserName(metaName);
+          }
+
+          await syncUserSettings(currentSession.user.id, savedStep);
+        } else {
+          const parsedStep = Number(savedStep);
+
+          setOnboardingStepState(
+            Number.isInteger(parsedStep) &&
+              parsedStep >= 0 &&
+              parsedStep <= ONBOARDING_DONE
+              ? parsedStep
+              : 0,
+          );
+        }
+      } catch {
+        if (mounted) {
+          setSession(null);
+          setOnboardingStepState(0);
+        }
+      } finally {
+        if (mounted) {
+          setReady(true);
+        }
+      }
+    }
+
 
       addTransaction: (transaction) =>
         set((state) => ({
@@ -298,3 +304,191 @@ export const useSession = create<SessionState>()(
     },
   ),
 );
+
+    void initialize();
+
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [syncUserSettings]);
+
+  const refreshUserSettings = useCallback(async () => {
+    if (!session?.user?.id) return;
+
+    const saved = await AsyncStorage.getItem(ONBOARDING_KEY);
+    await syncUserSettings(session.user.id, saved);
+  }, [session, syncUserSettings]);
+
+  const setOnboardingStep = useCallback((step: number) => {
+    const clamped = Math.max(0, Math.min(step, ONBOARDING_DONE));
+
+    setOnboardingStepState(clamped);
+    void AsyncStorage.setItem(ONBOARDING_KEY, String(clamped)).catch(() => {});
+  }, []);
+
+  const finishOnboardingStep = useCallback(() => {
+    setOnboardingStepState((currentStep) => {
+      const next = Math.min(currentStep + 1, ONBOARDING_DONE);
+      void AsyncStorage.setItem(ONBOARDING_KEY, String(next)).catch(() => {});
+      return next;
+    });
+  }, []);
+
+  const markOnboardingComplete = useCallback(async () => {
+    setOnboardingStepState(ONBOARDING_DONE);
+
+    await AsyncStorage.setItem(
+      ONBOARDING_KEY,
+      String(ONBOARDING_DONE),
+    ).catch(() => {});
+
+    if (session?.user?.id) {
+      try {
+        await supabase
+          .from('user_settings')
+          .update({ onboarding_completed: true })
+          .eq('user_id', session.user.id);
+      } catch {
+        // Handled.
+      }
+    }
+  }, [session]);
+
+  const signUp = useCallback(async (
+    email: string,
+    password: string,
+    fullName?: string,
+  ): Promise<string | null> => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: fullName ? { full_name: fullName } : undefined,
+          emailRedirectTo: VERIFY_REDIRECT_URL,
+        },
+      });
+
+      return error?.message ?? null;
+    } catch {
+      return 'Unable to create your account. Please try again.';
+    }
+  }, []);
+
+  const login = useCallback(async (
+    email: string,
+    password: string,
+  ): Promise<string | null> => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      return error?.message ?? null;
+    } catch {
+      return 'Unable to log in. Please try again.';
+    }
+  }, []);
+
+  const logout = useCallback(async (): Promise<string | null> => {
+    try {
+      const { error } = await supabase.auth.signOut({
+        scope: 'local',
+      });
+
+      await AsyncStorage.removeItem(ONBOARDING_KEY).catch(() => {});
+      setSession(null);
+      setUserName('');
+      setOnboardingStepState(0);
+
+      return error?.message ?? null;
+    } catch {
+      return 'Unable to log out. Please try again.';
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (
+    email: string,
+  ): Promise<string | null> => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: RESET_REDIRECT_URL,
+        },
+      );
+
+      return error?.message ?? null;
+    } catch {
+      return 'Unable to send the reset link. Please try again.';
+    }
+  }, []);
+
+  const updatePassword = useCallback(async (
+    password: string,
+  ): Promise<string | null> => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+
+      return error?.message ?? null;
+    } catch {
+      return 'Unable to update your password. Please try again.';
+    }
+  }, []);
+
+  const value = useMemo(() => ({
+    ready,
+    isLoggedIn: !!session,
+    user: session?.user ?? null,
+    userName,
+    currencyCode,
+    onboardingStep,
+    signUp,
+    login,
+    logout,
+    resetPassword,
+    updatePassword,
+    finishOnboardingStep,
+    setOnboardingStep,
+    setUserName,
+    setCurrencyCode,
+    refreshUserSettings,
+    markOnboardingComplete,
+  }), [
+    ready,
+    session,
+    userName,
+    currencyCode,
+    onboardingStep,
+    signUp,
+    login,
+    logout,
+    resetPassword,
+    updatePassword,
+    finishOnboardingStep,
+    setOnboardingStep,
+    refreshUserSettings,
+    markOnboardingComplete,
+  ]);
+
+  return (
+    <SessionContext.Provider value={value}>
+      {children}
+    </SessionContext.Provider>
+  );
+}
+
+export function useSession(): SessionValue {
+  const value = useContext(SessionContext);
+
+  if (!value) {
+    throw new Error('useSession must be used inside SessionProvider');
+  }
+
+  return value;
+}
+

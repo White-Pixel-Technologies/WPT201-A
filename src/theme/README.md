@@ -25,6 +25,7 @@ Implementation: `theme-context.tsx`
 | `typography.ts`     | Inter font families, sizes, weights and line heights |
 | `spacing.ts`        | Shared spacing values                                |
 | `radius.ts`         | Shared corner radius values                          |
+| `controls.ts`       | Minimum interactive tap target size                  |
 | `theme-context.tsx` | Theme state, persistence and `useTheme()`            |
 | `index.ts`          | Public theme exports                                 |
 
@@ -90,12 +91,12 @@ Use `tagColors` from `useTheme()` for mode-aware tag backgrounds.
 
 The available named colours are:
 
-Red, Orange, Amber, Yellow, Lime, Green, Emerald, Teal, Cyan, Sky, Blue, Indigo, Violet, Purple, Pink and Rose.
+Red, Coral, Orange, Gold, Lime, Green, Teal, Cyan, Blue, Indigo, Purple, Pink, Magenta, Brown, Olive and Grey.
 
 ## Development rules
 
+- Use tokens only. No typed hex codes.
 - Use semantic theme colours in screens and components.
-- Do not hardcode hexadecimal colours in screen files.
 - Use shared typography, spacing and radius tokens.
 - Make sure text remains readable in both modes.
 - Check inputs, borders, icons and surfaces in both modes.
@@ -110,7 +111,7 @@ The theme preview route is:
 
 `/theme-preview`
 
-It displays the light and dark palettes, tag colours, typography, spacing and radius values.
+It displays the selected System, Light or Dark palette, all tag colours, typography, spacing, radius and control sizes.
 
 ## Design Pack status
 
