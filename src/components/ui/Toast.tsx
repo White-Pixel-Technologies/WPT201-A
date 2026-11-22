@@ -10,12 +10,7 @@ type ToastProps = {
   onDismiss?: () => void;
 };
 
-export default function Toast({
-  visible,
-  message,
-  onUndo,
-  onDismiss,
-}: ToastProps) {
+export default function Toast({ visible, message, onUndo, onDismiss }: ToastProps) {
   // D3: Use theme tokens. Toast uses an inverted surface for contrast.
   // In light mode: dark surface (#2C2C2A) with light text (#E8E6DF).
   // In dark mode: a slightly lighter surface for distinction.
@@ -71,9 +66,7 @@ export default function Toast({
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
     >
-      <Text style={[styles.message, { color: toastText }]}>
-        {message ?? t('toast.saved')}
-      </Text>
+      <Text style={[styles.message, { color: toastText }]}>{message ?? t('toast.saved')}</Text>
 
       {onUndo && (
         <Pressable
@@ -82,9 +75,7 @@ export default function Toast({
           accessibilityLabel={t('toast.undo')}
           style={styles.undoButton}
         >
-          <Text style={[styles.undoText, { color: colors.primary }]}>
-            {t('toast.undo')}
-          </Text>
+          <Text style={[styles.undoText, { color: colors.primary }]}>{t('toast.undo')}</Text>
         </Pressable>
       )}
     </Animated.View>

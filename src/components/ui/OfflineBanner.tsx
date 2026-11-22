@@ -25,16 +25,9 @@ export default function OfflineBanner({ visible }: OfflineBannerProps) {
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
     >
-      <MaterialCommunityIcons
-        name="wifi-off"
-        size={18}
-        color={textColor}
-        accessible={false}
-      />
+      <MaterialCommunityIcons name="wifi-off" size={18} color={textColor} accessible={false} />
 
-      <Text style={[styles.message, { color: textColor }]}>
-        {t('info.offline')}
-      </Text>
+      <Text style={[styles.message, { color: textColor }]}>{t('info.offline')}</Text>
     </View>
   );
 }

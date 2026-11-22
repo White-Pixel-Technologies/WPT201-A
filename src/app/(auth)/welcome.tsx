@@ -9,9 +9,7 @@ export default function Welcome() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.logo, { color: colors.primary }]}>
-          {t('app.name')}
-        </Text>
+        <Text style={[styles.logo, { color: colors.primary }]}>{t('app.name')}</Text>
       </View>
 
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -21,10 +19,7 @@ export default function Welcome() {
       <View style={styles.actions}>
         <Link href="/(auth)/signup" asChild>
           <Pressable
-            style={StyleSheet.flatten([
-              styles.primaryButton,
-              { backgroundColor: colors.primary },
-            ])}
+            style={StyleSheet.flatten([styles.primaryButton, { backgroundColor: colors.primary }])}
             accessibilityRole="button"
             accessibilityLabel={t('welcome.create_account')}
           >
@@ -43,9 +38,7 @@ export default function Welcome() {
             accessibilityRole="button"
             accessibilityLabel={t('welcome.login')}
           >
-            <Text style={[styles.secondaryText, { color: colors.text }]}>
-              {t('welcome.login')}
-            </Text>
+            <Text style={[styles.secondaryText, { color: colors.text }]}>{t('welcome.login')}</Text>
           </Pressable>
         </Link>
       </View>
@@ -69,9 +62,7 @@ export default function Welcome() {
         </Text>
       </View>
 
-      <Text style={[styles.credit, { color: colors.textMuted }]}>
-        {t('welcome.credit')}
-      </Text>
+      <Text style={[styles.credit, { color: colors.textMuted }]}>{t('welcome.credit')}</Text>
     </View>
   );
 }

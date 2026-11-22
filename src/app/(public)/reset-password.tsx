@@ -1,12 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { useSession } from '../../lib/session';
@@ -45,11 +38,7 @@ export default function ResetPassword() {
   const hasAllowedCharacters = /^[\x20-\x7E]*$/.test(password);
 
   const isPasswordValid =
-    hasMinLength &&
-    hasMaxLength &&
-    hasLetter &&
-    hasNumber &&
-    hasAllowedCharacters;
+    hasMinLength && hasMaxLength && hasLetter && hasNumber && hasAllowedCharacters;
 
   useEffect(() => {
     let active = true;
@@ -100,9 +89,7 @@ export default function ResetPassword() {
 
       // 3. token_hash param (Supabase PKCE / email recovery link)
       const rawTokenHash = params.token_hash ?? params.token;
-      const tokenHash = Array.isArray(rawTokenHash)
-        ? rawTokenHash[0]
-        : rawTokenHash;
+      const tokenHash = Array.isArray(rawTokenHash) ? rawTokenHash[0] : rawTokenHash;
       const rawType = params.type;
       const typeParam = Array.isArray(rawType) ? rawType[0] : rawType;
 
@@ -195,16 +182,11 @@ export default function ResetPassword() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>
-        {t('reset.title')}
-      </Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('reset.title')}</Text>
 
       {message ? (
         <Text
-          style={[
-            styles.message,
-            { backgroundColor: colors.error + '18', color: colors.error },
-          ]}
+          style={[styles.message, { backgroundColor: colors.error + '18', color: colors.error }]}
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
         >
@@ -212,9 +194,7 @@ export default function ResetPassword() {
         </Text>
       ) : null}
 
-      {status === 'checking' && (
-        <ActivityIndicator size="large" color={colors.primary} />
-      )}
+      {status === 'checking' && <ActivityIndicator size="large" color={colors.primary} />}
 
       {status === 'ready' && (
         <>
@@ -260,12 +240,7 @@ export default function ResetPassword() {
             accessibilityLabel={t('reset.confirm_password')}
           />
 
-          <View
-            style={[
-              styles.checklist,
-              { backgroundColor: colors.surfaceSecondary },
-            ]}
-          >
+          <View style={[styles.checklist, { backgroundColor: colors.surfaceSecondary }]}>
             <Text style={[styles.checkTitle, { color: colors.text }]}>
               {t('reset.requirements')}
             </Text>
@@ -278,30 +253,14 @@ export default function ResetPassword() {
             >
               {hasMinLength && hasMaxLength ? '✓' : '○'} {t('reset.req.length')}
             </Text>
-            <Text
-              style={
-                hasLetter
-                  ? { color: colors.success }
-                  : { color: colors.textMuted }
-              }
-            >
+            <Text style={hasLetter ? { color: colors.success } : { color: colors.textMuted }}>
               {hasLetter ? '✓' : '○'} {t('reset.req.letter')}
             </Text>
-            <Text
-              style={
-                hasNumber
-                  ? { color: colors.success }
-                  : { color: colors.textMuted }
-              }
-            >
+            <Text style={hasNumber ? { color: colors.success } : { color: colors.textMuted }}>
               {hasNumber ? '✓' : '○'} {t('reset.req.number')}
             </Text>
             <Text
-              style={
-                hasAllowedCharacters
-                  ? { color: colors.success }
-                  : { color: colors.textMuted }
-              }
+              style={hasAllowedCharacters ? { color: colors.success } : { color: colors.textMuted }}
             >
               {hasAllowedCharacters ? '✓' : '○'} {t('reset.req.chars')}
             </Text>

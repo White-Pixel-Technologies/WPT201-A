@@ -55,19 +55,12 @@ export default function ConfirmSheet({
     >
       <View style={[styles.overlay, isDesktop && styles.desktopOverlay]}>
         <View
-          style={[
-            styles.sheet,
-            isDesktop && styles.desktopSheet,
-            { backgroundColor },
-          ]}
+          style={[styles.sheet, isDesktop && styles.desktopSheet, { backgroundColor }]}
           accessibilityViewIsModal
           accessibilityRole="alert"
         >
           {!isDesktop && (
-            <View
-              style={[styles.handle, { backgroundColor: colors.border }]}
-              accessible={false}
-            />
+            <View style={[styles.handle, { backgroundColor: colors.border }]} accessible={false} />
           )}
 
           <Text style={[styles.title, { color: textColor }]}>
@@ -75,9 +68,7 @@ export default function ConfirmSheet({
           </Text>
 
           {description ? (
-            <Text style={[styles.description, { color: colors.textSecondary }]}>
-              {description}
-            </Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>
           ) : null}
 
           <View style={styles.actions}>

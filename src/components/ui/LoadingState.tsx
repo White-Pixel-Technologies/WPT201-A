@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { t } from '../../i18n';
 import { useTheme } from '../../theme/theme-context';
 
@@ -14,10 +8,7 @@ type LoadingStateProps = {
   spinnerSize?: 'small' | 'large';
 };
 
-export default function LoadingState({
-  onRetry,
-  spinnerSize = 'large',
-}: LoadingStateProps) {
+export default function LoadingState({ onRetry, spinnerSize = 'large' }: LoadingStateProps) {
   const { colors } = useTheme();
   const [isSlow, setIsSlow] = useState(false);
 
@@ -41,19 +32,11 @@ export default function LoadingState({
       <ActivityIndicator size={spinnerSize} color={colors.primary} />
 
       <View style={[styles.skeleton, { backgroundColor: skeletonColor }]} />
-      <View
-        style={[
-          styles.skeleton,
-          { backgroundColor: skeletonColor, opacity: 0.7 },
-        ]}
-      />
+      <View style={[styles.skeleton, { backgroundColor: skeletonColor, opacity: 0.7 }]} />
 
       {isSlow && (
         <View style={styles.slowContainer}>
-          <Text
-            style={[styles.message, { color: textColor }]}
-            accessibilityLiveRegion="polite"
-          >
+          <Text style={[styles.message, { color: textColor }]} accessibilityLiveRegion="polite">
             {t('loading.slow')}
           </Text>
 

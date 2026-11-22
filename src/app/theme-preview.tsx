@@ -19,9 +19,7 @@ export default function ThemePreviewScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <AppText style={[styles.heading, { color: colors.text }]}>
-        WPT 201 - A Theme Preview
-      </AppText>
+      <AppText style={[styles.heading, { color: colors.text }]}>WPT 201 - A Theme Preview</AppText>
 
       <AppText style={[styles.description, { color: colors.textSecondary }]}>
         Preview of shared design tokens in the selected theme.
@@ -45,9 +43,7 @@ export default function ThemePreviewScreen() {
                 },
               ]}
             >
-              <AppText
-                style={{ color: selected ? colors.onPrimary : colors.text }}
-              >
+              <AppText style={{ color: selected ? colors.onPrimary : colors.text }}>
                 {item[0].toUpperCase() + item.slice(1)}
               </AppText>
             </Pressable>
@@ -55,15 +51,8 @@ export default function ThemePreviewScreen() {
         })}
       </View>
 
-      <View
-        style={[
-          styles.panel,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-        ]}
-      >
-        <AppText style={[styles.panelTitle, { color: colors.text }]}>
-          Color Tokens
-        </AppText>
+      <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <AppText style={[styles.panelTitle, { color: colors.text }]}>Color Tokens</AppText>
 
         {Object.entries(colors).map(([name, value]) => (
           <View key={name} style={styles.tokenRow}>
@@ -75,9 +64,7 @@ export default function ThemePreviewScreen() {
           </View>
         ))}
 
-        <AppText style={[styles.sectionTitle, { color: colors.text }]}>
-          16 Tag Colors
-        </AppText>
+        <AppText style={[styles.sectionTitle, { color: colors.text }]}>16 Tag Colors</AppText>
 
         <View style={styles.tagGrid}>
           {Object.entries(tagColors).map(([name, value]) => (
@@ -88,9 +75,7 @@ export default function ThemePreviewScreen() {
           ))}
         </View>
 
-        <AppText style={[styles.sectionTitle, { color: colors.text }]}>
-          Typography
-        </AppText>
+        <AppText style={[styles.sectionTitle, { color: colors.text }]}>Typography</AppText>
 
         {Object.entries(typography.fontSize).map(([name, size]) => (
           <AppText
@@ -98,10 +83,7 @@ export default function ThemePreviewScreen() {
             style={{
               color: colors.text,
               fontSize: size,
-              lineHeight:
-                typography.lineHeight[
-                  name as keyof typeof typography.lineHeight
-                ],
+              lineHeight: typography.lineHeight[name as keyof typeof typography.lineHeight],
               marginBottom: spacing.sm,
             }}
           >
@@ -109,9 +91,7 @@ export default function ThemePreviewScreen() {
           </AppText>
         ))}
 
-        <AppText style={[styles.sectionTitle, { color: colors.text }]}>
-          Font Weights
-        </AppText>
+        <AppText style={[styles.sectionTitle, { color: colors.text }]}>Font Weights</AppText>
 
         {Object.entries(typography.fontFamily).map(([name, font]) => (
           <AppText

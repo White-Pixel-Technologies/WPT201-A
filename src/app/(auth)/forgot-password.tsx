@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 import { Link } from 'expo-router';
 import { useSession } from '../../lib/session';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
@@ -33,10 +27,7 @@ export default function ForgotPassword() {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (
-      !normalizedEmail ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
-    ) {
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       setMessage(t('err.email.invalid'));
       return;
     }
@@ -55,24 +46,14 @@ export default function ForgotPassword() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: colors.background },
-      ]}
-    >
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>
-        Forgot password?
-      </Text>
+      <Text style={[styles.title, { color: colors.text }]}>Forgot password?</Text>
 
       {message ? (
         <Text
-          style={[
-            styles.error,
-            { backgroundColor: colors.error + '18', color: colors.error },
-          ]}
+          style={[styles.error, { backgroundColor: colors.error + '18', color: colors.error }]}
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
         >
@@ -85,18 +66,14 @@ export default function ForgotPassword() {
           <Text style={[styles.message, { color: colors.textSecondary }]}>
             {t('info.reset.sent')}
           </Text>
-          <Link
-            href="/(auth)/login"
-            style={[styles.link, { color: colors.primary }]}
-          >
+          <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
             Back to log in
           </Link>
         </>
       ) : (
         <>
           <Text style={[styles.message, { color: colors.textSecondary }]}>
-            Enter your email address and we&apos;ll send you a password reset
-            link.
+            Enter your email address and we&apos;ll send you a password reset link.
           </Text>
 
           <TextInput
@@ -134,10 +111,7 @@ export default function ForgotPassword() {
             </Text>
           </Pressable>
 
-          <Link
-            href="/(auth)/login"
-            style={[styles.link, { color: colors.primary }]}
-          >
+          <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
             Back to log in
           </Link>
         </>

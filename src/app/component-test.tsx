@@ -49,30 +49,18 @@ export default function ComponentTest() {
       </Text>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Text style={{ color: textColor }}>
-          {isDark ? 'Dark Mode' : 'Light Mode'}
-        </Text>
-        <Switch
-          value={isDark}
-          onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
-        />
+        <Text style={{ color: textColor }}>{isDark ? 'Dark Mode' : 'Light Mode'}</Text>
+        <Switch value={isDark} onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')} />
       </View>
 
-      <Text style={{ color: textColor, marginTop: 20 }}>
-        C01 - Offline Banner
-      </Text>
+      <Text style={{ color: textColor, marginTop: 20 }}>C01 - Offline Banner</Text>
       <OfflineBanner visible={showOffline} />
-      <Button
-        title="Toggle Offline"
-        onPress={() => setShowOffline(!showOffline)}
-      />
+      <Button title="Toggle Offline" onPress={() => setShowOffline(!showOffline)} />
 
       <Text style={{ color: textColor, marginTop: 20 }}>C02 - Empty State</Text>
       <EmptyState onAddSource={() => setShowToast(true)} />
 
-      <Text style={{ color: textColor, marginTop: 20 }}>
-        C03 - Inline Error - All Variants
-      </Text>
+      <Text style={{ color: textColor, marginTop: 20 }}>C03 - Inline Error - All Variants</Text>
 
       <InlineError
         variant="error"
@@ -80,24 +68,17 @@ export default function ComponentTest() {
         onRetry={() => setShowToast(true)}
       />
 
-      <InlineError
-        variant="warning"
-        message="This account starts below zero."
-      />
+      <InlineError variant="warning" message="This account starts below zero." />
 
       <InlineError variant="info" message="Connect to the internet to save." />
 
       <InlineError variant="success" message="Changes saved successfully." />
 
-      <Text style={{ color: textColor, marginTop: 20 }}>
-        C04 - Loading State
-      </Text>
+      <Text style={{ color: textColor, marginTop: 20 }}>C04 - Loading State</Text>
       <LoadingState spinnerSize="small" onRetry={() => setShowToast(true)} />
       <LoadingState spinnerSize="large" onRetry={() => setShowToast(true)} />
 
-      <Text style={{ color: textColor, marginTop: 20 }}>
-        C05 - Confirm Sheet
-      </Text>
+      <Text style={{ color: textColor, marginTop: 20 }}>C05 - Confirm Sheet</Text>
       <Button title="Open Confirm Sheet" onPress={() => setShowConfirm(true)} />
       <ConfirmSheet
         visible={showConfirm}

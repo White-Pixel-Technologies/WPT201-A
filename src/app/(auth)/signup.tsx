@@ -1,12 +1,5 @@
 import { useRef, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
@@ -59,10 +52,7 @@ export default function Signup() {
       return;
     }
 
-    if (
-      cleanEmail.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
-    ) {
+    if (cleanEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setMessage(t('err.email.invalid'));
       return;
     }
@@ -108,27 +98,17 @@ export default function Signup() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: colors.background },
-      ]}
-    >
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>
-        Create your account
-      </Text>
+      <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Start managing your money with {t('app.name')}.
       </Text>
 
       {message ? (
         <Text
-          style={[
-            styles.error,
-            { backgroundColor: colors.error + '18', color: colors.error },
-          ]}
+          style={[styles.error, { backgroundColor: colors.error + '18', color: colors.error }]}
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
         >
@@ -210,40 +190,18 @@ export default function Signup() {
         </Pressable>
       </View>
 
-      <View
-        style={[styles.checklist, { backgroundColor: colors.surfaceSecondary }]}
-      >
-        <Text style={[styles.checkTitle, { color: colors.text }]}>
-          Password requirements
-        </Text>
-        <Text
-          style={
-            hasLength ? { color: colors.success } : { color: colors.textMuted }
-          }
-        >
+      <View style={[styles.checklist, { backgroundColor: colors.surfaceSecondary }]}>
+        <Text style={[styles.checkTitle, { color: colors.text }]}>Password requirements</Text>
+        <Text style={hasLength ? { color: colors.success } : { color: colors.textMuted }}>
           {hasLength ? '✓' : '○'} 8–64 characters
         </Text>
-        <Text
-          style={
-            hasLetter ? { color: colors.success } : { color: colors.textMuted }
-          }
-        >
+        <Text style={hasLetter ? { color: colors.success } : { color: colors.textMuted }}>
           {hasLetter ? '✓' : '○'} At least one letter
         </Text>
-        <Text
-          style={
-            hasNumber ? { color: colors.success } : { color: colors.textMuted }
-          }
-        >
+        <Text style={hasNumber ? { color: colors.success } : { color: colors.textMuted }}>
           {hasNumber ? '✓' : '○'} At least one number
         </Text>
-        <Text
-          style={
-            validCharacters
-              ? { color: colors.success }
-              : { color: colors.textMuted }
-          }
-        >
+        <Text style={validCharacters ? { color: colors.success } : { color: colors.textMuted }}>
           {validCharacters ? '✓' : '○'} English letters, numbers and symbols
         </Text>
       </View>
@@ -266,26 +224,17 @@ export default function Signup() {
 
       <Text style={[styles.footer, { color: colors.textMuted }]}>
         Already have an account?{' '}
-        <Link
-          href="/(auth)/login"
-          style={[styles.link, { color: colors.primary }]}
-        >
+        <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
           Log in
         </Link>
       </Text>
 
       <View style={styles.legal}>
-        <Link
-          href="/(public)/terms"
-          style={[styles.link, { color: colors.primary }]}
-        >
+        <Link href="/(public)/terms" style={[styles.link, { color: colors.primary }]}>
           Terms
         </Link>
         <Text style={[styles.footer, { color: colors.textMuted }]}> · </Text>
-        <Link
-          href="/(public)/privacy"
-          style={[styles.link, { color: colors.primary }]}
-        >
+        <Link href="/(public)/privacy" style={[styles.link, { color: colors.primary }]}>
           Privacy Policy
         </Link>
       </View>

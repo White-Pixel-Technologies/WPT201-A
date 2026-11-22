@@ -1,11 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
@@ -28,9 +22,7 @@ export default function VerifyEmail() {
   const verificationPromise = useRef<Promise<boolean> | null>(null);
 
   const rawTokenHash = params.token_hash ?? params.token;
-  const tokenHash = Array.isArray(rawTokenHash)
-    ? rawTokenHash[0]
-    : rawTokenHash;
+  const tokenHash = Array.isArray(rawTokenHash) ? rawTokenHash[0] : rawTokenHash;
 
   const rawType = params.type;
   const typeParam = Array.isArray(rawType) ? rawType[0] : rawType;
@@ -43,9 +35,7 @@ export default function VerifyEmail() {
 
     async function verifyEmail() {
       // 1. Check if an error was passed directly via query params
-      const errorParam = Array.isArray(params.error)
-        ? params.error[0]
-        : params.error;
+      const errorParam = Array.isArray(params.error) ? params.error[0] : params.error;
       const errorDesc = Array.isArray(params.error_description)
         ? params.error_description[0]
         : params.error_description;
@@ -53,9 +43,7 @@ export default function VerifyEmail() {
       if (errorParam) {
         if (active) {
           setStatus('failed');
-          setErrorMessage(
-            errorDesc ? decodeURIComponent(errorDesc) : t('info.link.expired'),
-          );
+          setErrorMessage(errorDesc ? decodeURIComponent(errorDesc) : t('info.link.expired'));
         }
         return;
       }
@@ -71,9 +59,7 @@ export default function VerifyEmail() {
           if (active) {
             setStatus('failed');
             setErrorMessage(
-              hashErrorDesc
-                ? decodeURIComponent(hashErrorDesc)
-                : t('info.link.expired'),
+              hashErrorDesc ? decodeURIComponent(hashErrorDesc) : t('info.link.expired'),
             );
           }
           return;
@@ -108,8 +94,7 @@ export default function VerifyEmail() {
           return;
         }
 
-        const otpType: EmailOtpType =
-          typeParam === 'email' ? 'email' : 'signup';
+        const otpType: EmailOtpType = typeParam === 'email' ? 'email' : 'signup';
 
         verificationPromise.current ??= (async () => {
           try {
@@ -189,9 +174,7 @@ export default function VerifyEmail() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {status === 'loading' && (
-        <ActivityIndicator size="large" color={colors.primary} />
-      )}
+      {status === 'loading' && <ActivityIndicator size="large" color={colors.primary} />}
 
       <Text
         style={[styles.title, { color: colors.text }]}

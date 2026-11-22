@@ -68,15 +68,8 @@ export default function InlineError({
       accessibilityLiveRegion="polite"
     >
       <View style={styles.content}>
-        <MaterialCommunityIcons
-          name={vs.icon}
-          size={20}
-          color={color}
-          accessible={false}
-        />
-        <Text style={[styles.message, { color }]}>
-          {message ?? t('err.generic')}
-        </Text>
+        <MaterialCommunityIcons name={vs.icon} size={20} color={color} accessible={false} />
+        <Text style={[styles.message, { color }]}>{message ?? t('err.generic')}</Text>
       </View>
 
       {onRetry && (
@@ -86,9 +79,7 @@ export default function InlineError({
           accessibilityLabel={t('action.retry')}
           style={styles.button}
         >
-          <Text style={[styles.buttonText, { color }]}>
-            {t('action.retry')}
-          </Text>
+          <Text style={[styles.buttonText, { color }]}>{t('action.retry')}</Text>
         </Pressable>
       )}
     </View>
