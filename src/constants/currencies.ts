@@ -7,28 +7,130 @@ export interface Currency {
 }
 
 export const SUPPORTED_CURRENCIES: Currency[] = [
-  { code: 'INR', name: 'Indian Rupee', symbol: '₹', prefix: true, useSpace: false },
-  { code: 'USD', name: 'US Dollar', symbol: '$', prefix: true, useSpace: false },
+  {
+    code: 'INR',
+    name: 'Indian Rupee',
+    symbol: '₹',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'USD',
+    name: 'US Dollar',
+    symbol: '$',
+    prefix: true,
+    useSpace: false,
+  },
   { code: 'EUR', name: 'Euro', symbol: '€', prefix: true, useSpace: false },
-  { code: 'GBP', name: 'British Pound', symbol: '£', prefix: true, useSpace: false },
-  { code: 'JPY', name: 'Japanese Yen', symbol: '¥', prefix: true, useSpace: false },
-  { code: 'BDT', name: 'Bangladeshi Taka', symbol: '৳', prefix: true, useSpace: false },
-  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', prefix: true, useSpace: false },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', prefix: true, useSpace: false },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', prefix: true, useSpace: false },
-  { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM', prefix: true, useSpace: true },
-  { code: 'LKR', name: 'Sri Lankan Rupee', symbol: 'Rs', prefix: true, useSpace: true },
-  { code: 'NPR', name: 'Nepalese Rupee', symbol: 'Rs', prefix: true, useSpace: true },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'AED', prefix: true, useSpace: true },
-  { code: 'SAR', name: 'Saudi Riyal', symbol: 'SAR', prefix: true, useSpace: true },
-  { code: 'QAR', name: 'Qatari Riyal', symbol: 'QAR', prefix: true, useSpace: true },
-  { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'KWD', prefix: true, useSpace: true },
-  { code: 'OMR', name: 'Omani Rial', symbol: 'OMR', prefix: true, useSpace: true },
-  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', prefix: true, useSpace: true },
+  {
+    code: 'GBP',
+    name: 'British Pound',
+    symbol: '£',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'JPY',
+    name: 'Japanese Yen',
+    symbol: '¥',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'BDT',
+    name: 'Bangladeshi Taka',
+    symbol: '৳',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'SGD',
+    name: 'Singapore Dollar',
+    symbol: 'S$',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'AUD',
+    name: 'Australian Dollar',
+    symbol: 'A$',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'CAD',
+    name: 'Canadian Dollar',
+    symbol: 'C$',
+    prefix: true,
+    useSpace: false,
+  },
+  {
+    code: 'MYR',
+    name: 'Malaysian Ringgit',
+    symbol: 'RM',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'LKR',
+    name: 'Sri Lankan Rupee',
+    symbol: 'Rs',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'NPR',
+    name: 'Nepalese Rupee',
+    symbol: 'Rs',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'AED',
+    name: 'UAE Dirham',
+    symbol: 'AED',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'SAR',
+    name: 'Saudi Riyal',
+    symbol: 'SAR',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'QAR',
+    name: 'Qatari Riyal',
+    symbol: 'QAR',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'KWD',
+    name: 'Kuwaiti Dinar',
+    symbol: 'KWD',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'OMR',
+    name: 'Omani Rial',
+    symbol: 'OMR',
+    prefix: true,
+    useSpace: true,
+  },
+  {
+    code: 'CHF',
+    name: 'Swiss Franc',
+    symbol: 'CHF',
+    prefix: true,
+    useSpace: true,
+  },
 ];
 
 export const CURRENCY_MAP = new Map<string, Currency>(
-  SUPPORTED_CURRENCIES.map((c) => [c.code, c])
+  SUPPORTED_CURRENCIES.map((c) => [c.code, c]),
 );
 
 export function getCurrency(code: string | null | undefined): Currency {
@@ -47,7 +149,8 @@ export function detectDefaultCurrency(): string {
     }
 
     const parts = locale.split(/[-_]/);
-    const country = parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '';
+    const country =
+      parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '';
 
     const countryToCurrency: Record<string, string> = {
       IN: 'INR',
