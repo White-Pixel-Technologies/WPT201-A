@@ -36,7 +36,7 @@ export default function Settings() {
       }
 
       setShowLogout(false);
-      router.replace('/(auth)/login');
+      router.replace('/(auth)/welcome');
     } catch {
       setLogoutError(t('err.logout.failed'));
     } finally {
