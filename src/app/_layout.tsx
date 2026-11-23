@@ -57,16 +57,6 @@ function AppContent() {
 }
 
 export default function RootLayout() {
-
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
-
-  if (!fontsLoaded && !fontError) {
-
   const [loaded, error] = useFonts({
     Inter_400Regular: require('../../assets/fonts/Inter_400Regular.ttf'),
     Inter_500Medium: require('../../assets/fonts/Inter_500Medium.ttf'),
@@ -75,7 +65,6 @@ export default function RootLayout() {
   });
 
   if (!loaded && !error) {
-
     return null;
   }
 
