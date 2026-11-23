@@ -1,6 +1,6 @@
 ﻿# Shared Components
 
-This folder contains reusable UI components used across SaveMode screens.
+This folder contains reusable UI components used across WPT 201 - A screens.
 
 ## Current shared component
 

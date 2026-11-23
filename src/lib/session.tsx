@@ -13,7 +13,7 @@ import { supabase } from './supabase';
 import { RESET_REDIRECT_URL, VERIFY_REDIRECT_URL } from '../constants/urls';
 
 export const ONBOARDING_DONE = 3;
-const ONBOARDING_KEY = 'savemode-onboarding-step';
+const ONBOARDING_KEY = 'app-onboarding-step';
 
 type SessionValue = {
   ready: boolean;
@@ -22,11 +22,7 @@ type SessionValue = {
   userName: string;
   currencyCode: string;
   onboardingStep: number;
-  signUp: (
-    email: string,
-    password: string,
-    fullName?: string,
-  ) => Promise<string | null>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<string | null>;
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<string | null>;
   resetPassword: (email: string) => Promise<string | null>;
@@ -77,16 +73,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (data.onboarding_completed) {
         setOnboardingStepState(ONBOARDING_DONE);
         await AsyncStorage.setItem(ONBOARDING_KEY, String(ONBOARDING_DONE));
+      } else if (!data.name || data.name.trim().length === 0) {
+        // Missing name: step 1 (D9)
+        setOnboardingStepState(0);
+        await AsyncStorage.setItem(ONBOARDING_KEY, '0');
+      } else if (!data.currency_code) {
+        // Missing currency: step 2 (D9)
+        setOnboardingStepState(1);
+        await AsyncStorage.setItem(ONBOARDING_KEY, '1');
       } else {
-        if (!data.name || data.name.trim().length === 0) {
-          setOnboardingStepState(0);
-          await AsyncStorage.setItem(ONBOARDING_KEY, '0');
-        } else {
-          const parsed = Number(savedStep);
-          const stepToSet = parsed === 2 ? 2 : 1;
-          setOnboardingStepState(stepToSet);
-          await AsyncStorage.setItem(ONBOARDING_KEY, String(stepToSet));
-        }
+        // Otherwise: step 3 (D9)
+        setOnboardingStepState(2);
+        await AsyncStorage.setItem(ONBOARDING_KEY, String(2));
       }
     } catch {
       // Keep app functioning with local state.
@@ -96,31 +94,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        if (!mounted) return;
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!mounted) return;
 
-        setSession(newSession);
+      setSession(newSession);
 
-        if (newSession?.user) {
-          const metaName = (
-            newSession.user.user_metadata?.full_name ||
-            newSession.user.user_metadata?.name ||
-            ''
-          ) as string;
+      if (newSession?.user) {
+        const metaName = (newSession.user.user_metadata?.full_name ||
+          newSession.user.user_metadata?.name ||
+          '') as string;
 
-          if (metaName) {
-            setUserName((prev) => prev || metaName);
-          }
-
-          void AsyncStorage.getItem(ONBOARDING_KEY).then((saved) => {
-            if (mounted) {
-              void syncUserSettings(newSession.user.id, saved);
-            }
-          });
+        if (metaName) {
+          setUserName((prev) => prev || metaName);
         }
-      },
-    );
+
+        void AsyncStorage.getItem(ONBOARDING_KEY).then((saved) => {
+          if (mounted) {
+            void syncUserSettings(newSession.user.id, saved);
+          }
+        });
+      }
+    });
 
     async function initialize() {
       try {
@@ -131,18 +125,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
         if (!mounted) return;
 
-        const currentSession = sessionResult.error
-          ? null
-          : sessionResult.data.session;
+        const currentSession = sessionResult.error ? null : sessionResult.data.session;
 
         setSession(currentSession);
 
         if (currentSession?.user) {
-          const metaName = (
-            currentSession.user.user_metadata?.full_name ||
+          const metaName = (currentSession.user.user_metadata?.full_name ||
             currentSession.user.user_metadata?.name ||
-            ''
-          ) as string;
+            '') as string;
 
           if (metaName) {
             setUserName(metaName);
@@ -153,9 +143,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           const parsedStep = Number(savedStep);
 
           setOnboardingStepState(
-            Number.isInteger(parsedStep) &&
-              parsedStep >= 0 &&
-              parsedStep <= ONBOARDING_DONE
+            Number.isInteger(parsedStep) && parsedStep >= 0 && parsedStep <= ONBOARDING_DONE
               ? parsedStep
               : 0,
           );
@@ -205,10 +193,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const markOnboardingComplete = useCallback(async () => {
     setOnboardingStepState(ONBOARDING_DONE);
 
-    await AsyncStorage.setItem(
-      ONBOARDING_KEY,
-      String(ONBOARDING_DONE),
-    ).catch(() => {});
+    await AsyncStorage.setItem(ONBOARDING_KEY, String(ONBOARDING_DONE)).catch(() => {});
 
     if (session?.user?.id) {
       try {
@@ -222,40 +207,50 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [session]);
 
-  const signUp = useCallback(async (
-    email: string,
-    password: string,
-    fullName?: string,
-  ): Promise<string | null> => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: fullName ? { full_name: fullName } : undefined,
-          emailRedirectTo: VERIFY_REDIRECT_URL,
-        },
-      });
+  const signUp = useCallback(
+    async (email: string, password: string, fullName?: string): Promise<string | null> => {
+      try {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: fullName ? { full_name: fullName } : undefined,
+            emailRedirectTo: VERIFY_REDIRECT_URL,
+          },
+        });
 
-      return error?.message ?? null;
-    } catch {
-      return 'Unable to create your account. Please try again.';
-    }
-  }, []);
+        return error?.message ?? null;
+      } catch {
+        return 'Unable to create your account. Please try again.';
+      }
+    },
+    [],
+  );
 
-  const login = useCallback(async (
-    email: string,
-    password: string,
-  ): Promise<string | null> => {
+  const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
-      return error?.message ?? null;
+      if (!error) return null;
+
+      const msg = error.message?.toLowerCase() || '';
+      if (msg.includes('email not confirmed') || msg.includes('unverified')) {
+        return 'unverified';
+      }
+      if (msg.includes('rate') || msg.includes('too many') || msg.includes('attempts')) {
+        return 'ratelimit';
+      }
+      if (msg.includes('network') || msg.includes('failed to fetch')) {
+        return 'network';
+      }
+
+      // Default (AUTH-09: wrong email or password always shows 'Email or password is incorrect.')
+      return 'invalid_credentials';
     } catch {
-      return 'Unable to log in. Please try again.';
+      return 'network';
     }
   }, []);
 
@@ -276,16 +271,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const resetPassword = useCallback(async (
-    email: string,
-  ): Promise<string | null> => {
+  const resetPassword = useCallback(async (email: string): Promise<string | null> => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
-        {
-          redirectTo: RESET_REDIRECT_URL,
-        },
-      );
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: RESET_REDIRECT_URL,
+      });
 
       return error?.message ?? null;
     } catch {
@@ -293,60 +283,69 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updatePassword = useCallback(async (
-    password: string,
-  ): Promise<string | null> => {
+  const updatePassword = useCallback(async (password: string): Promise<string | null> => {
     try {
       const { error } = await supabase.auth.updateUser({
         password,
       });
 
-      return error?.message ?? null;
+      if (error) {
+        return error.message ?? null;
+      }
+
+      // AUTH-23: After password update, sign out all other active sessions
+      // so they cannot continue using old credentials on other devices.
+      try {
+        await supabase.auth.signOut({ scope: 'others' });
+      } catch {
+        // signOut 'others' is best-effort — do not fail password update if it errors.
+      }
+
+      return null;
     } catch {
       return 'Unable to update your password. Please try again.';
     }
   }, []);
 
-  const value = useMemo(() => ({
-    ready,
-    isLoggedIn: !!session,
-    user: session?.user ?? null,
-    userName,
-    currencyCode,
-    onboardingStep,
-    signUp,
-    login,
-    logout,
-    resetPassword,
-    updatePassword,
-    finishOnboardingStep,
-    setOnboardingStep,
-    setUserName,
-    setCurrencyCode,
-    refreshUserSettings,
-    markOnboardingComplete,
-  }), [
-    ready,
-    session,
-    userName,
-    currencyCode,
-    onboardingStep,
-    signUp,
-    login,
-    logout,
-    resetPassword,
-    updatePassword,
-    finishOnboardingStep,
-    setOnboardingStep,
-    refreshUserSettings,
-    markOnboardingComplete,
-  ]);
-
-  return (
-    <SessionContext.Provider value={value}>
-      {children}
-    </SessionContext.Provider>
+  const value = useMemo(
+    () => ({
+      ready,
+      isLoggedIn: !!session,
+      user: session?.user ?? null,
+      userName,
+      currencyCode,
+      onboardingStep,
+      signUp,
+      login,
+      logout,
+      resetPassword,
+      updatePassword,
+      finishOnboardingStep,
+      setOnboardingStep,
+      setUserName,
+      setCurrencyCode,
+      refreshUserSettings,
+      markOnboardingComplete,
+    }),
+    [
+      ready,
+      session,
+      userName,
+      currencyCode,
+      onboardingStep,
+      signUp,
+      login,
+      logout,
+      resetPassword,
+      updatePassword,
+      finishOnboardingStep,
+      setOnboardingStep,
+      refreshUserSettings,
+      markOnboardingComplete,
+    ],
   );
+
+  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 
 export function useSession(): SessionValue {
