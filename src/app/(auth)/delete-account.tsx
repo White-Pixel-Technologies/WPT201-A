@@ -1,4 +1,5 @@
 
+
 import { Link } from 'expo-router';
 import {
     ScrollView,
@@ -140,3 +141,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+export default function DeleteAccount() {
+  return <PlaceholderScreen title={NavigationText.deleteAccount} />;
+}
