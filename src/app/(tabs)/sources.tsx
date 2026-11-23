@@ -1,30 +1,28 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import SourceForm, {
-  type SourceItem,
-  type SourceType,
-} from '../../components/sources/SourceForm';
-import ConfirmSheet from '../../components/ui/ConfirmSheet';
-import EmptyState from '../../components/ui/EmptyState';
-import OfflineBanner from '../../components/ui/OfflineBanner';
-import Toast from '../../components/ui/Toast';
-import { Colors } from '../../constants/colors';
+import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
+import { useSafeSave } from '../../lib/useSafeSave';
+import { useAppTheme } from '../../lib/theme';
+import { useSession } from '../../lib/session';
 import { t } from '../../i18n';
 import { formatAmount } from '../../lib/money';
-import { useSession } from '../../lib/session';
-import { supabase } from '../../lib/supabase';
-import { useAppTheme } from '../../lib/theme';
-import { useSafeSave } from '../../lib/useSafeSave';
+import OfflineBanner from '../../components/ui/OfflineBanner';
+import EmptyState from '../../components/ui/EmptyState';
+import Toast from '../../components/ui/Toast';
+import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import { ErrorBox } from '../../components/ui/ErrorBox';
+import SourceForm, { type SourceItem, type SourceType } from '../../components/sources/SourceForm';
+import { Colors } from '../../constants/colors';
 
 type SourceTotals = {
   bankCashTotal: number;
@@ -54,9 +52,7 @@ export default function SourcesScreen() {
   const [archivedExpanded, setArchivedExpanded] = useState(false);
 
   // Restore confirm
-  const [sourceToRestore, setSourceToRestore] = useState<SourceItem | null>(
-    null,
-  );
+  const [sourceToRestore, setSourceToRestore] = useState<SourceItem | null>(null);
 
   // Toast
   const [toastMessage, setToastMessage] = useState('');
@@ -72,17 +68,14 @@ export default function SourcesScreen() {
     setListError('');
     try {
       // 1. Fetch sources with stats (E6)
-      const { data: sourcesData, error: sourcesError } =
-        await supabase.rpc('sources_with_stats');
+      const { data: sourcesData, error: sourcesError } = await supabase.rpc('sources_with_stats');
 
       let fetchedSources: SourceItem[] = [];
       if (sourcesError) {
         // Fallback to table query if RPC is not present
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('financial_sources')
-          .select(
-            'id, type, name, opening_amount, current_amount, credit_limit, is_archived',
-          )
+          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
           .order('name');
 
         if (fallbackError) {
@@ -100,33 +93,19 @@ export default function SourcesScreen() {
       setSources(fetchedSources);
 
       // 2. Fetch source totals (E6, SRC-08)
-      const { data: totalsData, error: totalsError } =
-        await supabase.rpc('source_totals');
+      const { data: totalsData, error: totalsError } = await supabase.rpc('source_totals');
 
-      if (!totalsError && totalsData && totalsData.length > 0) {
-        const row = totalsData[0];
-        setTotals({
-          bankCashTotal: Number(row.bank_cash_total ?? 0),
-          cardOutstandingTotal: Number(row.card_outstanding_total ?? 0),
-        });
-      } else {
-        // Fallback calculation from active sources
-        let bankCash = 0;
-        let cardOut = 0;
-        for (const s of fetchedSources) {
-          if (!s.is_archived) {
-            if (s.type === 'card') {
-              cardOut += Number(s.current_amount);
-            } else {
-              bankCash += Number(s.current_amount);
-            }
-          }
-        }
-        setTotals({
-          bankCashTotal: bankCash,
-          cardOutstandingTotal: cardOut,
-        });
+      if (totalsError || !totalsData || totalsData.length === 0) {
+        // D10: Prohibit client-side totals fallback. On DB failure, set listError
+        setListError(t('err.generic'));
+        return;
       }
+
+      const row = totalsData[0];
+      setTotals({
+        bankCashTotal: Number(row.bank_cash_total ?? 0),
+        cardOutstandingTotal: Number(row.card_outstanding_total ?? 0),
+      });
     } catch {
       setListError(t('err.generic'));
     }
@@ -159,22 +138,14 @@ export default function SourcesScreen() {
   }, [fetchSourcesData]);
 
   // Group active sources (SRC-06): 1. Bank accounts, 2. Cash, 3. Credit cards; alphabetical by name
-  const activeSources = useMemo(
-    () => sources.filter((s) => !s.is_archived),
-    [sources],
-  );
-  const archivedSources = useMemo(
-    () => sources.filter((s) => s.is_archived),
-    [sources],
-  );
+  const activeSources = useMemo(() => sources.filter((s) => !s.is_archived), [sources]);
+  const archivedSources = useMemo(() => sources.filter((s) => s.is_archived), [sources]);
 
   const bankAccounts = useMemo(
     () =>
       activeSources
         .filter((s) => s.type === 'bank')
-        .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
-        ),
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })),
     [activeSources],
   );
 
@@ -182,9 +153,7 @@ export default function SourcesScreen() {
     () =>
       activeSources
         .filter((s) => s.type === 'cash')
-        .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
-        ),
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })),
     [activeSources],
   );
 
@@ -192,9 +161,7 @@ export default function SourcesScreen() {
     () =>
       activeSources
         .filter((s) => s.type === 'card')
-        .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
-        ),
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })),
     [activeSources],
   );
 
@@ -252,9 +219,7 @@ export default function SourcesScreen() {
     const isBelowZero = !isCard && source.current_amount < 0;
 
     const usagePercent =
-      isCard && limit > 0
-        ? Math.min(100, Math.max(0, (outstanding / limit) * 100))
-        : 0;
+      isCard && limit > 0 ? Math.min(100, Math.max(0, (outstanding / limit) * 100)) : 0;
 
     return (
       <Pressable
@@ -267,10 +232,7 @@ export default function SourcesScreen() {
         <View style={styles.sourceTopRow}>
           <View style={styles.sourceLeft}>
             <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: isDark ? '#27272A' : '#E8F5F1' },
-              ]}
+              style={[styles.iconContainer, { backgroundColor: isDark ? '#27272A' : '#E8F5F1' }]}
             >
               <MaterialCommunityIcons
                 name={getSourceIcon(source.type) as any}
@@ -279,21 +241,14 @@ export default function SourcesScreen() {
               />
             </View>
             <View style={styles.nameContainer}>
-              <Text style={[styles.sourceName, { color: textColor }]}>
-                {source.name}
-              </Text>
+              <Text style={[styles.sourceName, { color: textColor }]}>{source.name}</Text>
             </View>
           </View>
 
           {/* Amount on Right */}
           <View style={styles.amountContainer}>
             {!isCard ? (
-              <Text
-                style={[
-                  styles.balanceAmount,
-                  { color: isBelowZero ? '#DC2626' : textColor },
-                ]}
-              >
+              <Text style={[styles.balanceAmount, { color: isBelowZero ? '#DC2626' : textColor }]}>
                 {formatAmount(source.current_amount, currencyCode)}
               </Text>
             ) : (
@@ -309,9 +264,7 @@ export default function SourcesScreen() {
                     hideZeroPaise: true,
                   })}
                 </Text>
-                <Text
-                  style={[styles.cardAvailableText, { color: subtextColor }]}
-                >
+                <Text style={[styles.cardAvailableText, { color: subtextColor }]}>
                   Available{' '}
                   {formatAmount(availableCredit, currencyCode, {
                     hideZeroPaise: true,
@@ -324,12 +277,7 @@ export default function SourcesScreen() {
 
         {/* Thin Usage Bar for Credit Cards (SRC-07) */}
         {isCard && limit > 0 && (
-          <View
-            style={[
-              styles.usageBarTrack,
-              { backgroundColor: isDark ? '#3F3F46' : '#E2E8F0' },
-            ]}
-          >
+          <View style={[styles.usageBarTrack, { backgroundColor: isDark ? '#3F3F46' : '#E2E8F0' }]}>
             <View
               style={[
                 styles.usageBarFill,
@@ -345,22 +293,14 @@ export default function SourcesScreen() {
         {/* Warning Labels (SRC-09) */}
         {isBelowZero && (
           <View style={styles.warningRow}>
-            <MaterialCommunityIcons
-              name="alert-circle-outline"
-              size={15}
-              color="#DC2626"
-            />
+            <MaterialCommunityIcons name="alert-circle-outline" size={15} color="#DC2626" />
             <Text style={styles.warningText}>Below zero</Text>
           </View>
         )}
 
         {isOverLimit && (
           <View style={styles.warningRow}>
-            <MaterialCommunityIcons
-              name="alert-circle-outline"
-              size={15}
-              color="#DC2626"
-            />
+            <MaterialCommunityIcons name="alert-circle-outline" size={15} color="#DC2626" />
             <Text style={styles.warningText}>
               Over limit by{' '}
               {formatAmount(outstanding - limit, currencyCode, {
@@ -372,11 +312,7 @@ export default function SourcesScreen() {
 
         {isCreditBalance && (
           <View style={[styles.warningRow, styles.creditBalanceRow]}>
-            <MaterialCommunityIcons
-              name="check-circle-outline"
-              size={15}
-              color="#16A34A"
-            />
+            <MaterialCommunityIcons name="check-circle-outline" size={15} color="#16A34A" />
             <Text style={styles.creditBalanceText}>
               Credit balance{' '}
               {formatAmount(Math.abs(outstanding), currencyCode, {
@@ -430,47 +366,23 @@ export default function SourcesScreen() {
 
       {/* Two Separate Totals at the Top (SRC-08) */}
       <View style={styles.totalsContainer}>
-        <View
-          style={[
-            styles.totalCard,
-            { backgroundColor: cardColor, borderColor },
-          ]}
-        >
-          <Text style={[styles.totalLabel, { color: subtextColor }]}>
-            Total Balance
-          </Text>
+        <View style={[styles.totalCard, { backgroundColor: cardColor, borderColor }]}>
+          <Text style={[styles.totalLabel, { color: subtextColor }]}>Total Balance</Text>
           <Text style={[styles.totalAmount, { color: Colors.primary }]}>
             {formatAmount(totals.bankCashTotal, currencyCode)}
           </Text>
         </View>
 
-        <View
-          style={[
-            styles.totalCard,
-            { backgroundColor: cardColor, borderColor },
-          ]}
-        >
-          <Text style={[styles.totalLabel, { color: subtextColor }]}>
-            Total Card Outstanding
-          </Text>
+        <View style={[styles.totalCard, { backgroundColor: cardColor, borderColor }]}>
+          <Text style={[styles.totalLabel, { color: subtextColor }]}>Total Card Outstanding</Text>
           <Text style={[styles.totalAmount, { color: textColor }]}>
             {formatAmount(totals.cardOutstandingTotal, currencyCode)}
           </Text>
         </View>
       </View>
 
-      {/* Error state */}
-      {!!listError && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{listError}</Text>
-          <Pressable
-            onPress={loadData}
-            style={[styles.retryBtn, { backgroundColor: Colors.primary }]}
-          >
-            <Text style={styles.retryBtnText}>Retry</Text>
-          </Pressable>
-        </View>
-      )}
+      {/* Error state (D10) */}
+      {!!listError && <ErrorBox message={listError} onRetry={loadData} isDark={isDark} />}
 
       {/* Loading state */}
       {isLoading ? (
@@ -513,21 +425,12 @@ export default function SourcesScreen() {
           {/* Dashed "Add source" Card at End of List (Task 10 Requirement) */}
           <Pressable
             onPress={handleOpenAdd}
-            style={[
-              styles.dashedAddCard,
-              { borderColor: isDark ? '#3F3F46' : '#94A3B8' },
-            ]}
+            style={[styles.dashedAddCard, { borderColor: isDark ? '#3F3F46' : '#94A3B8' }]}
             accessibilityRole="button"
             accessibilityLabel="Add source"
           >
-            <MaterialCommunityIcons
-              name="plus-circle-outline"
-              size={22}
-              color={Colors.primary}
-            />
-            <Text style={[styles.dashedAddText, { color: Colors.primary }]}>
-              Add source
-            </Text>
+            <MaterialCommunityIcons name="plus-circle-outline" size={22} color={Colors.primary} />
+            <Text style={[styles.dashedAddText, { color: Colors.primary }]}>Add source</Text>
           </Pressable>
         </View>
       )}
@@ -556,10 +459,7 @@ export default function SourcesScreen() {
               {archivedSources.map((source) => (
                 <View
                   key={source.id}
-                  style={[
-                    styles.archivedCard,
-                    { backgroundColor: cardColor, borderColor },
-                  ]}
+                  style={[styles.archivedCard, { backgroundColor: cardColor, borderColor }]}
                 >
                   <View style={styles.sourceLeft}>
                     <MaterialCommunityIcons
@@ -567,9 +467,7 @@ export default function SourcesScreen() {
                       size={20}
                       color={subtextColor}
                     />
-                    <Text style={[styles.archivedName, { color: textColor }]}>
-                      {source.name}
-                    </Text>
+                    <Text style={[styles.archivedName, { color: textColor }]}>{source.name}</Text>
                   </View>
 
                   <Pressable
@@ -578,11 +476,7 @@ export default function SourcesScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Restore ${source.name}`}
                   >
-                    <Text
-                      style={[styles.restoreBtnText, { color: Colors.primary }]}
-                    >
-                      Restore
-                    </Text>
+                    <Text style={[styles.restoreBtnText, { color: Colors.primary }]}>Restore</Text>
                   </Pressable>
                 </View>
               ))}
@@ -592,11 +486,7 @@ export default function SourcesScreen() {
       )}
 
       {/* Toast */}
-      <Toast
-        visible={showToast}
-        message={toastMessage}
-        onDismiss={() => setShowToast(false)}
-      />
+      <Toast visible={showToast} message={toastMessage} onDismiss={() => setShowToast(false)} />
 
       {/* Restore Confirmation Sheet */}
       {sourceToRestore && (
