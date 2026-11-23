@@ -1,9 +1,9 @@
 
 import { Link, Stack } from 'expo-router';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
+  ScrollView,
+  StyleSheet,
+  Text,
 } from 'react-native';
 
 export default function TermsOfUse() {
@@ -78,8 +78,8 @@ export default function TermsOfUse() {
 
       <Text style={styles.heading}>7. Limitation of Liability</Text>
       <Text style={styles.body}>
-        WPT 201 - A is provided on an "as is" and
-        "as available" basis without warranties of any kind.
+        WPT 201 - A is provided on an &quot;as is&quot; and
+        &quot;as available&quot; basis without warranties of any kind.
         To the maximum extent permitted by applicable law,
         WPT 201 - A and its operators shall not be liable for
         any indirect, incidental, or consequential damages
@@ -90,7 +90,7 @@ export default function TermsOfUse() {
       <Text style={styles.body}>
         We may modify these Terms at any time. We will provide
         notice of material changes by updating the
-        "Last updated" date on this page.
+        &quot;Last updated&quot; date on this page.
       </Text>
 
       <Text style={styles.heading}>9. Contact Us</Text>
