@@ -24,8 +24,7 @@ function getFontFamily(weight: TextStyle['fontWeight']) {
 export default function AppText({ style, ...props }: AppTextProps) {
   const flattenedStyle = StyleSheet.flatten(style);
 
-  const fontFamily =
-    flattenedStyle?.fontFamily ?? getFontFamily(flattenedStyle?.fontWeight);
+  const fontFamily = flattenedStyle?.fontFamily ?? getFontFamily(flattenedStyle?.fontWeight);
 
   return <Text {...props} style={[{ fontFamily }, style]} />;
 }

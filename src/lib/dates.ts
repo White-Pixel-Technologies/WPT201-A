@@ -20,20 +20,12 @@ export const MIN_MONTH = 0;
 
 // Check leap year
 export function isLeapYear(year: number): boolean {
-  return (
-    Number.isInteger(year) &&
-    ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0)
-  );
+  return Number.isInteger(year) && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0);
 }
 
 // Get days in a month (0-11)
 export function daysInMonth(year: number, month: number): number {
-  if (
-    !Number.isInteger(year) ||
-    !Number.isInteger(month) ||
-    month < 0 ||
-    month > 11
-  ) {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 0 || month > 11) {
     throw new RangeError('Invalid year or month.');
   }
 
@@ -52,10 +44,7 @@ function startOfDay(date: Date): Date {
 // Validate transaction date
 // Minimum: 01-Jan-2000
 // Maximum: Tomorrow
-export function isValidTransactionDate(
-  date: Date,
-  now: Date = new Date(),
-): boolean {
+export function isValidTransactionDate(date: Date, now: Date = new Date()): boolean {
   if (
     !(date instanceof Date) ||
     !(now instanceof Date) ||
@@ -118,12 +107,7 @@ export function formatMonthYear(date: Date): string {
 
 // Check previous month navigation
 export function canGoPrevMonth(year: number, month: number): boolean {
-  if (
-    !Number.isInteger(year) ||
-    !Number.isInteger(month) ||
-    month < 0 ||
-    month > 11
-  ) {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 0 || month > 11) {
     return false;
   }
 
@@ -131,11 +115,7 @@ export function canGoPrevMonth(year: number, month: number): boolean {
 }
 
 // Check next month navigation
-export function canGoNextMonth(
-  year: number,
-  month: number,
-  now: Date = new Date(),
-): boolean {
+export function canGoNextMonth(year: number, month: number, now: Date = new Date()): boolean {
   if (
     !Number.isInteger(year) ||
     !Number.isInteger(month) ||
@@ -147,10 +127,7 @@ export function canGoNextMonth(
     return false;
   }
 
-  return (
-    year < now.getFullYear() ||
-    (year === now.getFullYear() && month < now.getMonth())
-  );
+  return year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
 }
 
 // Get previous month
@@ -159,9 +136,7 @@ export function prevMonth(year: number, month: number) {
     return { year, month };
   }
 
-  return month === 0
-    ? { year: year - 1, month: 11 }
-    : { year, month: month - 1 };
+  return month === 0 ? { year: year - 1, month: 11 } : { year, month: month - 1 };
 }
 
 // Get next month
@@ -170,7 +145,5 @@ export function nextMonth(year: number, month: number, now: Date = new Date()) {
     return { year, month };
   }
 
-  return month === 11
-    ? { year: year + 1, month: 0 }
-    : { year, month: month + 1 };
+  return month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 };
 }
