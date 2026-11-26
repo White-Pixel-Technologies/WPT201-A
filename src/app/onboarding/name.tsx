@@ -90,21 +90,14 @@ export default function OnboardingNameScreen() {
       style={[styles.container, { backgroundColor }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <OfflineBanner visible={!isOnline} />
 
         <View style={styles.cardContainer}>
           <View style={[styles.card, { backgroundColor: cardColor }]}>
-            <Text style={[styles.progressText, { color: Colors.primary }]}>
-              Step 1 of 3
-            </Text>
+            <Text style={[styles.progressText, { color: Colors.primary }]}>Step 1 of 3</Text>
 
-            <Text style={[styles.title, { color: textColor }]}>
-              What&apos;s your name?
-            </Text>
+            <Text style={[styles.title, { color: textColor }]}>What&apos;s your name?</Text>
 
             <Text style={[styles.subtitle, { color: subtextColor }]}>
               Welcome to WPT 201 - A. Let&apos;s personalize your experience.
@@ -112,9 +105,7 @@ export default function OnboardingNameScreen() {
 
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: textColor }]}>
-                  Your name
-                </Text>
+                <Text style={[styles.label, { color: textColor }]}>Your name</Text>
                 {showCounter && (
                   <Text style={[styles.counter, { color: subtextColor }]}>
                     {name.length}/{MAX_NAME_LENGTH}
@@ -152,9 +143,7 @@ export default function OnboardingNameScreen() {
               )}
             </View>
 
-            {!isOnline && (
-              <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>
-            )}
+            {!isOnline && <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>}
 
             <Pressable
               onPress={handleContinue}

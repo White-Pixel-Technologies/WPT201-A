@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import * as Network from 'expo-network';
 
@@ -11,20 +10,14 @@ export function useNetworkStatus() {
     Network.getNetworkStateAsync()
       .then((state) => {
         if (mounted) {
-          setIsOnline(
-            state.isConnected !== false &&
-            state.isInternetReachable !== false
-          );
+          setIsOnline(state.isConnected !== false && state.isInternetReachable !== false);
         }
       })
       .catch(() => {});
 
     const subscription = Network.addNetworkStateListener((state) => {
       if (mounted) {
-        setIsOnline(
-          state.isConnected !== false &&
-          state.isInternetReachable !== false
-        );
+        setIsOnline(state.isConnected !== false && state.isInternetReachable !== false);
       }
     });
 

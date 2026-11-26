@@ -39,18 +39,73 @@ function calculateSourceTotals(sources: SourceItem[]) {
 
 describe('Sources Grouping and Sorting (SRC-06)', () => {
   const mockSources: SourceItem[] = [
-    { id: '1', type: 'card', name: 'ICICI Amazon Pay', opening_amount: 1000, current_amount: 1000, credit_limit: 50000, is_archived: false },
-    { id: '2', type: 'bank', name: 'SBI Savings', opening_amount: 5000, current_amount: 5000, credit_limit: null, is_archived: false },
-    { id: '3', type: 'cash', name: 'Wallet cash', opening_amount: 500, current_amount: 500, credit_limit: null, is_archived: false },
-    { id: '4', type: 'bank', name: 'HDFC Salary', opening_amount: 15000, current_amount: 15000, credit_limit: null, is_archived: false },
-    { id: '5', type: 'card', name: 'Axis Ace', opening_amount: 2000, current_amount: 2000, credit_limit: 30000, is_archived: false },
-    { id: '6', type: 'cash', name: 'Home cash', opening_amount: 1000, current_amount: 1000, credit_limit: null, is_archived: false },
-    { id: '7', type: 'bank', name: 'Old Account', opening_amount: 0, current_amount: 0, credit_limit: null, is_archived: true },
+    {
+      id: '1',
+      type: 'card',
+      name: 'ICICI Amazon Pay',
+      opening_amount: 1000,
+      current_amount: 1000,
+      credit_limit: 50000,
+      is_archived: false,
+    },
+    {
+      id: '2',
+      type: 'bank',
+      name: 'SBI Savings',
+      opening_amount: 5000,
+      current_amount: 5000,
+      credit_limit: null,
+      is_archived: false,
+    },
+    {
+      id: '3',
+      type: 'cash',
+      name: 'Wallet cash',
+      opening_amount: 500,
+      current_amount: 500,
+      credit_limit: null,
+      is_archived: false,
+    },
+    {
+      id: '4',
+      type: 'bank',
+      name: 'HDFC Salary',
+      opening_amount: 15000,
+      current_amount: 15000,
+      credit_limit: null,
+      is_archived: false,
+    },
+    {
+      id: '5',
+      type: 'card',
+      name: 'Axis Ace',
+      opening_amount: 2000,
+      current_amount: 2000,
+      credit_limit: 30000,
+      is_archived: false,
+    },
+    {
+      id: '6',
+      type: 'cash',
+      name: 'Home cash',
+      opening_amount: 1000,
+      current_amount: 1000,
+      credit_limit: null,
+      is_archived: false,
+    },
+    {
+      id: '7',
+      type: 'bank',
+      name: 'Old Account',
+      opening_amount: 0,
+      current_amount: 0,
+      credit_limit: null,
+      is_archived: true,
+    },
   ];
 
   it('groups active sources in order: Bank accounts, Cash, Credit cards', () => {
-    const { bankAccounts, cashSources, creditCards, archived } =
-      groupAndSortSources(mockSources);
+    const { bankAccounts, cashSources, creditCards, archived } = groupAndSortSources(mockSources);
 
     expect(bankAccounts.length).toBe(2);
     expect(cashSources.length).toBe(2);
@@ -59,8 +114,7 @@ describe('Sources Grouping and Sorting (SRC-06)', () => {
   });
 
   it('sorts alphabetically by name within each group', () => {
-    const { bankAccounts, cashSources, creditCards } =
-      groupAndSortSources(mockSources);
+    const { bankAccounts, cashSources, creditCards } = groupAndSortSources(mockSources);
 
     expect(bankAccounts.map((s) => s.name)).toEqual(['HDFC Salary', 'SBI Savings']);
     expect(cashSources.map((s) => s.name)).toEqual(['Home cash', 'Wallet cash']);
@@ -71,11 +125,51 @@ describe('Sources Grouping and Sorting (SRC-06)', () => {
 describe('Source Totals (SRC-08)', () => {
   it('calculates total balance as sum of active bank + cash and card outstanding separately', () => {
     const sources: SourceItem[] = [
-      { id: '1', type: 'bank', name: 'SBI', opening_amount: 10000, current_amount: 10000, credit_limit: null, is_archived: false },
-      { id: '2', type: 'cash', name: 'Cash', opening_amount: 2500, current_amount: 2500, credit_limit: null, is_archived: false },
-      { id: '3', type: 'card', name: 'Card 1', opening_amount: 4000, current_amount: 4000, credit_limit: 50000, is_archived: false },
-      { id: '4', type: 'card', name: 'Card 2', opening_amount: 1500, current_amount: 1500, credit_limit: 20000, is_archived: false },
-      { id: '5', type: 'bank', name: 'Archived Bank', opening_amount: 50000, current_amount: 50000, credit_limit: null, is_archived: true },
+      {
+        id: '1',
+        type: 'bank',
+        name: 'SBI',
+        opening_amount: 10000,
+        current_amount: 10000,
+        credit_limit: null,
+        is_archived: false,
+      },
+      {
+        id: '2',
+        type: 'cash',
+        name: 'Cash',
+        opening_amount: 2500,
+        current_amount: 2500,
+        credit_limit: null,
+        is_archived: false,
+      },
+      {
+        id: '3',
+        type: 'card',
+        name: 'Card 1',
+        opening_amount: 4000,
+        current_amount: 4000,
+        credit_limit: 50000,
+        is_archived: false,
+      },
+      {
+        id: '4',
+        type: 'card',
+        name: 'Card 2',
+        opening_amount: 1500,
+        current_amount: 1500,
+        credit_limit: 20000,
+        is_archived: false,
+      },
+      {
+        id: '5',
+        type: 'bank',
+        name: 'Archived Bank',
+        opening_amount: 50000,
+        current_amount: 50000,
+        credit_limit: null,
+        is_archived: true,
+      },
     ];
 
     const { bankCashTotal, cardOutstandingTotal } = calculateSourceTotals(sources);
@@ -112,7 +206,8 @@ describe('Source Warnings (SRC-09)', () => {
       credit_limit: 50000,
       is_archived: false,
     };
-    const isOverLimit = (card.credit_limit ?? 0) > 0 && card.current_amount > (card.credit_limit ?? 0);
+    const isOverLimit =
+      (card.credit_limit ?? 0) > 0 && card.current_amount > (card.credit_limit ?? 0);
     const overLimitBy = card.current_amount - (card.credit_limit ?? 0);
     expect(isOverLimit).toBe(true);
     expect(overLimitBy).toBe(5000);

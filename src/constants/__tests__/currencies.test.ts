@@ -1,9 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import {
-  SUPPORTED_CURRENCIES,
-  getCurrency,
-  detectDefaultCurrency,
-} from '../currencies';
+import { SUPPORTED_CURRENCIES, getCurrency, detectDefaultCurrency } from '../currencies';
 
 describe('currencies (CUR-01)', () => {
   it('contains all 18 supported currencies', () => {

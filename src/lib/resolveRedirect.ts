@@ -8,12 +8,7 @@ const ALWAYS_OPEN = new Set([
   '/delete-account',
 ]);
 
-const GUEST_ONLY = new Set([
-  '/welcome',
-  '/login',
-  '/signup',
-  '/forgot-password',
-]);
+const GUEST_ONLY = new Set(['/welcome', '/login', '/signup', '/forgot-password']);
 
 const MAIN_PAGES = new Set(['/home', '/transactions', '/sources', '/settings']);
 
@@ -24,10 +19,7 @@ function cleanPath(pathname: string): string {
   return pathname || '/';
 }
 
-export function resolveRedirect(
-  pathname: string,
-  gate: AuthGate,
-): string | null {
+export function resolveRedirect(pathname: string, gate: AuthGate): string | null {
   const path = cleanPath(pathname);
 
   if (gate.loading || ALWAYS_OPEN.has(path)) {

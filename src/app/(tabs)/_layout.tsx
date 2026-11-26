@@ -24,8 +24,18 @@ interface DesktopNavItem {
 
 const desktopNavItems: DesktopNavItem[] = [
   { label: NavigationText.home, path: '/home', basePath: '/home', icon: 'home' },
-  { label: NavigationText.transactions, path: '/transactions', basePath: '/transactions', icon: 'list' },
-  { label: NavigationText.addTransaction, path: '/transactions?add=true', basePath: '/transactions?add=true', icon: 'plus-circle' },
+  {
+    label: NavigationText.transactions,
+    path: '/transactions',
+    basePath: '/transactions',
+    icon: 'list',
+  },
+  {
+    label: NavigationText.addTransaction,
+    path: '/transactions?add=true',
+    basePath: '/transactions?add=true',
+    icon: 'plus-circle',
+  },
   { label: NavigationText.sources, path: '/sources', basePath: '/sources', icon: 'credit-card' },
   { label: NavigationText.settings, path: '/settings', basePath: '/settings', icon: 'settings' },
 ];
@@ -81,17 +91,8 @@ export default function TabsLayout() {
           onPress={() => navigation.navigate(routes[0].name)}
           style={styles.navLink}
         >
-          <Feather
-            name="home"
-            size={20}
-            color={isHomeFocused ? Colors.primary : mutedColor}
-          />
-          <Text
-            style={[
-              styles.navLabel,
-              { color: isHomeFocused ? Colors.primary : mutedColor },
-            ]}
-          >
+          <Feather name="home" size={20} color={isHomeFocused ? Colors.primary : mutedColor} />
+          <Text style={[styles.navLabel, { color: isHomeFocused ? Colors.primary : mutedColor }]}>
             {NavigationText.home}
           </Text>
         </Pressable>
@@ -122,10 +123,7 @@ export default function TabsLayout() {
           accessibilityRole="button"
           accessibilityLabel={NavigationText.addTransaction}
           onPress={() => router.push('/transactions?add=true' as never)}
-          style={[
-            styles.plusButton,
-            { backgroundColor: Colors.primary, borderColor: background },
-          ]}
+          style={[styles.plusButton, { backgroundColor: Colors.primary, borderColor: background }]}
         >
           <Feather name="plus" size={26} color="#FFFFFF" />
         </Pressable>
@@ -143,10 +141,7 @@ export default function TabsLayout() {
             color={isSourcesFocused ? Colors.primary : mutedColor}
           />
           <Text
-            style={[
-              styles.navLabel,
-              { color: isSourcesFocused ? Colors.primary : mutedColor },
-            ]}
+            style={[styles.navLabel, { color: isSourcesFocused ? Colors.primary : mutedColor }]}
           >
             {NavigationText.sources}
           </Text>
@@ -165,10 +160,7 @@ export default function TabsLayout() {
             color={isSettingsFocused ? Colors.primary : mutedColor}
           />
           <Text
-            style={[
-              styles.navLabel,
-              { color: isSettingsFocused ? Colors.primary : mutedColor },
-            ]}
+            style={[styles.navLabel, { color: isSettingsFocused ? Colors.primary : mutedColor }]}
           >
             {NavigationText.settings}
           </Text>
@@ -180,15 +172,8 @@ export default function TabsLayout() {
   if (desktop) {
     return (
       <View style={[styles.screen, { backgroundColor: background }]}>
-        <View
-          style={[
-            styles.sidebar,
-            { borderRightColor: border, backgroundColor: background },
-          ]}
-        >
-          <Text style={[styles.brand, { color: foreground }]}>
-            {NavigationText.appName}
-          </Text>
+        <View style={[styles.sidebar, { borderRightColor: border, backgroundColor: background }]}>
+          <Text style={[styles.brand, { color: foreground }]}>{NavigationText.appName}</Text>
 
           {desktopNavItems.map((item) => {
             const isActive =
@@ -223,12 +208,7 @@ export default function TabsLayout() {
         </View>
 
         <View style={styles.main}>
-          <View
-            style={[
-              styles.header,
-              { borderBottomColor: border, backgroundColor: background },
-            ]}
-          >
+          <View style={[styles.header, { borderBottomColor: border, backgroundColor: background }]}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={NavigationText.addTransaction}
@@ -236,9 +216,7 @@ export default function TabsLayout() {
               style={[styles.addButton, { backgroundColor: Colors.primary }]}
             >
               <Feather name="plus" size={18} color="#FFFFFF" />
-              <Text style={styles.addButtonText}>
-                {NavigationText.addTransaction}
-              </Text>
+              <Text style={styles.addButtonText}>{NavigationText.addTransaction}</Text>
             </Pressable>
           </View>
 

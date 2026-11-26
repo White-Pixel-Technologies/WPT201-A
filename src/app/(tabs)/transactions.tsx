@@ -11,12 +11,7 @@ export default function Transactions() {
   const { isDark } = useAppTheme();
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: isDark ? '#121212' : '#FFFFFF' },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
       <EmptyState
         icon="swap-horizontal"
         title="No transactions yet"

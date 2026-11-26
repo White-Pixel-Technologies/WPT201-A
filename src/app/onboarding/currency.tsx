@@ -54,7 +54,7 @@ export default function OnboardingCurrencyScreen() {
       (c) =>
         c.code.toLowerCase().includes(q) ||
         c.name.toLowerCase().includes(q) ||
-        c.symbol.toLowerCase().includes(q)
+        c.symbol.toLowerCase().includes(q),
     );
   }, [searchQuery]);
 
@@ -117,23 +117,12 @@ export default function OnboardingCurrencyScreen() {
         accessibilityLabel={`${item.name} (${item.code})`}
       >
         <View style={styles.currencyLeft}>
-          <View
-            style={[
-              styles.symbolBadge,
-              { backgroundColor: isDark ? '#27272A' : '#F1F5F9' },
-            ]}
-          >
-            <Text style={[styles.symbolText, { color: Colors.primary }]}>
-              {item.symbol}
-            </Text>
+          <View style={[styles.symbolBadge, { backgroundColor: isDark ? '#27272A' : '#F1F5F9' }]}>
+            <Text style={[styles.symbolText, { color: Colors.primary }]}>{item.symbol}</Text>
           </View>
           <View style={styles.currencyInfo}>
-            <Text style={[styles.currencyName, { color: textColor }]}>
-              {item.name}
-            </Text>
-            <Text style={[styles.currencyCode, { color: subtextColor }]}>
-              {item.code}
-            </Text>
+            <Text style={[styles.currencyName, { color: textColor }]}>{item.name}</Text>
+            <Text style={[styles.currencyCode, { color: subtextColor }]}>{item.code}</Text>
           </View>
         </View>
 
@@ -162,32 +151,21 @@ export default function OnboardingCurrencyScreen() {
             accessibilityRole="button"
             accessibilityLabel="Back to Step 1"
           >
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={24}
-              color={textColor}
-            />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={textColor} />
             <Text style={[styles.backText, { color: textColor }]}>Back</Text>
           </Pressable>
 
-          <Text style={[styles.progressText, { color: Colors.primary }]}>
-            Step 2 of 3
-          </Text>
+          <Text style={[styles.progressText, { color: Colors.primary }]}>Step 2 of 3</Text>
         </View>
 
-        <Text style={[styles.title, { color: textColor }]}>
-          Choose your currency
-        </Text>
+        <Text style={[styles.title, { color: textColor }]}>Choose your currency</Text>
         <Text style={[styles.subtitle, { color: subtextColor }]}>
           Amounts will be displayed in this currency across the app.
         </Text>
 
         {/* Search Input */}
         <View
-          style={[
-            styles.searchContainer,
-            { borderColor: inputBorder, backgroundColor: inputBg },
-          ]}
+          style={[styles.searchContainer, { borderColor: inputBorder, backgroundColor: inputBg }]}
         >
           <MaterialCommunityIcons
             name="magnify"
@@ -205,11 +183,7 @@ export default function OnboardingCurrencyScreen() {
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')}>
-              <MaterialCommunityIcons
-                name="close-circle"
-                size={18}
-                color={subtextColor}
-              />
+              <MaterialCommunityIcons name="close-circle" size={18} color={subtextColor} />
             </Pressable>
           )}
         </View>
@@ -232,9 +206,7 @@ export default function OnboardingCurrencyScreen() {
 
         {/* Bottom continue action */}
         <View style={[styles.footer, { backgroundColor }]}>
-          {!isOnline && (
-            <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>
-          )}
+          {!isOnline && <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>}
 
           <Pressable
             onPress={handleContinue}
