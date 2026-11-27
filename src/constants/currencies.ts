@@ -48,21 +48,21 @@ export const SUPPORTED_CURRENCIES: Currency[] = [
     name: 'Singapore Dollar',
     symbol: 'S$',
     prefix: true,
-    useSpace: false,
+    useSpace: true,
   },
   {
     code: 'AUD',
     name: 'Australian Dollar',
     symbol: 'A$',
     prefix: true,
-    useSpace: false,
+    useSpace: true,
   },
   {
     code: 'CAD',
     name: 'Canadian Dollar',
     symbol: 'C$',
     prefix: true,
-    useSpace: false,
+    useSpace: true,
   },
   {
     code: 'MYR',
@@ -129,9 +129,7 @@ export const SUPPORTED_CURRENCIES: Currency[] = [
   },
 ];
 
-export const CURRENCY_MAP = new Map<string, Currency>(
-  SUPPORTED_CURRENCIES.map((c) => [c.code, c]),
-);
+export const CURRENCY_MAP = new Map<string, Currency>(SUPPORTED_CURRENCIES.map((c) => [c.code, c]));
 
 export function getCurrency(code: string | null | undefined): Currency {
   if (!code) return SUPPORTED_CURRENCIES[0];
@@ -149,8 +147,7 @@ export function detectDefaultCurrency(): string {
     }
 
     const parts = locale.split(/[-_]/);
-    const country =
-      parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '';
+    const country = parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '';
 
     const countryToCurrency: Record<string, string> = {
       IN: 'INR',
