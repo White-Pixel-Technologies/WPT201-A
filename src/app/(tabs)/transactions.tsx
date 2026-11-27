@@ -1,35 +1,22 @@
-import { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import EmptyState from '../../components/ui/EmptyState';
-import Toast from '../../components/ui/Toast';
-import { useAppTheme } from '../../lib/theme';
+import { ScrollView, StyleSheet, Text } from 'react-native';
+import { t } from '../../i18n';
+import { useTheme } from '../../theme/theme-context';
 
+// Sprint 1 (D4 card): Transactions shows only its title. The list comes in Sprint 3.
 export default function Transactions() {
-  const params = useLocalSearchParams<{ add?: string }>();
-  const [showToast, setShowToast] = useState(Boolean(params.add));
-  const { isDark } = useAppTheme();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-      <EmptyState
-        icon="swap-horizontal"
-        title="No transactions yet"
-        description="Transactions you record or import will appear here."
-        actionLabel="Add transaction"
-        onAction={() => setShowToast(true)}
-      />
-      <Toast
-        visible={showToast}
-        message="Transaction entry will be available in the next release."
-        onDismiss={() => setShowToast(false)}
-      />
-    </View>
+    <ScrollView
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={styles.container}
+    >
+      <Text style={[styles.heading, { color: colors.text }]}>{t('nav.transactions')}</Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { padding: 20 },
+  heading: { fontSize: 26, fontFamily: 'Inter_700Bold' },
 });

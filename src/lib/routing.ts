@@ -33,3 +33,18 @@ export function currentUrl(
   const text = query.toString();
   return text ? pathname + '?' + text : pathname;
 }
+
+// PRD 4.3: the page a logged-out person tried to open, used once after login.
+let pendingReturnPath: string | null = null;
+
+/** Saves the page to come back to after login (and after onboarding). */
+export function rememberReturnPath(path: unknown): void {
+  if (typeof path === 'string' && path.length > 0) pendingReturnPath = path;
+}
+
+/** Gives the saved page once, then forgets it. Falls back to /home. */
+export function takeReturnPath(): Href {
+  const target = safeRedirectPath(pendingReturnPath);
+  pendingReturnPath = null;
+  return target;
+}
