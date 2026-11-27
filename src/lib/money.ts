@@ -164,3 +164,40 @@ export function formatShortAmount(amount: number, currencyCode = 'INR'): string 
 
   return `${sign}${curr.symbol}${space}${valueStr}${suffix}`;
 }
+
+/** Largest amount a user may type (G-MON-02): 99,99,99,999.99 */
+export const MAX_AMOUNT_TEXT_DIGITS = 9;
+
+/**
+ * Keypad rule (G-MON-03, G-MON-04): runs on every key press.
+ */
+export function sanitizeAmountInput(next: string, previous = ''): string {
+  // only digits and one dot
+  if (!/^[0-9]*\.?[0-9]*$/.test(next)) return previous;
+
+  // "." on its own becomes "0."
+  let text = next.startsWith('.') ? '0' + next : next;
+
+  // remove leading zeros ("0050" -> "50")
+  text = text.replace(/^0+(?=\d)/, '');
+
+  const [whole, decimals] = text.split('.');
+
+  // block a third decimal digit
+  if (decimals !== undefined && decimals.length > 2) return previous;
+
+  // block any digit past 99,99,99,999.99
+  if (whole.length > MAX_AMOUNT_TEXT_DIGITS) return previous;
+
+  return text;
+}
+
+/** When the field is left: "50." -> "50.00", "7.5" -> "7.50" */
+export function finishAmountInput(text: string): string {
+  if (text === '' || text === '0.') {
+    return text === '' ? '' : '0.00';
+  }
+
+  const [whole, decimals = ''] = text.split('.');
+  return `${whole || '0'}.${(decimals + '00').slice(0, 2)}`;
+}
