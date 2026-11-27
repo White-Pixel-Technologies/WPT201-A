@@ -301,12 +301,48 @@ SET LOCAL ROLE authenticated;
 -- ---------------------------------------------------------
 
 DO $$
+DECLARE
+    v_existing INTEGER;
+    v_others INTEGER;
+    v_add_others INTEGER;
+    i INTEGER;
 BEGIN
+    -- Count existing expense tags
+    SELECT COUNT(*),
+           COUNT(*) FILTER (WHERE is_others = TRUE)
+    INTO v_existing, v_others
+    FROM public.tags
+    WHERE user_id = 'bb65b43f-a85e-4098-be4f-307194966c8b'
+      AND type = 'expense';
+
+    -- Add Others only if missing
+    v_add_others := CASE WHEN v_others = 0 THEN 1 ELSE 0 END;
+
+    -- Fill up to 100 expense tags
+    FOR i IN 1..(100 - v_existing - v_add_others) LOOP
+        INSERT INTO public.tags
+            (user_id, type, name, colour)
+        VALUES (
+            'bb65b43f-a85e-4098-be4f-307194966c8b',
+            'expense',
+            'Rule Test Tag ' || i,
+            '#808080'
+        );
+    END LOOP;
+
+    -- Try to insert the 101st tag
     BEGIN
-        INSERT INTO public.tags (type, name, colour)
-        VALUES ('expense', 'Rule Test 101st Tag', '#808080');
+        INSERT INTO public.tags
+            (user_id, type, name, colour)
+        VALUES (
+            'bb65b43f-a85e-4098-be4f-307194966c8b',
+            'expense',
+            'Rule Test 101st Tag',
+            '#808080'
+        );
 
         RAISE EXCEPTION 'FAIL: 101st tag was allowed';
+
     EXCEPTION
         WHEN SQLSTATE 'P0001' THEN
             IF SQLERRM <> 'WPT_TAG_LIMIT' THEN
@@ -318,7 +354,7 @@ BEGIN
 END;
 $$;
 
-
+SELECT 'PASS: 101st tag blocked' AS proof_result;
 -- ---------------------------------------------------------
 -- 10. Others tag cannot be renamed
 -- ---------------------------------------------------------
@@ -489,13 +525,44 @@ RESET ROLE;
 -- 8. 51st source must be blocked
 -- ---------------------------------------------------------
 
+-- ---------------------------------------------------------
+-- 8. 51st source must be blocked
+-- ---------------------------------------------------------
+
+-- ---------------------------------------------------------
+-- 8. 51st source must be blocked
+-- ---------------------------------------------------------
+
 DO $$
+DECLARE
+    v_user_id UUID := 'bb65b43f-a85e-4098-be4f-307194966c8b';
+    v_count INTEGER;
 BEGIN
-    -- Create the 50th source
+    -- Get current source count
+    SELECT COUNT(*)
+    INTO v_count
+    FROM public.financial_sources
+    WHERE user_id = v_user_id;
+
+    -- Create sources until there are 49
+    WHILE v_count < 49 LOOP
+        INSERT INTO public.financial_sources
+            (user_id, type, name, opening_amount)
+        VALUES (
+            v_user_id,
+            'cash',
+            'Rule Test Source ' || pg_catalog.gen_random_uuid()::TEXT,
+            0
+        );
+
+        v_count := v_count + 1;
+    END LOOP;
+
+    -- Create the named 50th source
     INSERT INTO public.financial_sources
         (user_id, type, name, opening_amount)
     VALUES (
-        'bb65b43f-a85e-4098-be4f-307194966c8b',
+        v_user_id,
         'cash',
         'Rule Test 50th Source',
         0
@@ -506,7 +573,7 @@ BEGIN
         INSERT INTO public.financial_sources
             (user_id, type, name, opening_amount)
         VALUES (
-            'bb65b43f-a85e-4098-be4f-307194966c8b',
+            v_user_id,
             'cash',
             'Rule Test 51st Source',
             0
@@ -524,7 +591,6 @@ BEGIN
     END;
 END;
 $$;
-
 
 
 
