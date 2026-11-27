@@ -10,12 +10,7 @@ export function getDatabaseErrorKey(error: unknown): string {
     hint?: string;
   };
 
-  const errorText = [
-    err.code,
-    err.message,
-    err.details,
-    err.hint,
-  ]
+  const errorText = [err.code, err.message, err.details, err.hint]
     .filter(Boolean)
     .join(' ')
     .toUpperCase();
@@ -48,10 +43,7 @@ export function getDatabaseErrorKey(error: unknown): string {
     return 'err.amount.max';
   }
 
-  if (
-    errorText.includes('EC-SRC-04') ||
-    errorText.includes('SOURCES_OPENING_SIGN')
-  ) {
+  if (errorText.includes('EC-SRC-04') || errorText.includes('SOURCES_OPENING_SIGN')) {
     return 'err.source.negative_cash';
   }
 
@@ -59,10 +51,7 @@ export function getDatabaseErrorKey(error: unknown): string {
     return 'err.source.type_locked';
   }
 
-  if (
-    errorText.includes('NETWORK') ||
-    errorText.includes('FETCH')
-  ) {
+  if (errorText.includes('NETWORK') || errorText.includes('FETCH')) {
     return 'err.network.save';
   }
 

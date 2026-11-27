@@ -90,9 +90,7 @@ describe('Date Helper Functions', () => {
     });
 
     test('rejects invalid current date', () => {
-      expect(
-        isValidTransactionDate(new Date(2026, 10, 17), new Date('invalid')),
-      ).toBe(false);
+      expect(isValidTransactionDate(new Date(2026, 10, 17), new Date('invalid'))).toBe(false);
     });
   });
 

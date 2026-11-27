@@ -1,10 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { z } from 'zod';
 
-const createSourceSchema = (
-  existingSources: { id?: string; name: string }[],
-  currentId?: string
-) =>
+const createSourceSchema = (existingSources: { id?: string; name: string }[], currentId?: string) =>
   z.object({
     type: z.enum(['bank', 'cash', 'card']),
     name: z
@@ -16,10 +13,10 @@ const createSourceSchema = (
         (val) => {
           const lower = val.trim().toLowerCase();
           return !existingSources.some(
-            (s) => s.id !== currentId && s.name.trim().toLowerCase() === lower
+            (s) => s.id !== currentId && s.name.trim().toLowerCase() === lower,
           );
         },
-        { message: 'You already have a source with this name.' }
+        { message: 'You already have a source with this name.' },
       ),
     openingAmount: z.string().min(1, 'Enter a valid amount.'),
     isOverdrawn: z.boolean(),
@@ -44,9 +41,7 @@ describe('SourceForm Zod Validation (Task 11)', () => {
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe(
-        'You already have a source with this name.'
-      );
+      expect(result.error.issues[0].message).toBe('You already have a source with this name.');
     }
   });
 

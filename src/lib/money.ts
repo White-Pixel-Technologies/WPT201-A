@@ -13,10 +13,7 @@ import { getCurrency } from '../constants/currencies';
  * "Rs. 1,200/-" -> 1200.00
  * "1200 Rs" -> 1200.00
  */
-export function cleanPastedAmount(
-  input: string,
-  currencyCode = 'INR',
-): string | null {
+export function cleanPastedAmount(input: string, currencyCode = 'INR'): string | null {
   if (!input || typeof input !== 'string') return null;
 
   let str = input.trim();
@@ -96,9 +93,7 @@ export function formatAmount(
   const [intPart, decPart] = fixed.split('.');
 
   const isINR = currencyCode.toUpperCase() === 'INR';
-  const groupedInt = isINR
-    ? formatIndianGrouping(intPart)
-    : formatStandardGrouping(intPart);
+  const groupedInt = isINR ? formatIndianGrouping(intPart) : formatStandardGrouping(intPart);
 
   let formattedNumber = groupedInt;
   if (options.hideZeroPaise && decPart === '00') {
@@ -125,10 +120,7 @@ export function formatAmount(
  * - INR from 1,00,000: L (₹3.4L). INR from 1,00,00,000: Cr (₹2.1Cr)
  * - Other currencies: M from 1,000,000 and B from 1,000,000,000
  */
-export function formatShortAmount(
-  amount: number,
-  currencyCode = 'INR',
-): string {
+export function formatShortAmount(amount: number, currencyCode = 'INR'): string {
   const isNegative = amount < 0;
   const abs = Math.abs(amount);
   const isINR = currencyCode.toUpperCase() === 'INR';

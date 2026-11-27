@@ -1,8 +1,4 @@
-import {
-  ThemeProvider,
-  useTheme,
-  type ThemeMode,
-} from '../theme/theme-context';
+import { ThemeProvider, useTheme, type ThemeMode } from '../theme/theme-context';
 
 export { ThemeProvider };
 export type { ThemeMode };
