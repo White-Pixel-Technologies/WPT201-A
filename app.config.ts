@@ -18,6 +18,22 @@ const config: ExpoConfig = {
   android: {
     package: 'in.whitepixeltechnologies.wpt201a',
     allowBackup: false,
+    blockedPermissions: [
+      'android.permission.SCHEDULE_EXACT_ALARM',
+      'android.permission.USE_EXACT_ALARM',
+      'android.permission.READ_SMS',
+      'android.permission.RECEIVE_SMS',
+      'android.permission.READ_CONTACTS',
+      'android.permission.ACCESS_FINE_LOCATION',
+      'android.permission.ACCESS_COARSE_LOCATION',
+      'android.permission.CAMERA',
+      'android.permission.RECORD_AUDIO',
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+      'android.permission.READ_PHONE_STATE',
+      'android.permission.SYSTEM_ALERT_WINDOW',
+      'android.permission.ACCESS_WIFI_STATE',
+    ],
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -26,6 +42,7 @@ const config: ExpoConfig = {
     },
     predictiveBackGestureEnabled: false,
   },
+
   web: {
     output: 'single',
     favicon: './assets/images/favicon.png',
