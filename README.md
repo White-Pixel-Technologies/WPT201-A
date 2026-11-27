@@ -68,6 +68,8 @@ Configure these variables in your `.env` file:
 
 Never commit `.env` or expose secret keys.
 
+**How to get the real values:** message the Echo team lead privately (never on Planka, GitHub or the group chat). Echo sends the Project URL and the public (publishable) key only. The secret (service role) key is never shared and never goes in the app.
+
 ## Running the Application
 
 ### Web
