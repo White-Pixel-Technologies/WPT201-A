@@ -7,7 +7,8 @@ export default function Index() {
 
   if (!ready) return null;
   if (!isLoggedIn) return <Redirect href="/(auth)/welcome" />;
-  if (onboardingStep < ONBOARDING_DONE) return <Redirect href={nextOnboardingHref(onboardingStep)} />;
+  if (onboardingStep < ONBOARDING_DONE)
+    return <Redirect href={nextOnboardingHref(onboardingStep)} />;
 
   return <Redirect href="/home" />;
 }

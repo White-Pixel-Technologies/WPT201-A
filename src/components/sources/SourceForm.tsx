@@ -1,27 +1,28 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { useState, useMemo } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
+  View,
   Text,
   TextInput,
-  View,
+  Pressable,
+  StyleSheet,
+  Switch,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
+import { useForm, Controller, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Colors } from '../../constants/colors';
-import { t } from '../../i18n';
-import { cleanPastedAmount, formatAmount } from '../../lib/money';
-import { useSession } from '../../lib/session';
-import { supabase } from '../../lib/supabase';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../lib/theme';
 import { useSafeSave } from '../../lib/useSafeSave';
+import { useSession } from '../../lib/session';
+import { supabase } from '../../lib/supabase';
+import { generateUUID } from '../../lib/uuid';
+import { t } from '../../i18n';
+import { formatAmount, cleanPastedAmount } from '../../lib/money';
 import ConfirmSheet from '../ui/ConfirmSheet';
 import InlineError from '../ui/InlineError';
+import { Colors } from '../../constants/colors';
 
 const MAX_SOURCES = 50;
 
@@ -38,10 +39,7 @@ export type SourceItem = {
   has_transactions?: boolean;
 };
 
-const createSourceSchema = (
-  existingSources: { id?: string; name: string }[],
-  currentId?: string,
-) =>
+const createSourceSchema = (existingSources: { id?: string; name: string }[], currentId?: string) =>
   z.object({
     type: z.enum(['bank', 'cash', 'card']),
     name: z
@@ -100,17 +98,13 @@ export default function SourceForm({
 
   const defaultValues: FormValues = useMemo(() => {
     if (initialSource) {
-      const isBankOverdrawn =
-        initialSource.type === 'bank' && initialSource.opening_amount < 0;
+      const isBankOverdrawn = initialSource.type === 'bank' && initialSource.opening_amount < 0;
       return {
         type: initialSource.type,
         name: initialSource.name,
         openingAmount: String(Math.abs(initialSource.opening_amount)),
         isOverdrawn: isBankOverdrawn,
-        creditLimit:
-          initialSource.credit_limit !== null
-            ? String(initialSource.credit_limit)
-            : '',
+        creditLimit: initialSource.credit_limit !== null ? String(initialSource.credit_limit) : '',
       };
     }
     return {
@@ -150,10 +144,7 @@ export default function SourceForm({
         ? 'e.g. ICICI Amazon Pay card'
         : 'e.g. Wallet cash';
 
-  const handleAmountInput = (
-    val: string,
-    field: 'openingAmount' | 'creditLimit',
-  ) => {
+  const handleAmountInput = (val: string, field: 'openingAmount' | 'creditLimit') => {
     clearError();
     setFormError('');
 
@@ -200,11 +191,7 @@ export default function SourceForm({
     let finalCreditLimit: number | null = null;
     if (values.type === 'card') {
       const parsedLimit = Number(values.creditLimit);
-      if (
-        !values.creditLimit ||
-        !Number.isFinite(parsedLimit) ||
-        parsedLimit <= 0
-      ) {
+      if (!values.creditLimit || !Number.isFinite(parsedLimit) || parsedLimit <= 0) {
         setFormError(t('err.limit.zero'));
         return;
       }
@@ -235,12 +222,13 @@ export default function SourceForm({
         return error;
       }
 
+      const newId = generateUUID();
       const { error } = await supabase.from('financial_sources').insert({
+        id: newId,
         type: values.type,
         name: values.name.trim(),
         opening_amount: finalOpening,
         credit_limit: finalCreditLimit,
-        is_archived: false,
       });
 
       return error;
@@ -260,10 +248,7 @@ export default function SourceForm({
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={[styles.card, { backgroundColor: cardColor }]}>
         <Text style={[styles.heading, { color: textColor }]}>
           {isEditing ? 'Edit Source' : 'Add Source'}
@@ -272,10 +257,7 @@ export default function SourceForm({
         {/* Read-only Current Balance at top when Editing (SRC-13) */}
         {isEditing && initialSource && (
           <View
-            style={[
-              styles.currentBalanceCard,
-              { backgroundColor: isDark ? '#27272A' : '#F1F5F9' },
-            ]}
+            style={[styles.currentBalanceCard, { backgroundColor: isDark ? '#27272A' : '#F1F5F9' }]}
           >
             <Text style={[styles.currentBalanceLabel, { color: subtextColor }]}>
               {initialSource.type === 'card'
@@ -286,10 +268,7 @@ export default function SourceForm({
               style={[
                 styles.currentBalanceValue,
                 {
-                  color:
-                    initialSource.current_amount < 0
-                      ? '#DC2626'
-                      : Colors.primary,
+                  color: initialSource.current_amount < 0 ? '#DC2626' : Colors.primary,
                 },
               ]}
             >
@@ -352,10 +331,7 @@ export default function SourceForm({
                     color={isSelected ? '#FFFFFF' : textColor}
                   />
                   <Text
-                    style={[
-                      styles.typeButtonText,
-                      { color: isSelected ? '#FFFFFF' : textColor },
-                    ]}
+                    style={[styles.typeButtonText, { color: isSelected ? '#FFFFFF' : textColor }]}
                   >
                     {item.label}
                   </Text>
@@ -368,13 +344,9 @@ export default function SourceForm({
         {/* Source Name Field */}
         <View style={styles.inputGroup}>
           <View style={styles.labelRow}>
-            <Text style={[styles.label, { color: textColor }]}>
-              Source name
-            </Text>
+            <Text style={[styles.label, { color: textColor }]}>Source name</Text>
             {watchedName?.length >= 24 && (
-              <Text style={[styles.counter, { color: subtextColor }]}>
-                {watchedName.length}/30
-              </Text>
+              <Text style={[styles.counter, { color: subtextColor }]}>{watchedName.length}/30</Text>
             )}
           </View>
           <Controller
@@ -403,12 +375,8 @@ export default function SourceForm({
               />
             )}
           />
-          <Text style={[styles.helperText, { color: subtextColor }]}>
-            {helperExample}
-          </Text>
-          {errors.name && (
-            <Text style={styles.fieldError}>{errors.name.message}</Text>
-          )}
+          <Text style={[styles.helperText, { color: subtextColor }]}>{helperExample}</Text>
+          {errors.name && <Text style={styles.fieldError}>{errors.name.message}</Text>}
         </View>
 
         {/* Opening Balance / Outstanding Field */}
@@ -473,30 +441,25 @@ export default function SourceForm({
             </View>
           )}
 
-          {selectedType === 'bank' &&
-            (watchedOverdrawn || Number(watchedOpening) < 0) && (
-              <View style={styles.warningBox}>
-                <InlineError
-                  message={t('warn.bank.starts.negative')}
-                  variant="warning"
-                  isDark={isDark}
-                />
-              </View>
-            )}
+          {selectedType === 'bank' && (watchedOverdrawn || Number(watchedOpening) < 0) && (
+            <View style={styles.warningBox}>
+              <InlineError
+                message={t('warn.bank.starts.negative')}
+                variant="warning"
+                isDark={isDark}
+              />
+            </View>
+          )}
 
           {errors.openingAmount && (
-            <Text style={styles.fieldError}>
-              {errors.openingAmount.message}
-            </Text>
+            <Text style={styles.fieldError}>{errors.openingAmount.message}</Text>
           )}
         </View>
 
         {/* Credit Limit Field (Cards Only) */}
         {selectedType === 'card' && (
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: textColor }]}>
-              Credit limit
-            </Text>
+            <Text style={[styles.label, { color: textColor }]}>Credit limit</Text>
             <Controller
               control={control}
               name="creditLimit"
@@ -533,9 +496,7 @@ export default function SourceForm({
               )}
 
             {errors.creditLimit && (
-              <Text style={styles.fieldError}>
-                {errors.creditLimit.message}
-              </Text>
+              <Text style={styles.fieldError}>{errors.creditLimit.message}</Text>
             )}
           </View>
         )}
@@ -543,17 +504,11 @@ export default function SourceForm({
         {/* Top general error box */}
         {(!!formError || !!errorMessage) && (
           <View style={styles.errorBox}>
-            <InlineError
-              message={formError || errorMessage}
-              variant="error"
-              isDark={isDark}
-            />
+            <InlineError message={formError || errorMessage} variant="error" isDark={isDark} />
           </View>
         )}
 
-        {!isOnline && (
-          <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>
-        )}
+        {!isOnline && <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>}
 
         {/* Action Buttons */}
         <View style={styles.actionRow}>
@@ -583,9 +538,7 @@ export default function SourceForm({
             accessibilityRole="button"
             accessibilityLabel="Cancel"
           >
-            <Text style={[styles.cancelButtonText, { color: textColor }]}>
-              Cancel
-            </Text>
+            <Text style={[styles.cancelButtonText, { color: textColor }]}>Cancel</Text>
           </Pressable>
         </View>
       </View>
