@@ -5,7 +5,7 @@ import { t } from '../../i18n';
 export default function Welcome() {
   return (
     <>
-      <PlaceholderScreen title={t('onboarding.welcome')} />
+      <PlaceholderScreen title={t('app.name')} />
       <PrivacyPolicyLink />
     </>
   );
