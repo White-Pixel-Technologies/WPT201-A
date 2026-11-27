@@ -1,9 +1,5 @@
 /// <reference types="node" />
-import {
-  ConfigPlugin,
-  withAndroidManifest,
-  withDangerousMod,
-} from '@expo/config-plugins';
+import { ConfigPlugin, withAndroidManifest, withDangerousMod } from '@expo/config-plugins';
 
 import fs from 'fs';
 import path from 'path';
@@ -19,8 +15,7 @@ const withBackupOff: ConfigPlugin = (config) => {
 
     mainApplication.$['android:allowBackup'] = 'false';
     mainApplication.$['android:fullBackupContent'] = '@xml/backup_rules';
-    mainApplication.$['android:dataExtractionRules'] =
-      '@xml/data_extraction_rules';
+    mainApplication.$['android:dataExtractionRules'] = '@xml/data_extraction_rules';
 
     return config;
   });
@@ -31,14 +26,7 @@ const withBackupOff: ConfigPlugin = (config) => {
     async (config) => {
       const projectRoot = config.modRequest.platformProjectRoot;
 
-      const xmlDirectory = path.join(
-        projectRoot,
-        'app',
-        'src',
-        'main',
-        'res',
-        'xml',
-      );
+      const xmlDirectory = path.join(projectRoot, 'app', 'src', 'main', 'res', 'xml');
 
       fs.mkdirSync(xmlDirectory, { recursive: true });
 
@@ -81,15 +69,9 @@ const withBackupOff: ConfigPlugin = (config) => {
     </device-transfer>
 </data-extraction-rules>`;
 
-      fs.writeFileSync(
-        path.join(xmlDirectory, 'backup_rules.xml'),
-        backupRules,
-      );
+      fs.writeFileSync(path.join(xmlDirectory, 'backup_rules.xml'), backupRules);
 
-      fs.writeFileSync(
-        path.join(xmlDirectory, 'data_extraction_rules.xml'),
-        dataExtractionRules,
-      );
+      fs.writeFileSync(path.join(xmlDirectory, 'data_extraction_rules.xml'), dataExtractionRules);
 
       return config;
     },

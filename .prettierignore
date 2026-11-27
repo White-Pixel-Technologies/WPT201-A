@@ -4,3 +4,6 @@ dist
 coverage
 package-lock.json
 setup3.js
+
+# Generated Android backup/build files
+android_backup/

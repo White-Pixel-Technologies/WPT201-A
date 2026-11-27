@@ -3,10 +3,7 @@
  * Uses crypto.randomUUID when available, with fallback.
  */
 export function generateUUID(): string {
-  if (
-    typeof crypto !== 'undefined' &&
-    typeof crypto.randomUUID === 'function'
-  ) {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     try {
       return crypto.randomUUID();
     } catch {

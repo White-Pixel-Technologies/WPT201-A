@@ -1,17 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import SourceForm, {
-  type SourceItem,
-} from '../../components/sources/SourceForm';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import SourceForm, { type SourceItem } from '../../components/sources/SourceForm';
 import ConfirmSheet from '../../components/ui/ConfirmSheet';
 import { Colors } from '../../constants/colors';
 import { t } from '../../i18n';
@@ -57,9 +48,7 @@ export default function SourceDetailScreen() {
         // Fallback to table query if RPC is not available
         const { data: directData, error: directErr } = await supabase
           .from('financial_sources')
-          .select(
-            'id, type, name, opening_amount, current_amount, credit_limit, is_archived',
-          )
+          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
           .order('name');
 
         if (directErr) {
@@ -123,10 +112,7 @@ export default function SourceDetailScreen() {
     if (!source || !isOnline || isSaving) return;
 
     const success = await save(async () => {
-      const { error } = await supabase
-        .from('financial_sources')
-        .delete()
-        .eq('id', source.id);
+      const { error } = await supabase.from('financial_sources').delete().eq('id', source.id);
       return error;
     });
 
@@ -203,18 +189,10 @@ export default function SourceDetailScreen() {
   const isBelowZero = !isCard && source.current_amount < 0;
 
   const typeIcon =
-    source.type === 'bank'
-      ? 'bank'
-      : source.type === 'card'
-        ? 'credit-card-outline'
-        : 'cash';
+    source.type === 'bank' ? 'bank' : source.type === 'card' ? 'credit-card-outline' : 'cash';
 
   const typeLabel =
-    source.type === 'bank'
-      ? 'Bank Account'
-      : source.type === 'card'
-        ? 'Credit Card'
-        : 'Cash';
+    source.type === 'bank' ? 'Bank Account' : source.type === 'card' ? 'Credit Card' : 'Cash';
 
   return (
     <ScrollView
@@ -229,11 +207,7 @@ export default function SourceDetailScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back to sources"
         >
-          <MaterialCommunityIcons
-            name="arrow-left"
-            size={24}
-            color={textColor}
-          />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={textColor} />
           <Text style={[styles.backText, { color: textColor }]}>Sources</Text>
         </Pressable>
 
@@ -245,57 +219,28 @@ export default function SourceDetailScreen() {
       </View>
 
       {/* Summary Card (SRC-10) */}
-      <View
-        style={[
-          styles.summaryCard,
-          { backgroundColor: cardColor, borderColor },
-        ]}
-      >
+      <View style={[styles.summaryCard, { backgroundColor: cardColor, borderColor }]}>
         <View style={styles.sourceTitleRow}>
-          <View
-            style={[
-              styles.iconWrapper,
-              { backgroundColor: isDark ? '#27272A' : '#E8F5F1' },
-            ]}
-          >
-            <MaterialCommunityIcons
-              name={typeIcon as any}
-              size={28}
-              color={Colors.primary}
-            />
+          <View style={[styles.iconWrapper, { backgroundColor: isDark ? '#27272A' : '#E8F5F1' }]}>
+            <MaterialCommunityIcons name={typeIcon as any} size={28} color={Colors.primary} />
           </View>
           <View style={styles.titleInfo}>
-            <Text style={[styles.sourceName, { color: textColor }]}>
-              {source.name}
-            </Text>
-            <Text style={[styles.sourceType, { color: subtextColor }]}>
-              {typeLabel}
-            </Text>
+            <Text style={[styles.sourceName, { color: textColor }]}>{source.name}</Text>
+            <Text style={[styles.sourceType, { color: subtextColor }]}>{typeLabel}</Text>
           </View>
         </View>
 
         {/* Bank or Cash: Current Balance */}
         {!isCard && (
           <View style={styles.amountSection}>
-            <Text style={[styles.amountLabel, { color: subtextColor }]}>
-              Current Balance
-            </Text>
-            <Text
-              style={[
-                styles.amountValue,
-                { color: isBelowZero ? '#DC2626' : textColor },
-              ]}
-            >
+            <Text style={[styles.amountLabel, { color: subtextColor }]}>Current Balance</Text>
+            <Text style={[styles.amountValue, { color: isBelowZero ? '#DC2626' : textColor }]}>
               {formatAmount(source.current_amount, currencyCode)}
             </Text>
 
             {isBelowZero && (
               <View style={styles.warningTag}>
-                <MaterialCommunityIcons
-                  name="alert-circle-outline"
-                  size={16}
-                  color="#DC2626"
-                />
+                <MaterialCommunityIcons name="alert-circle-outline" size={16} color="#DC2626" />
                 <Text style={styles.warningTagText}>Below zero</Text>
               </View>
             )}
@@ -307,23 +252,16 @@ export default function SourceDetailScreen() {
           <View style={styles.cardDetailsSection}>
             <View style={styles.cardAmountRow}>
               <View>
-                <Text style={[styles.amountLabel, { color: subtextColor }]}>
-                  Outstanding
-                </Text>
+                <Text style={[styles.amountLabel, { color: subtextColor }]}>Outstanding</Text>
                 <Text
-                  style={[
-                    styles.amountValue,
-                    { color: isCreditBalance ? '#16A34A' : textColor },
-                  ]}
+                  style={[styles.amountValue, { color: isCreditBalance ? '#16A34A' : textColor }]}
                 >
                   {formatAmount(outstanding, currencyCode)}
                 </Text>
               </View>
 
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={[styles.amountLabel, { color: subtextColor }]}>
-                  Available Credit
-                </Text>
+                <Text style={[styles.amountLabel, { color: subtextColor }]}>Available Credit</Text>
                 <Text style={[styles.amountValue, { color: Colors.primary }]}>
                   {formatAmount(availableCredit, currencyCode)}
                 </Text>
@@ -339,28 +277,18 @@ export default function SourceDetailScreen() {
             {/* Warnings from SRC-09 */}
             {isOverLimit && (
               <View style={styles.warningTag}>
-                <MaterialCommunityIcons
-                  name="alert-circle-outline"
-                  size={16}
-                  color="#DC2626"
-                />
+                <MaterialCommunityIcons name="alert-circle-outline" size={16} color="#DC2626" />
                 <Text style={styles.warningTagText}>
-                  Over limit by{' '}
-                  {formatAmount(outstanding - limit, currencyCode)}
+                  Over limit by {formatAmount(outstanding - limit, currencyCode)}
                 </Text>
               </View>
             )}
 
             {isCreditBalance && (
               <View style={[styles.warningTag, styles.creditBalanceTag]}>
-                <MaterialCommunityIcons
-                  name="check-circle-outline"
-                  size={16}
-                  color="#16A34A"
-                />
+                <MaterialCommunityIcons name="check-circle-outline" size={16} color="#16A34A" />
                 <Text style={styles.creditBalanceTagText}>
-                  Credit balance{' '}
-                  {formatAmount(Math.abs(outstanding), currencyCode)}
+                  Credit balance {formatAmount(Math.abs(outstanding), currencyCode)}
                 </Text>
               </View>
             )}
@@ -378,14 +306,8 @@ export default function SourceDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel="Edit source"
             >
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={18}
-                color={textColor}
-              />
-              <Text style={[styles.actionBtnText, { color: textColor }]}>
-                Edit
-              </Text>
+              <MaterialCommunityIcons name="pencil-outline" size={18} color={textColor} />
+              <Text style={[styles.actionBtnText, { color: textColor }]}>Edit</Text>
             </Pressable>
 
             <Pressable
@@ -407,9 +329,7 @@ export default function SourceDetailScreen() {
               accessibilityLabel="Add transaction"
             >
               <MaterialCommunityIcons name="plus" size={18} color="#FFFFFF" />
-              <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>
-                Add transaction
-              </Text>
+              <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>Add transaction</Text>
             </Pressable>
 
             <Pressable
@@ -418,14 +338,8 @@ export default function SourceDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel="Delete source"
             >
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={18}
-                color="#DC2626"
-              />
-              <Text style={[styles.actionBtnText, { color: '#DC2626' }]}>
-                Delete
-              </Text>
+              <MaterialCommunityIcons name="trash-can-outline" size={18} color="#DC2626" />
+              <Text style={[styles.actionBtnText, { color: '#DC2626' }]}>Delete</Text>
             </Pressable>
           </>
         )}
@@ -438,28 +352,18 @@ export default function SourceDetailScreen() {
             accessibilityLabel="Restore source"
           >
             <MaterialCommunityIcons name="restore" size={18} color="#FFFFFF" />
-            <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>
-              Restore Source
-            </Text>
+            <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>Restore Source</Text>
           </Pressable>
         )}
       </View>
 
       {/* Transactions Section - Empty State for now (SRC-11) */}
       <View style={styles.transactionsHeader}>
-        <Text style={[styles.sectionTitle, { color: textColor }]}>
-          Transactions
-        </Text>
+        <Text style={[styles.sectionTitle, { color: textColor }]}>Transactions</Text>
       </View>
 
-      <View
-        style={[styles.emptyBox, { backgroundColor: cardColor, borderColor }]}
-      >
-        <MaterialCommunityIcons
-          name="receipt-text-outline"
-          size={40}
-          color={subtextColor}
-        />
+      <View style={[styles.emptyBox, { backgroundColor: cardColor, borderColor }]}>
+        <MaterialCommunityIcons name="receipt-text-outline" size={40} color={subtextColor} />
         <Text style={[styles.emptyText, { color: subtextColor }]}>
           No transactions for this source yet.
         </Text>

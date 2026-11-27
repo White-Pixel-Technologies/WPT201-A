@@ -32,14 +32,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run Prettier check on changed files only
-        env:
-          BASE_REF: ${{ github.base_ref }}
-        run: |
-          git fetch origin "$BASE_REF"
-          git diff --name-only -z --diff-filter=ACMR \
-            "origin/${BASE_REF}...HEAD" \
-            | xargs -0 -r npx prettier --check --ignore-unknown
+      - name: Run Prettier check on all files
+        run: npx prettier --check .
 
       - name: Run Jest tests
         run: npx jest
