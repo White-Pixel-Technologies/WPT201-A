@@ -1,42 +1,34 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import ConfirmSheet from '../../components/ui/ConfirmSheet';
+import InlineError from '../../components/ui/InlineError';
 import { t } from '../../i18n';
 import { useSession } from '../../lib/session';
-import { ThemeMode, useAppTheme } from '../../lib/theme';
+import { useTheme } from '../../theme/theme-context';
 
+// Sprint 1 (D-21): Settings has ONE row only, "Log out".
 export default function Settings() {
   const router = useRouter();
   const { logout } = useSession();
+  const { colors } = useTheme();
 
-  const [notifications, setNotifications] = useState(true);
-  const [offlineMode, setOfflineMode] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState('');
 
-  const { themeMode, setThemeMode, isDark } = useAppTheme();
-
-  const textColor = isDark ? '#FFFFFF' : '#222222';
-  const cardColor = isDark ? '#242424' : '#F2F2F2';
-
   async function handleLogout() {
     if (loggingOut) return;
-
     setLoggingOut(true);
     setLogoutError('');
-
     try {
       const error = await logout();
-
       if (error) {
         setLogoutError(t('err.logout.failed'));
         return;
       }
-
       setShowLogout(false);
-      router.replace('/(auth)/welcome');
+      router.replace('/welcome');
     } catch {
       setLogoutError(t('err.logout.failed'));
     } finally {
@@ -46,92 +38,32 @@ export default function Settings() {
 
   return (
     <>
-      <ScrollView style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-        <Text style={[styles.heading, { color: textColor }]}>Settings</Text>
+      <ScrollView
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={styles.container}
+      >
+        <Text style={[styles.heading, { color: colors.text }]}>{t('nav.settings')}</Text>
 
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <View>
-            <Text style={[styles.title, { color: textColor }]}>Theme</Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>Choose app appearance</Text>
-          </View>
-
-          <View style={styles.themeOptions}>
-            {(['system', 'light', 'dark'] as ThemeMode[]).map((mode) => (
-              <Pressable
-                key={mode}
-                onPress={() => setThemeMode(mode)}
-                style={[styles.themeButton, themeMode === mode && styles.selected]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: themeMode === mode }}
-              >
-                <Text
-                  style={{
-                    color: themeMode === mode ? '#FFFFFF' : textColor,
-                  }}
-                >
-                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <View>
-            <Text style={[styles.title, { color: textColor }]}>Notifications</Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>Manage app notifications</Text>
-          </View>
-          <Switch value={notifications} onValueChange={setNotifications} />
-        </View>
-
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <View>
-            <Text style={[styles.title, { color: textColor }]}>Offline Mode</Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>Enable offline experience</Text>
-          </View>
-          <Switch value={offlineMode} onValueChange={setOfflineMode} />
-        </View>
-
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <View>
-            <Text style={[styles.title, { color: textColor }]}>About {t('app.name')}</Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>Version 1.0.0</Text>
-          </View>
-        </View>
-
-        {logoutError ? (
-          <Text style={styles.errorText} accessibilityRole="alert" accessibilityLiveRegion="polite">
-            {logoutError}
-          </Text>
-        ) : null}
+        {logoutError ? <InlineError message={logoutError} /> : null}
 
         <Pressable
-          style={[styles.card, styles.logoutCard]}
+          style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => {
             setLogoutError('');
             setShowLogout(true);
           }}
           accessibilityRole="button"
-          accessibilityLabel="Log out"
-          accessibilityHint="Opens a confirmation before logging out"
+          accessibilityLabel={t('settings.logout')}
         >
-          <Text style={styles.logoutText}>Log out</Text>
+          <Text style={[styles.rowText, { color: colors.error }]}>{t('settings.logout')}</Text>
         </Pressable>
 
-        <Pressable
-          style={[styles.card, styles.deleteAccountCard]}
-          onPress={() => router.push('/(public)/delete-account')}
-          accessibilityRole="button"
-          accessibilityLabel="Delete account"
-          accessibilityHint="Learn how to delete your account and personal data"
-        >
-          <Text style={styles.deleteAccountText}>Delete Account</Text>
-        </Pressable>
+        <Text style={[styles.credit, { color: colors.textMuted }]}>{t('label.credit')}</Text>
       </ScrollView>
 
       <ConfirmSheet
         visible={showLogout}
-        title={t('confirm.logout.title')}
+        title={t('confirm.logout.title', { app: t('app.name') })}
         cancelLabel={t('confirm.logout.cancel')}
         confirmLabel={t('confirm.logout.confirm')}
         loading={loggingOut}
@@ -145,48 +77,9 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  heading: { fontSize: 26, fontWeight: 'bold', marginBottom: 20 },
-  card: {
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    gap: 14,
-  },
-  title: { fontSize: 16, fontWeight: '600' },
-  subtitle: { fontSize: 12, marginTop: 4 },
-  themeOptions: { flexDirection: 'row', gap: 8 },
-  themeButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    backgroundColor: '#888888',
-  },
-  selected: { backgroundColor: '#2457C5' },
-  logoutCard: {
-    borderWidth: 1,
-    borderColor: '#D9534F',
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#D9534F',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  deleteAccountCard: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  deleteAccountText: {
-    color: '#888888',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  errorText: {
-    color: '#D92D20',
-    marginBottom: 12,
-    fontSize: 14,
-  },
+  container: { padding: 20, gap: 12, flexGrow: 1 },
+  heading: { fontSize: 26, fontFamily: 'Inter_700Bold', marginBottom: 8 },
+  row: { minHeight: 52, borderWidth: 1, borderRadius: 12, padding: 16, justifyContent: 'center' },
+  rowText: { fontSize: 16, fontFamily: 'Inter_600SemiBold' },
+  credit: { marginTop: 'auto', textAlign: 'center', fontSize: 12, fontFamily: 'Inter_400Regular' },
 });
