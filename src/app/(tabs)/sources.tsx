@@ -70,25 +70,11 @@ export default function SourcesScreen() {
       // 1. Fetch sources with stats (E6)
       const { data: sourcesData, error: sourcesError } = await supabase.rpc('sources_with_stats');
 
-      let fetchedSources: SourceItem[] = [];
       if (sourcesError) {
-        // Fallback to table query if RPC is not present
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('financial_sources')
-          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
-          .order('name');
-
-        if (fallbackError) {
-          setListError(t('err.generic'));
-          return;
-        }
-        fetchedSources = (fallbackData ?? []).map((s) => ({
-          ...s,
-          has_transactions: false,
-        })) as SourceItem[];
-      } else {
-        fetchedSources = (sourcesData ?? []) as SourceItem[];
+        setListError(t('err.generic'));
+        return;
       }
+      const fetchedSources = (sourcesData ?? []) as SourceItem[];
 
       setSources(fetchedSources);
 
