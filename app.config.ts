@@ -63,7 +63,10 @@ const config: ExpoConfig = {
     'expo-status-bar',
     'expo-web-browser',
     './plugins/backup-off',
-    ['expo-build-properties', { android: { minSdkVersion: 28 } }],
+    [
+      'expo-build-properties',
+      { android: { minSdkVersion: 28 }, ios: { deploymentTarget: '16.4' } },
+    ],
   ],
 
   experiments: {

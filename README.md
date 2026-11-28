@@ -8,8 +8,6 @@ Supported devices: iPhone with iOS 16.4 or later (iPhone only, no iPad layout). 
 
 WPT 201 - A is a privacy-focused personal expense management application built with Expo, React Native and TypeScript.
 
-The BRD and PRD specify Android 9+ and iOS 15.1+. The current Expo SDK 57 configuration requires a separate team decision because its supported iOS minimum is higher.
-
 ## Prerequisites
 
 - Node.js LTS
