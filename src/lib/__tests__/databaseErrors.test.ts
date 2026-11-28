@@ -50,4 +50,32 @@ describe('getDatabaseErrorKey', () => {
       'err.generic',
     );
   });
+
+  it('shows the minimum message for WPT_BAL_MIN', () => {
+    expect(getDatabaseErrorKey({ message: 'WPT_BAL_MIN' })).toBe('err.amount.min');
+  });
+
+  it('does not call every duplicate a name clash', () => {
+    expect(
+      getDatabaseErrorKey({
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "financial_sources_pkey"',
+      }),
+    ).toBe('err.generic');
+  });
+
+  it('maps sources_user_id_name_key and sources_name_user_id_unique constraints', () => {
+    expect(
+      getDatabaseErrorKey({
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "sources_user_id_name_key"',
+      }),
+    ).toBe('err.name.duplicate.source');
+    expect(
+      getDatabaseErrorKey({
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "sources_name_user_id_unique"',
+      }),
+    ).toBe('err.name.duplicate.source');
+  });
 });

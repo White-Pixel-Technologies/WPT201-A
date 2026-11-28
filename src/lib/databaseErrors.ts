@@ -21,8 +21,8 @@ export function getDatabaseErrorKey(error: unknown): string {
 
   if (
     errorText.includes('FINANCIAL_SOURCES_UNIQUE_NAME') ||
-    errorText.includes('UNIQUE_NAME') ||
-    errorText.includes('DUPLICATE KEY')
+    errorText.includes('SOURCES_USER_ID_NAME_KEY') ||
+    errorText.includes('SOURCES_NAME_USER_ID_UNIQUE')
   ) {
     return 'err.name.duplicate.source';
   }
@@ -35,11 +35,11 @@ export function getDatabaseErrorKey(error: unknown): string {
     return 'info.source.has.txns';
   }
 
-  if (
-    errorText.includes('WPT_BAL_MAX') ||
-    errorText.includes('WPT_BAL_MIN') ||
-    errorText.includes('BAL-10')
-  ) {
+  if (errorText.includes('WPT_BAL_MIN')) {
+    return 'err.amount.min';
+  }
+
+  if (errorText.includes('WPT_BAL_MAX') || errorText.includes('BAL-10')) {
     return 'err.amount.max';
   }
 
