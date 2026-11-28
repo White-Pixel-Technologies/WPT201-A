@@ -1,9 +1,16 @@
 import { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import {
+  Stack,
+  useGlobalSearchParams,
+  usePathname,
+  useRouter,
+  useSegments,
+  type Href,
+} from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import { SessionProvider, useSession, ONBOARDING_DONE } from '../lib/session';
-import { nextOnboardingHref } from '../lib/routing';
+import { currentUrl, nextOnboardingHref, rememberReturnPath, takeReturnPath } from '../lib/routing';
 import { ThemeProvider } from '../theme/theme-context';
 import { useNetworkStatus } from '../lib/useNetworkStatus';
 import OfflineBanner from '../components/ui/OfflineBanner';
@@ -13,6 +20,8 @@ function AppContent() {
   const { isOnline } = useNetworkStatus();
   const router = useRouter();
   const segments = useSegments();
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
 
   useEffect(() => {
     if (!ready) return;
@@ -29,7 +38,10 @@ function AppContent() {
 
     if (!isLoggedIn) {
       if (!isPublic) {
-        router.replace('/(auth)/welcome');
+        // PRD 4.3: remember the page, send the person to Log in
+        const back = currentUrl(pathname, params);
+        rememberReturnPath(back);
+        router.replace(('/login?next=' + encodeURIComponent(back)) as Href);
       }
       return;
     }
@@ -41,10 +53,11 @@ function AppContent() {
       }
     } else {
       if (currentGroup === '(auth)' || currentGroup === 'onboarding') {
-        router.replace('/home');
+        // PRD 4.3: go back to the page the person first asked for
+        router.replace(takeReturnPath());
       }
     }
-  }, [ready, isLoggedIn, onboardingStep, segments, router]);
+  }, [ready, isLoggedIn, onboardingStep, segments, router, pathname, params]);
 
   return (
     <View style={styles.container}>
@@ -62,6 +75,9 @@ export default function RootLayout() {
     Inter_500Medium: require('../../assets/fonts/Inter_500Medium.ttf'),
     Inter_600SemiBold: require('../../assets/fonts/Inter_600SemiBold.ttf'),
     Inter_700Bold: require('../../assets/fonts/Inter_700Bold.ttf'),
+    // Icon fonts must load from assets/fonts: Cloudflare never uploads node_modules
+    feather: require('../../assets/fonts/Feather.ttf'),
+    'material-community': require('../../assets/fonts/MaterialCommunityIcons.ttf'),
   });
 
   if (!loaded && !error) {

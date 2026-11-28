@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,23 +8,28 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
 import { useTheme } from '../../theme/theme-context';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 import { VERIFY_REDIRECT_URL } from '../../constants/urls';
+import { rememberReturnPath } from '../../lib/routing';
 import { t } from '../../i18n';
 
 export default function Login() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{ sessionExpired?: string }>();
+  const params = useLocalSearchParams<{ sessionExpired?: string; next?: string }>();
   const { login } = useSession();
   const { isOnline } = useNetworkStatus();
   const { colors } = useTheme();
 
   const submitting = useRef(false);
+
+  // PRD 4.3: keep the page from ?next= so we can return to it after login
+  useEffect(() => {
+    rememberReturnPath(params.next);
+  }, [params.next]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -78,7 +83,7 @@ export default function Login() {
         return;
       }
 
-      router.replace('/');
+      // The root layout now sends the person to the saved page (or onboarding).
     } catch {
       setMessage(t('err.login.failed'));
     } finally {
