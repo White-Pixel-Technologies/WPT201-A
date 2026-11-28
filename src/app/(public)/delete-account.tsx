@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { t } from '../../i18n';
 
 export default function DeleteAccountInfo() {
   const router = useRouter();
@@ -8,16 +9,16 @@ export default function DeleteAccountInfo() {
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: 'Delete Account' }} />
 
-      <Text style={styles.title}>How to Delete Your WPT 201 - A Account</Text>
-      <Text style={styles.updated}>Last updated: 21 November 2026</Text>
+      <Text style={styles.title}>How to Delete Your {t('app.name')} Account</Text>
+      <Text style={styles.updated}>Last updated: Sat, 28 Nov 2026</Text>
       <Text style={styles.subtitle}>
-        In compliance with Google Play and privacy regulations, WPT 201 - A provides a simple and
-        permanent way to delete your account and all associated data.
+        In compliance with Google Play and privacy regulations, {t('app.name')} provides a simple
+        and permanent way to delete your account and all associated data.
       </Text>
 
       <View style={styles.section}>
         <Text style={styles.heading}>Step-by-Step Instructions (In-App)</Text>
-        <Text style={styles.step}>1. Open the WPT 201 - A app and log in to your account.</Text>
+        <Text style={styles.step}>1. Open the {t('app.name')} app and log in to your account.</Text>
         <Text style={styles.step}>
           2. Tap the <Text style={styles.bold}>Settings</Text> tab in the bottom navigation bar.
         </Text>
@@ -50,10 +51,9 @@ export default function DeleteAccountInfo() {
       <View style={styles.section}>
         <Text style={styles.heading}>Cannot Access the App?</Text>
         <Text style={styles.body}>
-          If you have uninstalled the app or forgot your password, you can reset your password using
-          our Forgot Password page, log in below, and proceed with deletion. Alternatively, you can
-          email our support team with your registered email address to request manual account
-          deletion within 30 days.
+          If you have uninstalled the app or forgot your password, reset your password using the
+          Forgot password link on the Log in screen, log in below, and then delete your account from
+          Settings.
         </Text>
       </View>
 
