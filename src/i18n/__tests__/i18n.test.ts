@@ -98,11 +98,11 @@ function findDuplicateJsonKeys(rawJson: string): string[] {
 }
 
 describe('i18n shared text (en.json & t)', () => {
-  it('loads English translation messages with all 214 keys', () => {
+  it('loads English translation messages with all 240 keys', () => {
     expect(en).toBeDefined();
     expect(typeof en).toBe('object');
     expect(Array.isArray(en)).toBe(false);
-    expect(Object.keys(en)).toHaveLength(214);
+    expect(Object.keys(en)).toHaveLength(240);
   });
 
   it('exports both named and default t function', () => {

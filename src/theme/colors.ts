@@ -12,6 +12,7 @@ export type ThemeColors = {
   textMuted: string;
   border: string;
   primary: string;
+  primarySurface: string;
   onPrimary: string;
   accent: string;
   success: string;
@@ -30,6 +31,7 @@ export const lightColors: ThemeColors = {
   textMuted: '#5F5E5A',
   border: '#D3D1C7',
   primary: '#0F6E56',
+  primarySurface: '#E8F5F1',
   onPrimary: '#FFFFFF',
   accent: '#854F0B',
   success: '#3B6D11',
@@ -48,6 +50,7 @@ export const darkColors: ThemeColors = {
   textMuted: '#A8A79F',
   border: '#444441',
   primary: '#5DCAA5',
+  primarySurface: '#14382F',
   onPrimary: '#1A1A18',
   accent: '#EF9F27',
   success: '#97C459',
