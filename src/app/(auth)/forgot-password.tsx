@@ -49,7 +49,7 @@ export default function ForgotPassword() {
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <OfflineBanner visible={!isOnline} />
 
-      <Text style={[styles.title, { color: colors.text }]}>Forgot password?</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('forgot.title')}</Text>
 
       {message ? (
         <Text
@@ -67,13 +67,13 @@ export default function ForgotPassword() {
             {t('info.reset.sent')}
           </Text>
           <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
-            Back to log in
+            {t('forgot.back')}
           </Link>
         </>
       ) : (
         <>
           <Text style={[styles.message, { color: colors.textSecondary }]}>
-            Enter your email address and we&apos;ll send you a password reset link.
+            {t('forgot.helper')}
           </Text>
 
           <TextInput
@@ -85,7 +85,7 @@ export default function ForgotPassword() {
                 color: colors.text,
               },
             ]}
-            placeholder="Email address"
+            placeholder={t('forgot.email.placeholder')}
             placeholderTextColor={colors.textMuted}
             value={email}
             onChangeText={setEmail}
@@ -93,7 +93,9 @@ export default function ForgotPassword() {
             autoCapitalize="none"
             autoCorrect={false}
             editable={!loading}
-            accessibilityLabel="Email address"
+            returnKeyType="go"
+            onSubmitEditing={handleReset}
+            accessibilityLabel={t('forgot.email.placeholder')}
           />
 
           <Pressable
@@ -107,12 +109,12 @@ export default function ForgotPassword() {
             accessibilityRole="button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-              {loading ? 'Sending...' : 'Send reset link'}
+              {loading ? t('forgot.sending') : t('forgot.submit')}
             </Text>
           </Pressable>
 
           <Link href="/(auth)/login" style={[styles.link, { color: colors.primary }]}>
-            Back to log in
+            {t('forgot.back')}
           </Link>
         </>
       )}
