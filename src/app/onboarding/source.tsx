@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -18,7 +18,7 @@ import OfflineBanner from '../../components/ui/OfflineBanner';
 import { Colors } from '../../constants/colors';
 import { t } from '../../i18n';
 import { getDatabaseErrorKey } from '../../lib/databaseErrors';
-import { cleanPastedAmount } from '../../lib/money';
+import { cleanPastedAmount, sanitizeAmountInput } from '../../lib/money';
 import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../lib/theme';
@@ -72,7 +72,10 @@ export default function OnboardingSourceScreen() {
     }
   };
 
-  const handleAmountChange = (val: string, setter: (v: string) => void) => {
+  const handleAmountChange = (
+    val: string,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+  ) => {
     setError('');
     // Check if pasted with symbols
     if (/[₹$,a-zA-Z]/.test(val)) {
@@ -82,10 +85,8 @@ export default function OnboardingSourceScreen() {
         return;
       }
     }
-    // Block multiple decimal points and limit to 2 decimals
-    if (/^\d*\.?\d{0,2}$/.test(val) || val === '') {
-      setter(val);
-    }
+    // G-MON-03/04: keypad rule from money.ts
+    setter((previous) => sanitizeAmountInput(val, previous));
   };
 
   const handleBack = () => {
@@ -213,11 +214,10 @@ export default function OnboardingSourceScreen() {
               <Text style={[styles.progressText, { color: Colors.primary }]}>Step 3 of 3</Text>
             </View>
 
-            <Text style={[styles.title, { color: textColor }]}>Add your first source</Text>
+            <Text style={[styles.title, { color: textColor }]}>{t('onboarding.source.title')}</Text>
 
-            <Text style={[styles.subtitle, { color: subtextColor }]}>
-              Add where your money is: a bank account, cash in hand, or a credit card. You can add
-              more later.
+            <Text style={[styles.helper, { color: subtextColor }]}>
+              {t('info.source.firsthelp')}
             </Text>
 
             {/* Source Type Selector */}
@@ -483,6 +483,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginBottom: 20,
   },
+  helper: { fontSize: 14, marginBottom: 12 },
   label: {
     fontSize: 14,
     fontWeight: '600',
