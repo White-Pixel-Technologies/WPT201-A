@@ -45,25 +45,7 @@ export default function SourceDetailScreen() {
       const { data, error } = await supabase.rpc('sources_with_stats');
 
       if (error) {
-        // Fallback to table query if RPC is not available
-        const { data: directData, error: directErr } = await supabase
-          .from('financial_sources')
-          .select('id, type, name, opening_amount, current_amount, credit_limit, is_archived')
-          .order('name');
-
-        if (directErr) {
-          setErrorMsg('Unable to load source details.');
-          return;
-        }
-
-        const items = (directData ?? []) as SourceItem[];
-        setAllSources(items);
-        const match = items.find((s) => s.id === id);
-        if (match) {
-          setSource(match);
-        } else {
-          setErrorMsg('Source not found.');
-        }
+        setErrorMsg(t('err.generic'));
         return;
       }
 
@@ -73,10 +55,10 @@ export default function SourceDetailScreen() {
       if (match) {
         setSource(match);
       } else {
-        setErrorMsg('Source not found.');
+        setErrorMsg(t('err.generic'));
       }
     } catch {
-      setErrorMsg('Unable to load source details.');
+      setErrorMsg(t('err.generic'));
     } finally {
       setIsLoading(false);
     }
