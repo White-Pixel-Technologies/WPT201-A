@@ -26,8 +26,6 @@ type ThemeContextValue = {
 };
 
 const STORAGE_KEY = '@wpt201a/theme-mode';
-const LEGACY_STORAGE_KEY = '@savemode/theme-mode';
-const LEGACY_APP_STORAGE_KEY = '@app/theme-mode';
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
@@ -46,19 +44,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     async function loadThemeMode() {
       try {
-        let savedMode = await AsyncStorage.getItem(STORAGE_KEY);
-
-        if (savedMode === null) {
-          const legacyMode =
-            (await AsyncStorage.getItem(LEGACY_STORAGE_KEY)) ||
-            (await AsyncStorage.getItem(LEGACY_APP_STORAGE_KEY));
-          if (legacyMode === 'system' || legacyMode === 'light' || legacyMode === 'dark') {
-            savedMode = legacyMode;
-            await AsyncStorage.setItem(STORAGE_KEY, legacyMode);
-            await AsyncStorage.removeItem(LEGACY_STORAGE_KEY);
-            await AsyncStorage.removeItem(LEGACY_APP_STORAGE_KEY);
-          }
-        }
+        const savedMode = await AsyncStorage.getItem(STORAGE_KEY);
 
         if (isActive && (savedMode === 'system' || savedMode === 'light' || savedMode === 'dark')) {
           setModeState(savedMode);
