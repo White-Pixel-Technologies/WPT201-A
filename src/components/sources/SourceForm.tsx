@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { useSession } from '../../lib/session';
 import { supabase } from '../../lib/supabase';
 import { generateUUID } from '../../lib/uuid';
 import { t } from '../../i18n';
-import { formatAmount, cleanPastedAmount } from '../../lib/money';
+import { formatAmount, cleanPastedAmount, sanitizeAmountInput } from '../../lib/money';
 import ConfirmSheet from '../ui/ConfirmSheet';
 import InlineError from '../ui/InlineError';
 import { Colors } from '../../constants/colors';
@@ -61,6 +61,75 @@ const createSourceSchema = (existingSources: { id?: string; name: string }[], cu
     creditLimit: z.string().optional(),
   });
 
+export function checkIsPrimaryKeyConflict(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const err = error as { code?: string; message?: string; details?: string };
+  if (err.code !== '23505') return false;
+  const errDetails = [err.code, err.message, err.details].filter(Boolean).join(' ').toUpperCase();
+  return (
+    errDetails.includes('FINANCIAL_SOURCES_PKEY') ||
+    errDetails.includes('FINANCIAL_SOURCES_USER_ID_ID_UNIQUE') ||
+    errDetails.includes('KEY (ID)=') ||
+    errDetails.includes('(ID)=') ||
+    errDetails.includes('KEY (USER_ID, ID)=')
+  );
+}
+
+export function isSameIntendedSource(
+  existing:
+    | {
+        id?: string;
+        name?: string;
+        type?: string;
+        opening_amount?: number | string | null;
+        credit_limit?: number | string | null;
+      }
+    | null
+    | undefined,
+  targetId: string,
+  intended: {
+    name: string;
+    type: SourceType;
+    opening_amount: number;
+    credit_limit: number | null;
+  },
+): boolean {
+  if (!existing || !existing.id || !existing.name || !existing.type) {
+    return false;
+  }
+
+  const idMatches = existing.id === targetId;
+  const typeMatches = existing.type === intended.type;
+  const nameMatches = existing.name.trim().toLowerCase() === intended.name.trim().toLowerCase();
+
+  const existingOpening =
+    existing.opening_amount !== null && existing.opening_amount !== undefined
+      ? Number(existing.opening_amount)
+      : NaN;
+  const openingMatches = !isNaN(existingOpening) && existingOpening === intended.opening_amount;
+
+  const existingLimit =
+    existing.credit_limit !== null && existing.credit_limit !== undefined
+      ? Number(existing.credit_limit)
+      : null;
+  const limitMatches =
+    intended.credit_limit === null
+      ? existingLimit === null
+      : existingLimit !== null && existingLimit === intended.credit_limit;
+
+  return idMatches && typeMatches && nameMatches && openingMatches && limitMatches;
+}
+
+export function getOrCreateSourceId(
+  ref: { current: string | null },
+  initialSourceId?: string | null,
+): string {
+  if (ref.current === null) {
+    ref.current = initialSourceId ?? generateUUID();
+  }
+  return ref.current;
+}
+
 type FormValues = {
   type: SourceType;
   name: string;
@@ -89,6 +158,9 @@ export default function SourceForm({
 
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [formError, setFormError] = useState('');
+
+  // Stable ID ref preserved across re-renders and retries
+  const sourceIdRef = useRef<string | null>(null);
 
   const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
   const subtextColor = isDark ? '#A1A1AA' : '#64748B';
@@ -125,6 +197,7 @@ export default function SourceForm({
     control,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
@@ -157,14 +230,19 @@ export default function SourceForm({
       }
     }
 
-    if (/^\d*\.?\d{0,2}$/.test(val) || val === '') {
-      setValue(field, val, { shouldValidate: true, shouldDirty: true });
-    }
+    // G-MON-03/04: keypad rule from money.ts
+    const previous = getValues(field) ?? '';
+    setValue(field, sanitizeAmountInput(val, previous), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   const onSubmit = async (values: FormValues) => {
     setFormError('');
     clearError();
+
+    const stableSourceId = getOrCreateSourceId(sourceIdRef, initialSource?.id);
 
     // Custom validations per PRD
     const parsedAmount = Number(values.openingAmount);
@@ -222,14 +300,33 @@ export default function SourceForm({
         return error;
       }
 
-      const newId = generateUUID();
       const { error } = await supabase.from('financial_sources').insert({
-        id: newId,
+        id: stableSourceId,
         type: values.type,
         name: values.name.trim(),
         opening_amount: finalOpening,
         credit_limit: finalCreditLimit,
       });
+
+      if (error && checkIsPrimaryKeyConflict(error)) {
+        // Double-check if the existing row is the exact source we intended to insert
+        const { data: existing } = await supabase
+          .from('financial_sources')
+          .select('id, type, name, opening_amount, credit_limit')
+          .eq('id', stableSourceId)
+          .maybeSingle();
+
+        if (
+          isSameIntendedSource(existing, stableSourceId, {
+            name: values.name.trim(),
+            type: values.type,
+            opening_amount: finalOpening,
+            credit_limit: finalCreditLimit,
+          })
+        ) {
+          return null; // Treat idempotent retry as success
+        }
+      }
 
       return error;
     });
@@ -513,7 +610,7 @@ export default function SourceForm({
         {/* Action Buttons */}
         <View style={styles.actionRow}>
           <Pressable
-            onPress={handleSubmit(onSubmit)}
+            onPress={() => handleSubmit(onSubmit)()}
             disabled={!isOnline || isSaving}
             style={[
               styles.saveButton,

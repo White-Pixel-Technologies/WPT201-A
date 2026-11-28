@@ -1,5 +1,19 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { z } from 'zod';
+import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
+import {
+  checkIsPrimaryKeyConflict,
+  isSameIntendedSource,
+  getOrCreateSourceId,
+} from '../SourceForm';
+
+jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
+
+jest.mock('../../../lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(),
+  },
+}));
 
 const createSourceSchema = (existingSources: { id?: string; name: string }[], currentId?: string) =>
   z.object({
@@ -82,5 +96,213 @@ describe('SourceForm Zod Validation (Task 11)', () => {
     });
 
     expect(result.success).toBe(false);
+  });
+});
+
+describe('SourceForm Retry & Idempotency (D11)', () => {
+  it('identifies primary key conflict errors', () => {
+    expect(
+      checkIsPrimaryKeyConflict({
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "financial_sources_pkey"',
+        details: 'Key (id)=(src-123) already exists.',
+      }),
+    ).toBe(true);
+
+    expect(
+      checkIsPrimaryKeyConflict({
+        code: '23505',
+        message:
+          'duplicate key value violates unique constraint "financial_sources_user_id_id_unique"',
+        details: 'Key (user_id, id)=(u1, src-123) already exists.',
+      }),
+    ).toBe(true);
+  });
+
+  it('does not treat duplicate name violation as primary key conflict', () => {
+    expect(
+      checkIsPrimaryKeyConflict({
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "financial_sources_unique_name"',
+        details: 'Key (user_id, lower(btrim(name)))=(u1, cash) already exists.',
+      }),
+    ).toBe(false);
+  });
+
+  it('returns false for non-unique-violation errors', () => {
+    expect(
+      checkIsPrimaryKeyConflict({
+        code: '42P01',
+        message: 'relation does not exist',
+      }),
+    ).toBe(false);
+    expect(checkIsPrimaryKeyConflict(null)).toBe(false);
+  });
+
+  it('verifies existing same-ID record matches intended source before treating as success', () => {
+    const targetId = 'src-uuid-1';
+    const intended = {
+      name: 'Emergency Cash',
+      type: 'cash' as const,
+      opening_amount: 500,
+      credit_limit: null,
+    };
+
+    // Exact match with all fields
+    expect(
+      isSameIntendedSource(
+        {
+          id: targetId,
+          name: 'Emergency Cash',
+          type: 'cash',
+          opening_amount: 500,
+          credit_limit: null,
+        },
+        targetId,
+        intended,
+      ),
+    ).toBe(true);
+
+    // Case-insensitive & trimmed name match with all fields
+    expect(
+      isSameIntendedSource(
+        {
+          id: targetId,
+          name: '  emergency cash  ',
+          type: 'cash',
+          opening_amount: 500,
+          credit_limit: null,
+        },
+        targetId,
+        intended,
+      ),
+    ).toBe(true);
+
+    // Different opening amount is rejected
+    expect(
+      isSameIntendedSource(
+        {
+          id: targetId,
+          name: 'Emergency Cash',
+          type: 'cash',
+          opening_amount: 1000,
+          credit_limit: null,
+        },
+        targetId,
+        intended,
+      ),
+    ).toBe(false);
+
+    // Different credit limit is rejected
+    const cardIntended = {
+      name: 'Amazon ICICI',
+      type: 'card' as const,
+      opening_amount: 0,
+      credit_limit: 50000,
+    };
+    expect(
+      isSameIntendedSource(
+        {
+          id: targetId,
+          name: 'Amazon ICICI',
+          type: 'card',
+          opening_amount: 0,
+          credit_limit: 75000,
+        },
+        targetId,
+        cardIntended,
+      ),
+    ).toBe(false);
+
+    // Unrelated record with different ID is rejected
+    expect(
+      isSameIntendedSource(
+        {
+          id: 'different-uuid',
+          name: 'Emergency Cash',
+          type: 'cash',
+          opening_amount: 500,
+          credit_limit: null,
+        },
+        targetId,
+        intended,
+      ),
+    ).toBe(false);
+
+    // Record with different name is rejected
+    expect(
+      isSameIntendedSource(
+        {
+          id: targetId,
+          name: 'Salary Account',
+          type: 'cash',
+          opening_amount: 500,
+          credit_limit: null,
+        },
+        targetId,
+        intended,
+      ),
+    ).toBe(false);
+
+    // Record with different type is rejected
+    expect(
+      isSameIntendedSource(
+        {
+          id: targetId,
+          name: 'Emergency Cash',
+          type: 'bank',
+          opening_amount: 500,
+          credit_limit: null,
+        },
+        targetId,
+        intended,
+      ),
+    ).toBe(false);
+
+    // Missing / null record is rejected
+    expect(isSameIntendedSource(null, targetId, intended)).toBe(false);
+  });
+
+  it('generates UUID lazily only once across re-renders', () => {
+    const ref: { current: string | null } = { current: null };
+
+    // Initial render: generates UUID
+    const idFirstRender = getOrCreateSourceId(ref);
+    expect(typeof idFirstRender).toBe('string');
+    expect(idFirstRender.length).toBeGreaterThan(0);
+
+    // Simulated re-renders (e.g. user typing, validation state change)
+    const idSecondRender = getOrCreateSourceId(ref);
+    const idThirdRender = getOrCreateSourceId(ref);
+
+    expect(idSecondRender).toBe(idFirstRender);
+    expect(idThirdRender).toBe(idFirstRender);
+    expect(ref.current).toBe(idFirstRender);
+  });
+
+  it('preserves existing source ID when editing across re-renders', () => {
+    const existingSourceId = 'existing-source-id-123';
+    const ref: { current: string | null } = { current: null };
+
+    // Initial render in edit mode
+    const idFirstRender = getOrCreateSourceId(ref, existingSourceId);
+    expect(idFirstRender).toBe(existingSourceId);
+
+    // Subsequent re-render
+    const idSecondRender = getOrCreateSourceId(ref, existingSourceId);
+    expect(idSecondRender).toBe(existingSourceId);
+  });
+
+  it('reuses stable source ID across multiple submission attempts', () => {
+    const ref: { current: string | null } = { current: null };
+    const formId = getOrCreateSourceId(ref);
+
+    // First submit attempt
+    const firstAttemptId = ref.current;
+    expect(firstAttemptId).toBe(formId);
+
+    // Second submit attempt (e.g. retry after network timeout)
+    const secondAttemptId = ref.current;
+    expect(secondAttemptId).toBe(firstAttemptId);
   });
 });
