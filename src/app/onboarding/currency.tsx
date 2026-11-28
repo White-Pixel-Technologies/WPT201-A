@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSession } from '../../lib/session';
-import { useAppTheme } from '../../lib/theme';
+import { useTheme } from '../../theme/theme-context';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
 import { supabase } from '../../lib/supabase';
 import { t } from '../../i18n';
@@ -24,11 +24,10 @@ import {
   detectDefaultCurrency,
   type Currency,
 } from '../../constants/currencies';
-import { Colors } from '../../constants/colors';
 
 export default function OnboardingCurrencyScreen() {
   const router = useRouter();
-  const { isDark } = useAppTheme();
+  const { colors } = useTheme();
   const { isOnline } = useNetworkStatus();
   const { user, currencyCode, setCurrencyCode, setOnboardingStep } = useSession();
 
@@ -37,15 +36,6 @@ export default function OnboardingCurrencyScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
-  const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
-  const subtextColor = isDark ? '#A1A1AA' : '#64748B';
-  const cardColor = isDark ? '#1E1E1E' : '#FFFFFF';
-  const inputBorder = isDark ? '#3F3F46' : '#CBD5E1';
-  const inputBg = isDark ? '#27272A' : '#F8FAFC';
-  const itemBorder = isDark ? '#27272A' : '#F1F5F9';
-  const selectedBg = isDark ? '#14382F' : '#E8F5F1';
-  const backgroundColor = isDark ? '#121212' : '#F8FAFC';
 
   const filteredCurrencies = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -61,7 +51,7 @@ export default function OnboardingCurrencyScreen() {
   const handleContinue = async () => {
     setError('');
     if (!selectedCode) {
-      setError('Please select a currency.');
+      setError(t('onboarding.currency.required'));
       return;
     }
 
@@ -107,8 +97,8 @@ export default function OnboardingCurrencyScreen() {
         style={[
           styles.currencyRow,
           {
-            borderColor: isSelected ? Colors.primary : itemBorder,
-            backgroundColor: isSelected ? selectedBg : cardColor,
+            borderColor: isSelected ? colors.primary : colors.border,
+            backgroundColor: isSelected ? colors.primarySurface : colors.surface,
           },
         ]}
         onPress={() => setSelectedCode(item.code)}
@@ -117,19 +107,19 @@ export default function OnboardingCurrencyScreen() {
         accessibilityLabel={`${item.name} (${item.code})`}
       >
         <View style={styles.currencyLeft}>
-          <View style={[styles.symbolBadge, { backgroundColor: isDark ? '#27272A' : '#F1F5F9' }]}>
-            <Text style={[styles.symbolText, { color: Colors.primary }]}>{item.symbol}</Text>
+          <View style={[styles.symbolBadge, { backgroundColor: colors.surfaceSecondary }]}>
+            <Text style={[styles.symbolText, { color: colors.primary }]}>{item.symbol}</Text>
           </View>
           <View style={styles.currencyInfo}>
-            <Text style={[styles.currencyName, { color: textColor }]}>{item.name}</Text>
-            <Text style={[styles.currencyCode, { color: subtextColor }]}>{item.code}</Text>
+            <Text style={[styles.currencyName, { color: colors.text }]}>{item.name}</Text>
+            <Text style={[styles.currencyCode, { color: colors.textSecondary }]}>{item.code}</Text>
           </View>
         </View>
 
         <MaterialCommunityIcons
           name={isSelected ? 'radiobox-marked' : 'radiobox-blank'}
           size={22}
-          color={isSelected ? Colors.primary : subtextColor}
+          color={isSelected ? colors.primary : colors.textSecondary}
         />
       </Pressable>
     );
@@ -137,7 +127,7 @@ export default function OnboardingCurrencyScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <OfflineBanner visible={!isOnline} />
@@ -149,48 +139,53 @@ export default function OnboardingCurrencyScreen() {
             onPress={handleBack}
             style={styles.backButton}
             accessibilityRole="button"
-            accessibilityLabel="Back to Step 1"
+            accessibilityLabel={t('onboarding.back_to_step', { step: 1 })}
           >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={textColor} />
-            <Text style={[styles.backText, { color: textColor }]}>Back</Text>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.text} />
+            <Text style={[styles.backText, { color: colors.text }]}>{t('a11y.back')}</Text>
           </Pressable>
 
-          <Text style={[styles.progressText, { color: Colors.primary }]}>Step 2 of 3</Text>
+          <Text style={[styles.progressText, { color: colors.primary }]}>
+            {t('onboarding.step', { current: 2, total: 3 })}
+          </Text>
         </View>
 
-        <Text style={[styles.title, { color: textColor }]}>Choose your currency</Text>
-        <Text style={[styles.subtitle, { color: subtextColor }]}>
-          Amounts will be displayed in this currency across the app.
+        <Text style={[styles.title, { color: colors.text }]}>{t('onboarding.currency.title')}</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          {t('onboarding.currency.subtitle')}
         </Text>
 
         {/* Search Input */}
         <View
-          style={[styles.searchContainer, { borderColor: inputBorder, backgroundColor: inputBg }]}
+          style={[
+            styles.searchContainer,
+            { borderColor: colors.border, backgroundColor: colors.inputBackground },
+          ]}
         >
           <MaterialCommunityIcons
             name="magnify"
             size={20}
-            color={subtextColor}
+            color={colors.textSecondary}
             style={styles.searchIcon}
           />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search currency by name or code"
-            placeholderTextColor={subtextColor}
-            style={[styles.searchInput, { color: textColor }]}
-            accessibilityLabel="Search currency"
+            placeholder={t('onboarding.currency.search.placeholder')}
+            placeholderTextColor={colors.textSecondary}
+            style={[styles.searchInput, { color: colors.text }]}
+            accessibilityLabel={t('onboarding.currency.search.label')}
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')}>
-              <MaterialCommunityIcons name="close-circle" size={18} color={subtextColor} />
+              <MaterialCommunityIcons name="close-circle" size={18} color={colors.textSecondary} />
             </Pressable>
           )}
         </View>
 
         {!!error && (
           <View style={styles.errorContainer}>
-            <InlineError message={error} variant="error" isDark={isDark} />
+            <InlineError message={error} variant="error" />
           </View>
         )}
 
@@ -205,24 +200,35 @@ export default function OnboardingCurrencyScreen() {
         />
 
         {/* Bottom continue action */}
-        <View style={[styles.footer, { backgroundColor }]}>
-          {!isOnline && <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>}
+        <View
+          style={[
+            styles.footer,
+            { backgroundColor: colors.background, borderTopColor: colors.border },
+          ]}
+        >
+          {!isOnline && (
+            <Text style={[styles.offlineHint, { color: colors.warning }]}>
+              {t('info.offline.save')}
+            </Text>
+          )}
 
           <Pressable
             onPress={handleContinue}
             disabled={!isOnline || isSaving}
             style={[
               styles.primaryButton,
-              { backgroundColor: Colors.primary },
+              { backgroundColor: colors.primary },
               (!isOnline || isSaving) && styles.disabledButton,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Continue"
+            accessibilityLabel={t('onboarding.continue')}
           >
             {isSaving ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={colors.onPrimary} size="small" />
             ) : (
-              <Text style={styles.primaryButtonText}>Continue</Text>
+              <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
+                {t('onboarding.continue')}
+              </Text>
             )}
           </Pressable>
         </View>
@@ -337,10 +343,8 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#3F3F4633',
   },
   offlineHint: {
-    color: '#D97706',
     fontSize: 13,
     marginBottom: 8,
     textAlign: 'center',
@@ -352,7 +356,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

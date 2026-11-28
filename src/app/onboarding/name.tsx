@@ -12,32 +12,24 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSession } from '../../lib/session';
-import { useAppTheme } from '../../lib/theme';
+import { useTheme } from '../../theme/theme-context';
 import { useNetworkStatus } from '../../lib/useNetworkStatus';
 import { supabase } from '../../lib/supabase';
 import { t } from '../../i18n';
 import OfflineBanner from '../../components/ui/OfflineBanner';
 import InlineError from '../../components/ui/InlineError';
-import { Colors } from '../../constants/colors';
 
 const MAX_NAME_LENGTH = 40;
 
 export default function OnboardingNameScreen() {
   const router = useRouter();
-  const { isDark } = useAppTheme();
+  const { colors } = useTheme();
   const { isOnline } = useNetworkStatus();
   const { user, userName, setUserName, setOnboardingStep } = useSession();
 
   const [name, setName] = useState(userName || '');
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
-  const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
-  const subtextColor = isDark ? '#A1A1AA' : '#64748B';
-  const cardColor = isDark ? '#1E1E1E' : '#FFFFFF';
-  const inputBorder = isDark ? '#3F3F46' : '#CBD5E1';
-  const inputBg = isDark ? '#27272A' : '#F8FAFC';
-  const backgroundColor = isDark ? '#121212' : '#F8FAFC';
 
   const handleContinue = async () => {
     setError('');
@@ -49,7 +41,7 @@ export default function OnboardingNameScreen() {
     }
 
     if (trimmed.length > MAX_NAME_LENGTH) {
-      setError(`Name cannot exceed ${MAX_NAME_LENGTH} characters.`);
+      setError(t('onboarding.name.max_length', { max: MAX_NAME_LENGTH }));
       return;
     }
 
@@ -87,27 +79,29 @@ export default function OnboardingNameScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <OfflineBanner visible={!isOnline} />
 
         <View style={styles.cardContainer}>
-          <View style={[styles.card, { backgroundColor: cardColor }]}>
-            <Text style={[styles.progressText, { color: Colors.primary }]}>Step 1 of 3</Text>
-
-            <Text style={[styles.title, { color: textColor }]}>What&apos;s your name?</Text>
-
-            <Text style={[styles.subtitle, { color: subtextColor }]}>
-              Welcome to WPT 201 - A. Let&apos;s personalize your experience.
+          <View
+            style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.text }]}
+          >
+            <Text style={[styles.progressText, { color: colors.primary }]}>
+              {t('onboarding.step', { current: 1, total: 3 })}
             </Text>
+
+            <Text style={[styles.title, { color: colors.text }]}>{t('onboarding.name.title')}</Text>
 
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: textColor }]}>Your name</Text>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  {t('onboarding.name.label')}
+                </Text>
                 {showCounter && (
-                  <Text style={[styles.counter, { color: subtextColor }]}>
+                  <Text style={[styles.counter, { color: colors.textSecondary }]}>
                     {name.length}/{MAX_NAME_LENGTH}
                   </Text>
                 )}
@@ -120,46 +114,52 @@ export default function OnboardingNameScreen() {
                   if (error) setError('');
                 }}
                 maxLength={MAX_NAME_LENGTH}
-                placeholder="Enter your name"
-                placeholderTextColor={subtextColor}
+                placeholder={t('onboarding.name.placeholder')}
+                placeholderTextColor={colors.textSecondary}
                 autoFocus
                 autoCapitalize="words"
                 editable={!isSaving}
                 style={[
                   styles.input,
                   {
-                    color: textColor,
-                    borderColor: error ? '#DC2626' : inputBorder,
-                    backgroundColor: inputBg,
+                    color: colors.text,
+                    borderColor: error ? colors.error : colors.border,
+                    backgroundColor: colors.inputBackground,
                   },
                 ]}
-                accessibilityLabel="Your name"
+                accessibilityLabel={t('onboarding.name.label')}
               />
 
               {!!error && (
                 <View style={styles.errorContainer}>
-                  <InlineError message={error} variant="error" isDark={isDark} />
+                  <InlineError message={error} variant="error" />
                 </View>
               )}
             </View>
 
-            {!isOnline && <Text style={styles.offlineHint}>{t('info.offline.save')}</Text>}
+            {!isOnline && (
+              <Text style={[styles.offlineHint, { color: colors.warning }]}>
+                {t('info.offline.save')}
+              </Text>
+            )}
 
             <Pressable
               onPress={handleContinue}
               disabled={!isOnline || isSaving}
               style={[
                 styles.primaryButton,
-                { backgroundColor: Colors.primary },
+                { backgroundColor: colors.primary },
                 (!isOnline || isSaving) && styles.disabledButton,
               ]}
               accessibilityRole="button"
-              accessibilityLabel="Continue"
+              accessibilityLabel={t('onboarding.continue')}
             >
               {isSaving ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
+                <ActivityIndicator color={colors.onPrimary} size="small" />
               ) : (
-                <Text style={styles.primaryButtonText}>Continue</Text>
+                <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
+                  {t('onboarding.continue')}
+                </Text>
               )}
             </Pressable>
           </View>
@@ -186,7 +186,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     padding: 28,
-    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -202,12 +201,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputGroup: {
     marginBottom: 20,
@@ -236,7 +230,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   offlineHint: {
-    color: '#D97706',
     fontSize: 13,
     marginBottom: 12,
   },
@@ -248,7 +241,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },
